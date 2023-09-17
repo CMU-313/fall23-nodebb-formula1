@@ -4,6 +4,8 @@ const db = require('../database');
 const topics = require('../topics');
 const plugins = require('../plugins');
 const meta = require('../meta');
+const controllers = require('../controllers');
+const groups = require('../groups');
 
 module.exports = function (User) {
     User.updateLastOnlineTime = async function (uid) {
@@ -39,5 +41,27 @@ module.exports = function (User) {
         const lastonline = await db.sortedSetScores('users:online', uid);
         const isOnline = uid.map((uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000));
         return isArray ? isOnline : isOnline[0];
+    };
+    /**
+     * Get count of group members that are online
+     * @param {string} groupName group name
+     * @param {string} uid user id
+     * @returns count of online users
+     */
+    User.getGroupOnlineCount = async function (groupName, uid) {
+        // Get all online users (list of user data)
+        const { users } = await controllers.users.getUsersAndCount('users:online', uid, 0, -1);
+
+        // Get list of uids of online users
+        const onlineUids = users.map(user => user.uid);
+
+        // Get boolean array repesenting user membership in group
+        const groupMemberMask = groups.isMembers(onlineUids, groupName);
+
+        // Filter online user that are members in group
+        const onlineUsersInGroup = users.filter((_, idx) => groupMemberMask[idx]);
+
+        // Return number of online users in group
+        return onlineUsersInGroup.length;
     };
 };
