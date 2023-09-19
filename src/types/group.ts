@@ -19,6 +19,7 @@ export type GroupDataObject = {
   'cover:position': string;
   nameEncoded: string;
   displayName: string;
+  onlineUserCount: number;
   labelColor: string;
   textColor: string;
   icon: string;

@@ -7,6 +7,7 @@ const db = require('../database');
 const plugins = require('../plugins');
 const utils = require('../utils');
 const translator = require('../translator');
+const user = require('../user');
 
 const intFields = [
     'createtime', 'memberCount', 'hidden', 'system', 'private',
@@ -37,7 +38,16 @@ module.exports = function (Groups) {
         groupData.forEach(group => modifyGroup(group, fields));
 
         const results = await plugins.hooks.fire('filter:groups.get', { groups: groupData });
-        return results.groups;
+
+        // Compute online user counts per group
+        const groups = await Promise.all(results.groups.map(
+            async group => ({
+                ...group,
+                onlineUserCount: await user.getGroupOnlineCount(group.name),
+            })
+        ));
+
+        return groups;
     };
 
     Groups.getGroupsData = async function (groupNames) {
