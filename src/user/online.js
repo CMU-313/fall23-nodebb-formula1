@@ -4,7 +4,6 @@ const db = require('../database');
 const topics = require('../topics');
 const plugins = require('../plugins');
 const meta = require('../meta');
-const controllers = require('../controllers');
 const groups = require('../groups');
 
 module.exports = function (User) {
@@ -48,20 +47,16 @@ module.exports = function (User) {
      * @param {string} uid user id
      * @returns count of online users
      */
-    User.getGroupOnlineCount = async function (groupName, uid) {
-        // Get all online users (list of user data)
-        const { users } = await controllers.users.getUsersAndCount('users:online', uid, 0, -1);
-
+    User.getGroupOnlineCount = async function (groupName) {
         // Get list of uids of online users
-        const onlineUids = users.map(user => user.uid);
+        const onlineUids = await User.getUidsFromSet('users:online', 0, -1);
 
         // Get boolean array repesenting user membership in group
-        const groupMemberMask = groups.isMembers(onlineUids, groupName);
+        const groupMemberMask = await groups.isMembers(onlineUids, groupName);
 
         // Filter online user that are members in group
-        const onlineUsersInGroup = users.filter((_, idx) => groupMemberMask[idx]);
+        const numOnlineInGroup = groupMemberMask.reduce((count, isMember) => count + isMember, 0);
 
-        // Return number of online users in group
-        return onlineUsersInGroup.length;
+        return numOnlineInGroup;
     };
 };
