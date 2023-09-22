@@ -73,5 +73,13 @@
 		"iconClass": "fa-briefcase",
 		"textClass": "visible-xs-inline",
 		"text": "Career"
+	},
+	{
+		"route": "/testpoint",
+		"title": "Career",
+		"enabled": true,
+		"iconClass": "fa-briefcase",
+		"textClass": "visible-xs-inline",
+		"text": "Career"
 	}
 ]

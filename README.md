@@ -58,6 +58,24 @@ After running the test suite, you can find the coverage report generated in the 
 
 If you want to directly run the linting and testing commands with specific configurations (i.e. only running the test suite on specific files, using `--fix` with ESLint), you can find the underlying commands are in the `package.json` file.
 
+## Database (Redis)
+
+### Schema and Data
+Schema files located at `public/openapi/components/schemas` as `.yaml` files. These are called during the build/init of the database. To see how these correspond to existing entries, download `RedisInsight-v2` application from the internet. The Hash Keys in the database reflect what is shown in the schema files.
+
+There are also files under `public/openapi/read` that detail the data that is pulled for any GET request performed by the application. `public/openapi/read.yaml` species the route to the API and the corresponding `.yaml` file that contains the structure for the retrieved data. 
+
+Presumedly, adding a new datase table will require creating a schema file. Then, to access the data in the database, a new API/route needs to be created and the format added as a `openapi/read/*.yaml` file that is linked to in the `openapi/read.yaml`file.
+
+### Files
+* `src/database/redis.js`: Methods for initializing the redis host, port, etc. Contains init, close, and info functions
+* `src/database/index.js`: Connects to a DB via the session store object
+* `src/database/redis/hash.js`: Increment PK ids, get/edit/delete objects and their fields
+* `src/database/redis/main.js`: Flush, empty, check if DB exists. Basic getts and setters for keys
+* `src/topics/create.js`: Example of CRUD operations for topics as a reference for our bug reports
+* `src/bugs`: New directory for creating bug reports
+
+
 ## License
 
 NodeBB is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).

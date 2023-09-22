@@ -1,0 +1,15 @@
+BugObject:
+  type: object
+  properties:
+    bid: 
+      type: number
+      description: Bug idenitifier
+      example: 1
+    title:
+      type: string
+      description: Title for the complaint
+      example: Broken bug
+    desc:
+      type: string
+      description: String for the complaint
+      example: this is a bug please help 
