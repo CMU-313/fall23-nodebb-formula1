@@ -16,7 +16,7 @@
     <tbody>
     {{{each group.members}}}
     <tr data-uid="{group.members.uid}">
-        <h4>Currently online: 10 </h4>
+        <!-- IMPORT partials/groups/groupOnlineCount.tpl -->
         <td>
             <a href="{config.relative_path}/user/{group.members.userslug}">{buildAvatar(group.members, "sm", true)}</a>
         </td>

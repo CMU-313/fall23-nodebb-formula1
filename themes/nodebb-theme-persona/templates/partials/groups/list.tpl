@@ -15,8 +15,7 @@
                     <li class="truncated"><i class="fa fa-ellipsis-h"></i></li>
                     <!-- ENDIF groups.truncated -->
                 </ul>
-                <h4>Currently online: 10 </h4>
-                <!-- insert here -->
+                <!-- IMPORT partials/groups/groupOnlineCount.tpl -->
             </div>
         </div>
     </div>

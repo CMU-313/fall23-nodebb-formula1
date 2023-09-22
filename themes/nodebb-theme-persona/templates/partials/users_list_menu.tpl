@@ -1,5 +1,7 @@
 <ul class="nav nav-pills">
-    <li><a href="{config.relative_path}/users?section=online">[[global:online]] (32)</a></li>
+    <li>
+        <a href="{config.relative_path}/users?section=online">[[global:online]] <!-- IMPORT partials/groups/userOnlineCount.tpl --> </a>
+    </li>
     <li><a href="{config.relative_path}/users?section=sort-posts">[[users:top_posters]]</a></li>
     <!-- IF !reputation:disabled -->
     <li><a href="{config.relative_path}/users?section=sort-reputation">[[users:most_reputation]]</a></li>
