@@ -9,17 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import db from '../database';
-// import topics from '../topics';
-// import plugins from '../plugins';
-// import meta from '../meta';
 const db = require("../database");
 const topics = require("../topics");
 const plugins = require("../plugins");
 const meta = require("../meta");
-const User = {
-    uid: '',
-};
 module.exports = function (User) {
     User.updateLastOnlineTime = function (uid) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -58,14 +51,12 @@ module.exports = function (User) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = Date.now();
             const isArray = Array.isArray(uid);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            uid = isArray ? uid : [uid];
+            uid = (isArray ? uid : [uid]);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const lastonline = yield db.sortedSetScores('users:online', uid);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, max-len
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-            const isOnline = uid.map((_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+            const isOnline = uid.map(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            (_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000));
             return isArray ? isOnline : isOnline[0];
         });
     };

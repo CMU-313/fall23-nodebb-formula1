@@ -10,15 +10,11 @@ interface userDataTemplate {
 
 interface UserTemplate {
     uid: string;
-    updateLastOnlineTime?: any;
-    setUserField?: any;
-    updateOnlineUsers?: any;
-    isOnline?: any;
+    updateLastOnlineTime: (uid: string) => Promise<void>;
+    setUserField: (uid: string, field: string, value: any) => Promise<void>;
+    updateOnlineUsers: (uid: string) => Promise<void>;
+    isOnline: (uid: string | string[]) => Promise<boolean | boolean[]>;
 }
-
-const User: UserTemplate = {
-    uid: '',
-};
 
 module.exports = function (User: UserTemplate) {
     User.updateLastOnlineTime = async function (uid: string) {
@@ -52,17 +48,16 @@ module.exports = function (User: UserTemplate) {
         await plugins.hooks.fire('action:user.online', { uid: uid, timestamp: now });
     };
 
-    User.isOnline = async function (uid: any) {
+    User.isOnline = async function (uid: string | string[]) {
         const now = Date.now();
         const isArray = Array.isArray(uid);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        uid = isArray ? uid : [uid];
+        uid = (isArray ? uid : [uid]) as string[];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const lastonline : [] = await db.sortedSetScores('users:online', uid) as [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, max-len
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-        const isOnline : any = uid.map((_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+        const isOnline : boolean[] = uid.map(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            (_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000)
+        );
         return isArray ? isOnline : isOnline[0];
     };
 };
