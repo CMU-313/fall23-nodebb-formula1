@@ -1,7 +1,3 @@
-// import db from '../database';
-// import topics from '../topics';
-// import plugins from '../plugins';
-// import meta from '../meta';
 import db = require('../database');
 import topics = require('../topics');
 import plugins = require('../plugins');
