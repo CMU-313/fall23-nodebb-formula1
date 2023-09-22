@@ -11,7 +11,7 @@ interface userDataTemplate {
 interface UserTemplate {
     uid: string;
     updateLastOnlineTime: (uid: string) => Promise<void>;
-    setUserField: (uid: string, field: string, value: any) => Promise<void>;
+    setUserField: (uid: string, field: string, value: number | string) => Promise<void>;
     updateOnlineUsers: (uid: string) => Promise<void>;
     isOnline: (uid: string | string[]) => Promise<boolean | boolean[]>;
 }
@@ -27,7 +27,6 @@ module.exports = function (User: UserTemplate) {
         if (userData.status === 'offline' || now - parseInt(userData.lastonline, 10) < 300000) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         await User.setUserField(uid, 'lastonline', now);
     };
 
