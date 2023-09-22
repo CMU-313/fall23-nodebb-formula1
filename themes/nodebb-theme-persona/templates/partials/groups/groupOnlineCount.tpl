@@ -1,3 +1,3 @@
 <div>
-    <h4> Currently online: {groups.onlineUserCount} 10 </h4>
+    <h4> Currently online: {groups.onlineUserCount}</h4>
 </div>
