@@ -96,7 +96,6 @@ export = function (Groups: GroupsInterface) {
 
         groupData.forEach(group => modifyGroup(group, fields));
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const results = await plugins.hooks.fire('filter:groups.get', { groups: groupData }) as { groups: GroupDataObject[] };
         return results.groups;
     };
@@ -106,9 +105,7 @@ export = function (Groups: GroupsInterface) {
     };
 
     Groups.getGroupData = async function (groupName: string): Promise<GroupDataObject | null> {
-        console.log('getd1');
         const groupsData = await Groups.getGroupsData([groupName]);
-        console.log('d2');
         return Array.isArray(groupsData) && groupsData[0] ? groupsData[0] : null;
     };
 
@@ -123,11 +120,8 @@ export = function (Groups: GroupsInterface) {
     };
 
     Groups.setGroupField = async function (groupName: string, field: string, value: GroupDataField): Promise<void> {
-        console.log('checp1');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         await db.setObjectField(`group:${groupName}`, field, value);
-        console.log('checp2');
         await plugins.hooks.fire('action:group.set', { field: field, value: value, type: 'set' });
-        console.log('checp4');
     };
 }

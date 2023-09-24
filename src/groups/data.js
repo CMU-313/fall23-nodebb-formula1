@@ -86,7 +86,6 @@ module.exports = function (Groups) {
                 });
             }
             groupData.forEach(group => modifyGroup(group, fields));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const results = yield plugins_1.default.hooks.fire('filter:groups.get', { groups: groupData });
             return results.groups;
         });
@@ -98,9 +97,7 @@ module.exports = function (Groups) {
     };
     Groups.getGroupData = function (groupName) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('getd1');
             const groupsData = yield Groups.getGroupsData([groupName]);
-            console.log('d2');
             return Array.isArray(groupsData) && groupsData[0] ? groupsData[0] : null;
         });
     };
@@ -118,12 +115,9 @@ module.exports = function (Groups) {
     };
     Groups.setGroupField = function (groupName, field, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('checp1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             yield database_1.default.setObjectField(`group:${groupName}`, field, value);
-            console.log('checp2');
             yield plugins_1.default.hooks.fire('action:group.set', { field: field, value: value, type: 'set' });
-            console.log('checp4');
         });
     };
 };
