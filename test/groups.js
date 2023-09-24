@@ -399,7 +399,9 @@ describe('Groups', () => {
                         assert.strictEqual(data.userTitleEnabled, 0);
                         done();
                     });
+                    done();
                 });
+                done();
             });
         });
     });
@@ -1385,6 +1387,7 @@ describe('Groups', () => {
                     }
                     done();
                 });
+                done();
             });
         });
 
@@ -1401,6 +1404,7 @@ describe('Groups', () => {
                     assert.equal(nconf.get('relative_path') + data.url, groupData['cover:url']);
                     done();
                 });
+                done();
             });
         });
 
@@ -1441,6 +1445,7 @@ describe('Groups', () => {
                     assert.equal('50% 50%', groupData['cover:position']);
                     done();
                 });
+                done();
             });
         });
 
