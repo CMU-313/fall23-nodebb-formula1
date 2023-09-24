@@ -1,10 +1,12 @@
 import { UserObjectSlim } from './user';
 
+export type GroupDataField = number | string | boolean;
+
 export type GroupDataObject = {
   name: string;
   slug: string;
   createtime: number;
-  userTitle: number;
+  userTitle: string;
   userTitleEscaped: number;
   userTitleEnabled: number;
   description: string;

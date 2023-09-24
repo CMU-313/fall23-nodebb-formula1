@@ -17,12 +17,23 @@ const database_1 = __importDefault(require("../database"));
 const plugins_1 = __importDefault(require("../plugins"));
 const utils_1 = __importDefault(require("../utils"));
 const translator_1 = __importDefault(require("../translator"));
+const coverPhoto = require("../coverPhoto");
 const intFields = [
     'createtime', 'memberCount', 'hidden', 'system', 'private',
     'userTitleEnabled', 'disableJoinRequests', 'disableLeave',
 ];
+function escapeGroupData(group) {
+    if (group) {
+        group.nameEncoded = encodeURIComponent(group.name);
+        group.displayName = validator_1.default.escape(String(group.name));
+        group.description = validator_1.default.escape(String(group.description || ''));
+        group.userTitle = validator_1.default.escape(String(group.userTitle || ''));
+        group.userTitleEscaped = translator_1.default.escape(group.userTitle);
+    }
+}
 function modifyGroup(group, fields) {
     if (group) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         database_1.default.parseIntFields(group, intFields, fields);
         escapeGroupData(group);
         group.userTitleEnabled = ([null, undefined].includes(group.userTitleEnabled)) ? 1 : group.userTitleEnabled;
@@ -35,27 +46,23 @@ function modifyGroup(group, fields) {
         group.memberPostCidsArray = group.memberPostCids.split(',').map(cid => parseInt(cid, 10)).filter(Boolean);
         group['cover:thumb:url'] = group['cover:thumb:url'] || group['cover:url'];
         if (group['cover:url']) {
-            group['cover:url'] = group['cover:url'].startsWith('http') ? group['cover:url'] : (nconf_1.default.get('relative_path') + group['cover:url']);
+            group['cover:url'] = group['cover:url'].startsWith('http') ?
+                group['cover:url'] :
+                (nconf_1.default.get('relative_path') + group['cover:url']);
         }
         else {
-            group['cover:url'] = require('../coverPhoto').getDefaultGroupCover(group.name);
+            group['cover:url'] = coverPhoto.getDefaultGroupCover(group.name);
         }
         if (group['cover:thumb:url']) {
-            group['cover:thumb:url'] = group['cover:thumb:url'].startsWith('http') ? group['cover:thumb:url'] : (nconf_1.default.get('relative_path') + group['cover:thumb:url']);
+            group['cover:thumb:url'] =
+                group['cover:thumb:url'].startsWith('http') ?
+                    group['cover:thumb:url'] :
+                    (nconf_1.default.get('relative_path') + group['cover:thumb:url']);
         }
         else {
-            group['cover:thumb:url'] = require('../coverPhoto').getDefaultGroupCover(group.name);
+            group['cover:thumb:url'] = coverPhoto.getDefaultGroupCover(group.name);
         }
         group['cover:position'] = validator_1.default.escape(String(group['cover:position'] || '50% 50%'));
-    }
-}
-function escapeGroupData(group) {
-    if (group) {
-        group.nameEncoded = encodeURIComponent(group.name);
-        group.displayName = validator_1.default.escape(String(group.name));
-        group.description = validator_1.default.escape(String(group.description || ''));
-        group.userTitle = validator_1.default.escape(String(group.userTitle || ''));
-        group.userTitleEscaped = translator_1.default.escape(group.userTitle);
     }
 }
 module.exports = function (Groups) {
@@ -71,6 +78,7 @@ module.exports = function (Groups) {
                 return memo;
             }, []);
             const keys = groupNames.map(groupName => `group:${groupName}`);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const groupData = yield database_1.default.getObjects(keys, fields);
             if (ephemeralIdx.length) {
                 ephemeralIdx.forEach((idx) => {
@@ -78,6 +86,7 @@ module.exports = function (Groups) {
                 });
             }
             groupData.forEach(group => modifyGroup(group, fields));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const results = yield plugins_1.default.hooks.fire('filter:groups.get', { groups: groupData });
             return results.groups;
         });
@@ -89,7 +98,9 @@ module.exports = function (Groups) {
     };
     Groups.getGroupData = function (groupName) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('getd1');
             const groupsData = yield Groups.getGroupsData([groupName]);
+            console.log('d2');
             return Array.isArray(groupsData) && groupsData[0] ? groupsData[0] : null;
         });
     };
@@ -107,8 +118,12 @@ module.exports = function (Groups) {
     };
     Groups.setGroupField = function (groupName, field, value) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('checp1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             yield database_1.default.setObjectField(`group:${groupName}`, field, value);
-            plugins_1.default.hooks.fire('action:group.set', { field: field, value: value, type: 'set' });
+            console.log('checp2');
+            yield plugins_1.default.hooks.fire('action:group.set', { field: field, value: value, type: 'set' });
+            console.log('checp4');
         });
     };
 };
