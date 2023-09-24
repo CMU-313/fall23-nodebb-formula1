@@ -20,8 +20,20 @@ groupsController.list = async function (req, res) {
         privileges.global.can('group:create', req.uid),
     ]);
 
+    const groupsData = await Promise.all(
+        groupData.map(
+            async group => ({
+                ...group,
+
+                // eslint-disable-next-line max-len
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                onlineUserCount: await user.getGroupOnlineCount(group.name),
+            })
+        )
+    );
+
     res.render('groups/list', {
-        groups: groupData,
+        groups: groupsData,
         allowGroupCreation: allowGroupCreation,
         nextStart: 15,
         title: '[[pages:groups]]',
@@ -72,6 +84,8 @@ groupsController.details = async function (req, res, next) {
         return next();
     }
     groupData.isOwner = groupData.isOwner || isAdmin || (isGlobalMod && !groupData.system);
+
+    groupData.onlineUserCount = await user.getGroupOnlineCount(groupData.name);
 
     res.render('groups/details', {
         title: `[[pages:group, ${groupData.displayName}]]`,

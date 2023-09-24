@@ -2,6 +2,7 @@ import db = require('../database');
 import topics = require('../topics');
 import plugins = require('../plugins');
 import meta = require('../meta');
+import groups = require('../groups');
 
 interface userDataTemplate {
     status: string;
@@ -14,6 +15,8 @@ interface UserTemplate {
     setUserField: (uid: string, field: string, value: number | string) => Promise<void>;
     updateOnlineUsers: (uid: string) => Promise<void>;
     isOnline: (uid: string | string[]) => Promise<boolean | boolean[]>;
+    getGroupOnlineCount: (groupName: string) => Promise<number>;
+    getUidsFromSet: (set: string, start: number, stop: number) => Promise<string[]>;
 }
 
 module.exports = function (User: UserTemplate) {
@@ -58,5 +61,25 @@ module.exports = function (User: UserTemplate) {
             (_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000)
         );
         return isArray ? isOnline : isOnline[0];
+    };
+
+    /**
+     * Get count of group members that are online
+     * @param {string} groupName group name
+     * @param {string} uid user id
+     * @returns count of online users
+     */
+    User.getGroupOnlineCount = async function (groupName: string): Promise<number> {
+        // Get list of uids of online users
+        const onlineUids = await User.getUidsFromSet('users:online', 0, -1);
+
+        // Get boolean array repesenting user membership in group
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const groupMemberMask = await groups.isMembers(onlineUids, groupName) as boolean[];
+
+        // Filter online user that are members in group
+        const numOnlineInGroup = groupMemberMask.reduce((count, isMember) => count + Number(isMember), 0);
+
+        return numOnlineInGroup;
     };
 };
