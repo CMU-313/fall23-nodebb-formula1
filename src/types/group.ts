@@ -11,6 +11,7 @@ export type GroupDataObject = {
   userTitleEnabled: number;
   description: string;
   memberCount: number;
+  onlineUserCount: number;
   hidden: number;
   system: number;
   private: number;

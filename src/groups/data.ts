@@ -6,6 +6,7 @@ import utils from '../utils';
 import translator from '../translator';
 import { GroupDataField, GroupDataObject } from '../types';
 import coverPhoto = require('../coverPhoto');
+import user = require('../user');
 
 const intFields: string[] = [
     'createtime', 'memberCount', 'hidden', 'system', 'private',
@@ -97,7 +98,21 @@ export = function (Groups: GroupsInterface) {
         groupData.forEach(group => modifyGroup(group, fields));
 
         const results = await plugins.hooks.fire('filter:groups.get', { groups: groupData }) as { groups: GroupDataObject[] };
-        return results.groups;
+
+        // Compute online user counts per group
+        const groups = await Promise.all(
+            results.groups.map(
+                async group => ({
+                    ...group,
+
+                    // eslint-disable-next-line max-len
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    onlineUserCount: await user.getGroupOnlineCount(group.name) as number,
+                })
+            )
+        );
+
+        return groups;
     };
 
     Groups.getGroupsData = async function (groupNames: string[]): Promise<GroupDataObject[]> {

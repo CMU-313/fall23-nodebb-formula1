@@ -18,6 +18,7 @@ const plugins_1 = __importDefault(require("../plugins"));
 const utils_1 = __importDefault(require("../utils"));
 const translator_1 = __importDefault(require("../translator"));
 const coverPhoto = require("../coverPhoto");
+const user = require("../user");
 const intFields = [
     'createtime', 'memberCount', 'hidden', 'system', 'private',
     'userTitleEnabled', 'disableJoinRequests', 'disableLeave',
@@ -87,7 +88,14 @@ module.exports = function (Groups) {
             }
             groupData.forEach(group => modifyGroup(group, fields));
             const results = yield plugins_1.default.hooks.fire('filter:groups.get', { groups: groupData });
-            return results.groups;
+            // Compute online user counts per group
+            const groups = yield Promise.all(results.groups.map((group) => __awaiter(this, void 0, void 0, function* () {
+                return (Object.assign(Object.assign({}, group), { 
+                    // eslint-disable-next-line max-len
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    onlineUserCount: yield user.getGroupOnlineCount(group.name) }));
+            })));
+            return groups;
         });
     };
     Groups.getGroupsData = function (groupNames) {
