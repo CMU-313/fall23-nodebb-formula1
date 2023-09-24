@@ -15,7 +15,7 @@
                     <li class="truncated"><i class="fa fa-ellipsis-h"></i></li>
                     <!-- ENDIF groups.truncated -->
                 </ul>
-                <!-- IMPORT partials/groups/groupOnlineCount.tpl -->
+                <!-- IMPORT partials/groups/groupsOnlineCount.tpl -->
             </div>
         </div>
     </div>
