@@ -20,7 +20,7 @@ const plugins = require('../plugins');
 module.exports = function (Bugs) {
     Bugs.create = async function (data) {
         const timestamp = data.timestamp || Date.now();
-        const id = await db.incrObjectField('global', 'nextBid');
+        await db.incrObjectField('global', 'nextBid');
 
         const result = await plugins.hooks.fire('filter:bug.create', { bug: data, data: data });
         const bugData = result.bug;
@@ -37,22 +37,16 @@ module.exports = function (Bugs) {
 
         plugins.hooks.fire('action:bug.save', { bug: _.clone(bugData), data: data });
         return bugData.bid;
-    }
+    };
 
     Bugs.post = async function (data) {
-        // data = await plugins.hooks.fire('filter:bug.post', data);
-        const _ = await Bugs.create(data);
+        await Bugs.create(data);
         const bugData = data;
 
-        // let bugData = data;
-        // bugData.bid = bid;
-        // bugData.title = "HELLO TEST";
-        // bugData.desc = "DESCRIPTOIN GTEST"
-        
         plugins.hooks.fire('action:bug.post', { bug: bugData, data: data });
 
         return {
             bugData: bugData,
         };
     };
-}
+};

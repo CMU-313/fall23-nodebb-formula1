@@ -1,8 +1,6 @@
-const _ = require('lodash');
-const validator = require('validator');
+'use strict';
 
-const db = require('../database');
+// const db = require('../database');
 
 const Bugs = module.exports;
-
 require('./create')(Bugs);
