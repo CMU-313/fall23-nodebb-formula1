@@ -487,6 +487,18 @@ async function createWelcomePost() {
     }
 }
 
+async function createInitialBug() {
+    // const db = require('./database');
+    const Bugs = require('./bugs');
+
+    console.log('Creating initial bug!');
+    await Bugs.post({
+        bid: 1,
+        desc: "HSDLFDSf",
+        title: "TITLE",
+    });
+}
+
 async function enableDefaultPlugins() {
     console.log('Enabling default plugins');
 
@@ -581,6 +593,8 @@ install.setup = async function () {
         await setCopyrightWidget();
         await copyFavicon();
         await checkUpgrade();
+
+        await createInitialBug();
 
         const data = {
             ...adminInfo,
