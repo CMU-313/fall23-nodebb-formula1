@@ -1,1 +1,1 @@
-<h7> ({groups.onlineUserCount}) </h7>
+<h7> ({userCount}) </h7>
