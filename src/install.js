@@ -488,10 +488,9 @@ async function createWelcomePost() {
 }
 
 async function createInitialBug() {
-    // const db = require('./database');
     const Bugs = require('./bugs');
-
     console.log('Creating initial bug!');
+
     await Bugs.post({
         bid: 1,
         title: 'Bug default Title',
