@@ -73,5 +73,13 @@
 		"iconClass": "fa-briefcase",
 		"textClass": "visible-xs-inline",
 		"text": "Career"
+	},
+	{
+		"route": "/bug",
+		"title": "Bug",
+		"enabled": true,
+		"iconClass": "fa-bug",
+		"textClass": "visible-xs-inline",
+		"text": "Bug"
 	}
 ]
