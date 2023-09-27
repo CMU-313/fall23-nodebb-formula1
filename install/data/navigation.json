@@ -75,11 +75,11 @@
 		"text": "Career"
 	},
 	{
-		"route": "/testpoint",
-		"title": "Career",
+		"route": "/bug",
+		"title": "Bug",
 		"enabled": true,
 		"iconClass": "fa-bug",
 		"textClass": "visible-xs-inline",
-		"text": "Career"
+		"text": "Bug"
 	}
 ]
