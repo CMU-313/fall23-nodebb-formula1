@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+
+'use strict';
+
 const db = require('../database');
 const plugins = require('../plugins');
 const utils = require('../utils');
@@ -16,7 +20,7 @@ module.exports = function (Bugs) {
             fields: fields,
         });
         return result.posts;
-    }
+    };
 
     Bugs.getBugData = async function (bid) {
         const bugs = await Bugs.getBugsFields([bid], []);
@@ -25,6 +29,5 @@ module.exports = function (Bugs) {
 
     Bugs.getBugsData = async function (bids) {
         return await Bugs.getBugFields(bids, []);
-    }
-
-}
+    };
+};
