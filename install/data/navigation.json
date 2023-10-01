@@ -75,10 +75,10 @@
 		"text": "Career"
 	},
 	{
-		"route": "/bug",
+		"route": "/bugs",
 		"title": "Bug",
 		"enabled": true,
-		"iconClass": "fa-bug",
+		"iconClass": "fa-briefcase",
 		"textClass": "visible-xs-inline",
 		"text": "Bug"
 	}
