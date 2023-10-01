@@ -78,7 +78,7 @@
 		"route": "/bugs",
 		"title": "Bug",
 		"enabled": true,
-		"iconClass": "fa-briefcase",
+		"iconClass": "fa-bug",
 		"textClass": "visible-xs-inline",
 		"text": "Bug"
 	}
