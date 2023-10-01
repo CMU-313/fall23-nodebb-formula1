@@ -77,6 +77,8 @@ module.exports = function (Topics) {
     };
 
     Topics.post = async function (data) {
+        console.log(data);
+        console.log('\n\n\n\n\n');
         data = await plugins.hooks.fire('filter:topic.post', data);
         const { uid } = data;
 
