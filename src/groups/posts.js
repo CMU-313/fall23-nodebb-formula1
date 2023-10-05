@@ -38,17 +38,7 @@ module.exports = function (Groups) {
 
     Groups.getLatestMemberPosts = async function (groupName, max, uid) {
         let pids = await db.getSortedSetRevRange(`group:${groupName}:member:pids`, 0, max - 1);
-        const x = await db.getSortedSetRevRange(`topics:posts`, 0, max - 1);
-        console.log(x);
-        pids = await privileges.posts.filter('topics:read', x, uid);
+        pids = await privileges.posts.filter('topics:read', pids, uid);
         return await posts.getPostSummaryByPids(pids, uid, { stripTags: false });
     };
-
-    // Groups.getLatestGroupPosts = async function (groupName, max, uid) {
-    //     let pids = await db.getSortedSetRevRange(`group:${groupName}:member:pids`, 0, max - 1);
-    //     const x = await db.getSortedSetRevRange(`group:${groupName}`, 0, max - 1);
-    //     console.log(x);
-    //     pids = await privileges.posts.filter('topics:read', pids, uid);
-    //     return await posts.getPostSummaryByPids(pids, uid, { stripTags: false });
-    // };
 };

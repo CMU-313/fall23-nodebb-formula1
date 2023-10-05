@@ -29,6 +29,9 @@ TopicObject:
               type: string
             disabled:
               type: number
+            group:
+              type: string
+              example: My group
         user:
           type: object
           properties:

@@ -414,6 +414,10 @@ helpers.getHomePageRoutes = async function (uid) {
             name: 'Popular',
         },
         {
+            route: 'ungrouped',
+            name: 'Ungrouped',
+        },
+        {
             route: 'custom',
             name: 'Custom',
         },

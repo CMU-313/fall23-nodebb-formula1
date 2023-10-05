@@ -46,9 +46,6 @@
             <div class="panel-body">
                 <!-- IMPORT partials/groups/memberlist.tpl -->
             </div>
-            <div>
-                <!-- IMPORT partials/buttons/newTopic.tpl -->
-            </div>
         </div>
         <!-- IF group.isOwner -->
         <div class="panel panel-default">

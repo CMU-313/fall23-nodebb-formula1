@@ -287,7 +287,6 @@ module.exports = function (Posts) {
     }
 
     async function createTopic(data) {
-        console.log('createTopic');
         const result = await topics.post(data);
         socketHelpers.notifyNew(data.uid, 'newTopic', { posts: [result.postData], topic: result.topicData });
         return result;

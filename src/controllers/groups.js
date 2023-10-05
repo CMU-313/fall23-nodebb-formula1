@@ -102,7 +102,7 @@ const details = function (req, res, next) {
         res.render('groups/details', {
             title: `[[pages:group, ${groupData.displayName}]]`,
             group: groupData,
-            posts: posts.filter(post => post.isMainPost),
+            posts: posts,
             isAdmin: isAdmin,
             isGlobalMod: isGlobalMod,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

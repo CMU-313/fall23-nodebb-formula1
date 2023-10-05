@@ -44,5 +44,7 @@ module.exports = function () {
     setupApiRoute(router, 'get', '/:tid/events', [middleware.assert.topic], controllers.write.topics.getEvents);
     setupApiRoute(router, 'delete', '/:tid/events/:eventId', [middleware.assert.topic], controllers.write.topics.deleteEvent);
 
+    setupApiRoute(router, 'put', '/:tid/assign', [...middlewares, middleware.assert.topic], controllers.write.topics.assignGroup);
+
     return router;
 };

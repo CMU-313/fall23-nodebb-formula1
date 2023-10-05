@@ -33,6 +33,7 @@ module.exports = function (Topics) {
             lastposttime: 0,
             postcount: 0,
             viewcount: 0,
+            group: '',
         };
 
         if (Array.isArray(data.tags) && data.tags.length) {
@@ -41,6 +42,7 @@ module.exports = function (Topics) {
 
         const result = await plugins.hooks.fire('filter:topic.create', { topic: topicData, data: data });
         topicData = result.topic;
+        topicData.group = ''; // TODO maybe fix (not a fan of this line)
         await db.setObject(`topic:${topicData.tid}`, topicData);
 
         const timestampedSortedSetKeys = [
@@ -77,8 +79,6 @@ module.exports = function (Topics) {
     };
 
     Topics.post = async function (data) {
-        console.log(data);
-        console.log('\n\n\n\n\n');
         data = await plugins.hooks.fire('filter:topic.post', data);
         const { uid } = data;
 
