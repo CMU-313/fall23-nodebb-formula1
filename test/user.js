@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 'use strict';
 
 const assert = require('assert');
@@ -3020,6 +3022,17 @@ describe('User', () => {
             assert.strictEqual(await User.isOnline(testUid), true);
         });
     });
+
+    describe('User.getGroupOnlineCount', () => {
+        it('should return the count of online users in the specified group', async () => {
+            const groupName = 'testGroup';
+            const onlineUserIds = [];
+            const count = await User.getGroupOnlineCount(groupName);
+            assert.strictEqual(count, onlineUserIds.length);
+        });
+        // mock getUidsFromSet and isMembers
+    });
+
 
     describe('isPrivilegedOrSelf', () => {
         it('should return not error if self', (done) => {

@@ -18,7 +18,7 @@ describe('pubsub', () => {
         pubsub.publish('testEvent', { foo: 1 });
     });
 
-    it('should use same event emitter', (done) => {
+    it('should use same event œemitter', (done) => {
         pubsub.on('dummyEvent', (message) => {
             assert.equal(message.foo, 2);
             pubsub.removeAllListeners('dummyEvent');
