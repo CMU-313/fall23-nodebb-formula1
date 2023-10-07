@@ -25,10 +25,9 @@ ungroupedController.get = async function (req, res, next) {
         uid: uid,
     };
 
-    const term = helpers.terms[req.query.term] || 'alltime';
     if (req.originalUrl.startsWith(`${nconf.get('relative_path')}/api/ungrouped`) || req.originalUrl.startsWith(`${nconf.get('relative_path')}/ungouped`)) {
-        data.title = `[[pages:ungouped-${term}]]`; // TODO define labels in Json
-        const breadcrumbs = [{ text: '[[global:header.ungouped]]' }];
+        data.title = `Ungrouped`; // TODO define labels in Json
+        const breadcrumbs = [{ text: 'Ungrouped' }];
         data.breadcrumbs = helpers.buildBreadcrumbs(breadcrumbs);
     }
 

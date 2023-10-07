@@ -167,6 +167,45 @@ describe('Controllers', () => {
             });
         });
 
+        it('should load ungrouped', (done) => {
+            meta.configs.set('homePageRoute', 'ungrouped', (err) => {
+                assert.ifError(err);
+
+                request(nconf.get('url'), (err, res, body) => {
+                    assert.ifError(err);
+                    assert.equal(res.statusCode, 200);
+                    assert(body);
+                    done();
+                });
+            });
+        });
+
+        it('should load ungrouped with unassigned topics', (done) => {
+            request(`${nconf.get('url')}/api/ungrouped`, { json: true }, (err, res, body) => {
+                assert.ifError(err);
+                assert.equal(res.statusCode, 200);
+                assert(body);
+                const numTopics = body.topics.length; // Initial number of topics
+
+                topics.post({ // Post new topic
+                    uid: fooUid,
+                    title: 'topic title',
+                    content: 'test topic content',
+                    cid: cid,
+                }, (err) => {
+                    assert.ifError(err);
+                    request(`${nconf.get('url')}/api/ungrouped`, { json: true }, (err, res, body) => {
+                        assert.ifError(err);
+                        assert.equal(res.statusCode, 200);
+                        assert(body);
+                        // Ensure there is another topics
+                        assert.equal(body.topics.length, numTopics + 1);
+                        done();
+                    });
+                });
+            });
+        });
+
         it('should load category', (done) => {
             meta.configs.set('homePageRoute', 'category/1/test-category', (err) => {
                 assert.ifError(err);
@@ -943,7 +982,7 @@ describe('Controllers', () => {
                         assert.ifError(err);
                         assert.equal(res.statusCode, 200);
                         assert(body);
-                        assert.equal(body.posts[0].content, 'test topic content');
+                        assert.equal(body.posts.length, 0);
                         done();
                     });
                 });

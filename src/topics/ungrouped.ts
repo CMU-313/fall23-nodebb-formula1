@@ -1,9 +1,9 @@
-// eslint-disable-next-line import/no-import-module-exports
 import { TopicObject } from '../types';
 
 interface TopicsI {
-  getUngroupedTopics: (uid: string) => Promise<Data>;
-  getSortedTopics: (params: Params) => Promise<Data>;
+  getUngroupedTopics: (uid: string) => Promise<TopicData>; // TODO rename Data
+  getGroupedTopics: (group: string, uid: string) => Promise<TopicData>;
+  getSortedTopics: (params: Params) => Promise<TopicData>;
   getTopics: (tids: string[], params: Params) => Promise<TopicObject[]>;
   assignTopicToGroup: (tid: string, groupName: string) => Promise<void>;
   setTopicFields: (tid: string, data: {[key: string]: string}) => Promise<void>;
@@ -18,7 +18,7 @@ interface Params {
     uid?: string;
 }
 
-interface Data {
+interface TopicData {
     tids: string[];
     nextStart: number;
     topicsCount: number;
@@ -26,7 +26,7 @@ interface Data {
 }
 
 
-module.exports = function (Topics: TopicsI) {
+export = function (Topics: TopicsI) {
     Topics.getUngroupedTopics = async function (uid) {
         const params = {
             uid: uid,
@@ -34,6 +34,17 @@ module.exports = function (Topics: TopicsI) {
         const data = await Topics.getSortedTopics(params);
         const topics = await Topics.getTopics(data.tids, params);
         const ungroupedTopics = topics.filter(topic => !topic.group || topic.group === '');
+        data.topics = ungroupedTopics;
+        return data;
+    };
+
+    Topics.getGroupedTopics = async function (groupName, uid) {
+        const params = {
+            uid: uid,
+        };
+        const data = await Topics.getSortedTopics(params);
+        const topics = await Topics.getTopics(data.tids, params);
+        const ungroupedTopics = topics.filter(topic => topic.group && topic.group === groupName);
         data.topics = ungroupedTopics;
         return data;
     };
