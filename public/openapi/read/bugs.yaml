@@ -1,0 +1,21 @@
+get:
+  tags:
+    - bugs
+  summary: Get bugs
+  description: Returns a list of bugs sorted by the bid
+  responses:
+    "200":
+      description: ""
+      content:
+        application/json:
+          schema:
+            allOf:
+              - type: object
+                properties:
+                  tags:
+                    type: array
+                    description: An array of bugs sorted by the bid
+                    items:
+                      $ref: ../components/schemas/BugObject.yaml#/BugObject
+              - $ref: ../components/schemas/Breadcrumbs.yaml#/Breadcrumbs
+              - $ref: ../components/schemas/CommonProps.yaml#/CommonProps
