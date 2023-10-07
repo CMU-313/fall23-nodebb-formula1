@@ -81,5 +81,13 @@
 		"iconClass": "fa-bug",
 		"textClass": "visible-xs-inline",
 		"text": "Bug"
+	},
+	{
+		"route": "/submit-bug-report",
+		"title": "[[bug:submit]]",
+		"enabled": true,
+		"iconClass": "fa-tags",
+		"textClass": "visible-xs-inline",
+		"text": "[[bug:submit]]"
 	}
 ]
