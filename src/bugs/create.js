@@ -23,8 +23,23 @@ module.exports = function (Bugs) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             yield plugins_1.default.hooks.fire('filter:bug.create', { bug: data, data: data });
             /* eslint-disable max-len */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const bid = yield database_1.default.getObjectField('global', 'nextBid');
+            /* eslint-enable max-len */
+            console.log(bid);
+            const bugs = [];
+            const fields = ['title', 'description', 'resolved'];
+            for (let i = 1; i < bid; i++) {
+                bugs.push(`bug:${i}`);
+            }
+            // const result = await db.getObjects([`bug:2`], ['title'])
+            // console.log(result)
+            const result = yield database_1.default.getObjects(bugs, fields);
+            console.log(result);
+            // console.log(bugs)
+            /* eslint-disable max-len */
             // eslint-disable-next-line max-len, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
-            yield database_1.default.setObject(`bug:${data.bid}`, data);
+            yield database_1.default.setObject(`bug:${bid}`, data);
             /* eslint-enable max-len */
             const timestampedSortedSetKeys = ['bugs:bid'];
             yield Promise.all([
@@ -37,6 +52,7 @@ module.exports = function (Bugs) {
     };
     Bugs.post = function (data) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("posted");
             yield Bugs.create(data);
             const bugData = data;
             yield plugins_1.default.hooks.fire('action:bug.post', { bug: bugData, data: data });

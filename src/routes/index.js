@@ -40,7 +40,6 @@ _mounts.main = (app, middleware, controllers) => {
 
     setupPageRoute(app, '/email/unsubscribe/:token', [], controllers.accounts.settings.unsubscribe);
     app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
-
     app.post('/compose', middleware.applyCSRF, controllers.composer.post);
 };
 
@@ -90,6 +89,7 @@ _mounts.category = (app, name, middleware, controllers) => {
 _mounts.bugs = (app, name, middleware, controllers) => {
     const middlewares = [middleware.canViewUsers];
     setupPageRoute(app, `/${name}`, middlewares, controllers.bugs.get);
+    app.post(`/${name}-submit`, controllers.bugs.submit);
 };
 
 _mounts.career = (app, name, middleware, controllers) => {

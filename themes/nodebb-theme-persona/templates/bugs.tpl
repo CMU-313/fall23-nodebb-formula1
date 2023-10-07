@@ -6,7 +6,7 @@
 <body>
   <h1>Bug Report Form</h1><br>
 
-  <form action="/submit-bug-report" method="POST" enctype="multipart/form-data">
+  <form action="/bugs-submit" method="POST" enctype="multipart/form-data">
     <h4> <label for="name">Your name</label> </h4>
     <input type="text" name="name" id="name" placeholder="Your name"><br><br>
 

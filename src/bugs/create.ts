@@ -30,8 +30,13 @@ export = function (Bugs: BugsInterface) {
         await plugins.hooks.fire('filter:bug.create', { bug: data, data: data });
 
         /* eslint-disable max-len */
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const bid : number = await db.getObjectField('global', 'nextBid');
+        /* eslint-enable max-len */
+
+        /* eslint-disable max-len */
         // eslint-disable-next-line max-len, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
-        await db.setObject(`bug:${data.bid}`, data);
+        await db.setObject(`bug:${bid}`, data);
         /* eslint-enable max-len */
 
         const timestampedSortedSetKeys: string[] = ['bugs:bid'];
@@ -46,6 +51,7 @@ export = function (Bugs: BugsInterface) {
     };
 
     Bugs.post = async function (data: Bug): Promise<PostData> {
+        console.log("posted")
         await Bugs.create(data);
         const bugData: Bug = data;
 
