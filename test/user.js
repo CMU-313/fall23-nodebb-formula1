@@ -3031,6 +3031,14 @@ describe('User', () => {
             assert.strictEqual(count, onlineUserIds.length);
         });
         // mock getUidsFromSet and isMembers
+        it('should return the count of online users', async () => {
+            const groupName = 'testGroup';
+            const onlineUserIds = [1, 2];
+            const mockGreetWorld = jest.fn();
+            jest.mock(User, () => jest.fn().mockImplementation(() => ({
+                getUidsFromSet: mockGreetWorld,
+            })));
+        });
     });
 
 
