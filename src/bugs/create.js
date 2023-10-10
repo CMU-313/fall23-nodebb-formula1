@@ -19,12 +19,12 @@ module.exports = function (Bugs) {
         return __awaiter(this, void 0, void 0, function* () {
             const timestamp = data.timestamp || Date.now();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            yield database_1.default.incrObjectField('global', 'nextBid');
+            const bid = yield database_1.default.incrObjectField('global', 'nextBid');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             yield plugins_1.default.hooks.fire('filter:bug.create', { bug: data, data: data });
             /* eslint-disable max-len */
             // eslint-disable-next-line max-len, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
-            yield database_1.default.setObject(`bug:${data.bid}`, data);
+            yield database_1.default.setObject(`bug:${bid}`, data);
             /* eslint-enable max-len */
             const timestampedSortedSetKeys = ['bugs:bid'];
             yield Promise.all([

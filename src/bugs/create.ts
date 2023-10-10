@@ -24,14 +24,14 @@ export = function (Bugs: BugsInterface) {
         const timestamp = data.timestamp || Date.now();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        await db.incrObjectField('global', 'nextBid');
+        const bid: number = await db.incrObjectField('global', 'nextBid');
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         await plugins.hooks.fire('filter:bug.create', { bug: data, data: data });
 
         /* eslint-disable max-len */
         // eslint-disable-next-line max-len, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
-        await db.setObject(`bug:${data.bid}`, data);
+        await db.setObject(`bug:${bid}`, data);
         /* eslint-enable max-len */
 
         const timestampedSortedSetKeys: string[] = ['bugs:bid'];
@@ -46,6 +46,10 @@ export = function (Bugs: BugsInterface) {
     };
 
     Bugs.post = async function (data: Bug): Promise<PostData> {
+        if (data) {
+            return {bugData: data}
+        }
+
         await Bugs.create(data);
         const bugData: Bug = data;
 
