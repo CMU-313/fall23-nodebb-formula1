@@ -30,4 +30,17 @@ module.exports = function (Bugs) {
     Bugs.getBugsData = async function (bids) {
         return await Bugs.getBugFields(bids, []);
     };
+
+    Bugs.list = async function () {
+        const bid = await db.getObjectField('global', 'nextBid');
+        const bugs = []
+
+        const fields = ['title', 'description', 'resolved']
+        for (let i = 1; i < bid; i ++) {
+            bugs.push(`bug:${i}`)
+        }
+
+        const result = await db.getObjects(bugs, fields)
+        return result
+    };
 };
