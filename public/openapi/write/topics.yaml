@@ -24,6 +24,9 @@ post:
               items:
                 type: string
               example: [test, topic]
+            group:
+              type: string
+              example: My group
           required:
             - cid
             - title

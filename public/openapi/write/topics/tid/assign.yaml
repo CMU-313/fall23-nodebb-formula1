@@ -1,0 +1,36 @@
+put:
+  tags:
+    - topics
+  summary: assign topic to a groups
+  description: This operation assigns a topic to a group
+  parameters:
+    - in: path
+      name: tid
+      schema:
+        type: string
+      required: true
+      description: a valid topic id
+      example: 1
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            groupName:
+              type: string
+              description: a valid group name
+              example: My Group
+  responses:
+    '200':
+      description: Topic successfully assigned to group
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                $ref: ../../../components/schemas/Status.yaml#/Status
+              response:
+                type: object
+                properties: {}
