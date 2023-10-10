@@ -240,3 +240,10 @@ Topics.deleteEvent = async (req, res) => {
     await topics.events.purge(req.params.tid, [req.params.eventId]);
     helpers.formatApiResponse(200, res);
 };
+
+Topics.assignGroup = async (req, res) => {
+    const { tid } = req.params;
+    const { groupName } = req.body;
+    await topics.assignTopicToGroup(tid, groupName);
+    helpers.formatApiResponse(200, res);
+};

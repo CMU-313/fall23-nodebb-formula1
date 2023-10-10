@@ -125,6 +125,7 @@ SocketRooms.getLocalStats = function () {
             unread: 0,
             topics: 0,
             category: 0,
+            ungrouped: 0,
         },
         topics: {},
     };
@@ -136,6 +137,8 @@ SocketRooms.getLocalStats = function () {
         socketData.users.categories = Sockets.getCountInRoom('categories');
         socketData.users.recent = Sockets.getCountInRoom('recent_topics');
         socketData.users.unread = Sockets.getCountInRoom('unread_topics');
+        socketData.users.ungrouped = Sockets.getCountInRoom('ungrouped_topics');
+
 
         let topTenTopics = [];
         let tid;

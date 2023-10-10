@@ -91,7 +91,7 @@ const details = function (req, res, next) {
                 userListCount: 20,
             }),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            groups_1.default.getLatestMemberPosts(groupName, 10, req.uid),
+            groups_1.default.getLatestMemberPosts(groupName, req.uid),
         ]);
         if (!groupData) {
             return next();
