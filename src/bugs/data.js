@@ -1,46 +1,34 @@
-/* eslint-disable no-unused-vars */
-
-'use strict';
-
-const db = require('../database');
-const plugins = require('../plugins');
-const utils = require('../utils');
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const database_1 = __importDefault(require("../database"));
 module.exports = function (Bugs) {
-    Bugs.getBugFields = async function (bids, fields) {
-        if (!Array.isArray(bids) || !bids.length) {
-            return [];
-        }
-        const keys = bids.map(bid => `bug:${bid}`);
-        const bugData = await db.getObjects(keys, fields);
-
-        const result = await plugins.hooks.fire('filter:bids.getFields', {
-            bids: bids,
-            bugs: bugData,
-            fields: fields,
+    Bugs.list = function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* eslint-disable max-len */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+            const bid = yield database_1.default.getObjectField('global', 'nextBid');
+            /* eslint-enable max-len */
+            const bugs = [];
+            const fields = ['title', 'description', 'resolved'];
+            for (let i = 1; i < bid; i += 1) {
+                bugs.push(`bug:${i}`);
+            }
+            /* eslint-disable max-len */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+            const result = yield database_1.default.getObjects(bugs, fields);
+            /* eslint-enable max-len */
+            return result;
         });
-        return result.posts;
-    };
-
-    Bugs.getBugData = async function (bid) {
-        const bugs = await Bugs.getBugsFields([bid], []);
-        return bugs && bugs.length ? bugs[0] : null;
-    };
-
-    Bugs.getBugsData = async function (bids) {
-        return await Bugs.getBugFields(bids, []);
-    };
-
-    Bugs.list = async function () {
-        const bid = await db.getObjectField('global', 'nextBid');
-        const bugs = []
-
-        const fields = ['title', 'description', 'resolved']
-        for (let i = 1; i < bid; i ++) {
-            bugs.push(`bug:${i}`)
-        }
-
-        const result = await db.getObjects(bugs, fields)
-        return result
     };
 };

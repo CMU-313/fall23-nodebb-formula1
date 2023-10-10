@@ -23,8 +23,10 @@ export = function (Bugs: BugsInterface) {
     Bugs.create = async function (data : Bug): Promise<number> {
         const timestamp = data.timestamp || Date.now();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        /* eslint-disable max-len */
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
         const bid: number = await db.incrObjectField('global', 'nextBid');
+        /* eslint-enable max-len */
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         await plugins.hooks.fire('filter:bug.create', { bug: data, data: data });
@@ -47,7 +49,7 @@ export = function (Bugs: BugsInterface) {
 
     Bugs.post = async function (data: Bug): Promise<PostData> {
         if (data) {
-            return {bugData: data}
+            return { bugData: data };
         }
 
         await Bugs.create(data);
