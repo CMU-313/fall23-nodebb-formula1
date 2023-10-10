@@ -6,7 +6,7 @@
 <body>
   <h1>Bug Report Form</h1><br>
 
-  <form action="/submit-bug-report" method="POST">
+  <form>
     <h4> <label for="name">Your name</label> </h4>
     <input type="text" name="name" id="name" placeholder="Your name"><br><br>
 
@@ -22,7 +22,7 @@
     <h4> <label for="description">Image of the bug</label> </h4>
     <input type="file" name="photo" id="photo" accept="image/*"><br><br>
     
-    <button component="bug/report" class="btn btn-primary btn-lg btn-block" id="login" type="submit">Submit</button>
+    <button type="submit">Submit</button>
   </form>
 </body>
 </html>
