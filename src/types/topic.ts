@@ -11,6 +11,7 @@ export type TopicObjectCoreProperties = {
   user: UserObjectSlim;
   teaser: Teaser;
   tags: TagObject[];
+  group: string;
   isOwner: boolean;
   ignored: boolean;
   unread: boolean;

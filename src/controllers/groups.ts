@@ -86,7 +86,7 @@ export const details = async function (req: GroupsRequest, res: Response, next: 
             userListCount: 20,
         }),
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        groups.getLatestMemberPosts(groupName, 10, req.uid),
+        groups.getLatestMemberPosts(groupName, req.uid),
     ] as [Promise<GroupFullObject>, Promise<PostObject[]>]);
 
     if (!groupData) {

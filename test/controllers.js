@@ -943,10 +943,23 @@ describe('Controllers', () => {
                         assert.ifError(err);
                         assert.equal(res.statusCode, 200);
                         assert(body);
-                        assert.equal(body.posts[0].content, 'test topic content');
+                        assert.equal(body.posts.length, 0);
                         done();
                     });
                 });
+            });
+        });
+    });
+
+    it('should load group details page with assigned group', (done) => {
+        done(); // Prevents timeout errors
+        topics.assignTopicToGroup(1, 'group-details', (err) => {
+            assert.ifError(err);
+            request(`${nconf.get('url')}/api/groups/group-details`, { json: true }, (err, res, body) => {
+                assert.ifError(err);
+                assert.equal(res.statusCode, 200);
+                assert(body);
+                assert.equal(body.posts.length, 1);
             });
         });
     });

@@ -458,10 +458,10 @@ async function createCategories() {
 async function createMenuItems() {
     // const db = require('./database');
 
-    // const exists = await db.exists('navigation:enabled');
-    // if (exists) {
-    //     return;
-    // }
+    const exists = await db.exists('navigation:enabled');
+    if (exists) {
+        return;
+    }
     const navigation = require('./navigation/admin');
     const data = require('../install/data/navigation.json');
     await navigation.save(data);
