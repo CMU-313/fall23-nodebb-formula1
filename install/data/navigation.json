@@ -42,6 +42,14 @@
 		"text": "[[global:header.popular]]"
 	},
 	{
+		"route": "/ungrouped",
+		"title": "Ungrouped",
+		"enabled": true,
+		"iconClass": "fa-unlink",
+		"textClass": "visible-xs-inline",
+		"text": "Ungrouped posts"
+	},
+	{
 		"route": "/users",
 		"title": "[[global:header.users]]",
 		"enabled": true,
@@ -75,7 +83,7 @@
 		"text": "Career"
 	},
 	{
-		"route": "/bugs",
+		"route": "/bug",
 		"title": "Bug",
 		"enabled": true,
 		"iconClass": "fa-bug",

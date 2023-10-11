@@ -252,6 +252,8 @@ paths:
     $ref: 'read/tags/tag.yaml'
   /api/popular:
     $ref: 'read/popular.yaml'
+  /api/ungrouped:
+    $ref: 'read/ungrouped.yaml'
   /api/top:
     $ref: 'read/top.yaml'
   "/api/category/{category_id}/{slug}":
@@ -330,7 +332,5 @@ paths:
     $ref: 'read/groups/slug.yaml'
   "/api/groups/{slug}/members":
     $ref: 'read/groups/slug/members.yaml'
-  /api/bugs:
-    $ref: 'read/bugs.yaml'
   /api/outgoing:
     $ref: 'read/outgoing.yaml'

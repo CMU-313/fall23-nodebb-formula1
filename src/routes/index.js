@@ -79,6 +79,7 @@ _mounts.tags = (app, name, middleware, controllers) => {
 _mounts.category = (app, name, middleware, controllers) => {
     setupPageRoute(app, '/categories', [], controllers.categories.list);
     setupPageRoute(app, '/popular', [], controllers.popular.get);
+    setupPageRoute(app, '/ungrouped', [], controllers.ungrouped.get);
     setupPageRoute(app, '/recent', [], controllers.recent.get);
     setupPageRoute(app, '/top', [], controllers.top.get);
     setupPageRoute(app, '/unread', [middleware.ensureLoggedIn], controllers.unread.get);
