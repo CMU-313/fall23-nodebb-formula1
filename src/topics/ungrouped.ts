@@ -66,7 +66,6 @@ export = function (Topics: TopicsI) {
      * @param groupName name of group
      */
     Topics.assignTopicToGroup = async function (tid, groupName) {
-        console.log(groupName);
         await Topics.setTopicFields(tid, {
             group: groupName,
         });

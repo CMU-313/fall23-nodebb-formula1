@@ -51,7 +51,6 @@ module.exports = function (Topics) {
      */
     Topics.assignTopicToGroup = function (tid, groupName) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(groupName);
             yield Topics.setTopicFields(tid, {
                 group: groupName,
             });
