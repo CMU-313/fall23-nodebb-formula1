@@ -2,9 +2,9 @@
 
 const bugController = module.exports;
 const bugCreate = require('../../bugs');
+const helpers = require('../helpers');
 
 bugController.submitData = async function (req, res) {
     bugCreate.post(req.body);
-    console.log(req.body);
-    res.render('Successful Bug Form Submit', req);
+    helpers.formatApiResponse(200, res);
 };
