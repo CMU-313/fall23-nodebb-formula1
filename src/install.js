@@ -456,7 +456,7 @@ async function createCategories() {
 }
 
 async function createMenuItems() {
-    // const db = require('./database');
+    const db = require('./database');
 
     const exists = await db.exists('navigation:enabled');
     if (exists) {
