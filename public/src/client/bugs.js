@@ -1,12 +1,11 @@
 'use strict';
 
 define('forum/bug-report', [
-    'api',
-], function (api) {
+    'api', 'alerts',
+], function (api, alerts) {
     const Bugs = {};
 
     Bugs.init = function () {
-        console.log('bugs init');
         handleSubmitBug();
     };
 
@@ -23,7 +22,14 @@ define('forum/bug-report', [
                 description: description,
             };
             console.log(bugData);
-            api.post(`/bugs`, bugData);
+            Promise.all([
+                api.put(`/bugs`, bugData),
+            ]).catch(alerts.error);
+            // api.put(`/bugs`, bugData)
+            //     .then(() => alerts.success('Bug Report Submitted'))
+            //     .catch(alerts.error);
+            // e.preventDefault();
+            // api.post(`/bugs`, bugData);
         });
     }
     return Bugs;

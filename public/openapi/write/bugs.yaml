@@ -22,6 +22,8 @@ post:
             description:
               type: string
               example: 'describe here'
+            required:
+              - name
   responses:
     '200':
       description: bug report successfully created
