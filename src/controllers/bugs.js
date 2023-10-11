@@ -2,8 +2,8 @@
 
 'use strict';
 
-const bugController = module.exports;
+const bugsController = module.exports;
 
-bugController.get = async function (req, res) {
+bugsController.get = async function (req, res) {
     res.render('bugs', {});
 };
