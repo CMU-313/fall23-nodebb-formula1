@@ -39,14 +39,23 @@ module.exports = function (Bugs) {
     };
     Bugs.post = function (data) {
         return __awaiter(this, void 0, void 0, function* () {
+            // function formatDateToMMDDYYYY(date: Date): string {
+            //     const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+            //     const day = date.getDate().toString().padStart(2, '0');
+            //     const year = date.getFullYear().toString();
+            //     return `${month}-${day}-${year}`;
+            // }
             // if (!data) {
             //     return { bugData: data };
             // }
+            // console.log('hello')
+            // console.log(formatDateToMMDDYYYY(Date.now()))
             console.log(data);
             const bid = yield Bugs.create(data);
             const bugData = data;
             bugData.bid = bid;
             yield plugins_1.default.hooks.fire('action:bug.post', { bug: bugData, data: data });
+            console.log('bug', bugData);
             return {
                 bugData: bugData,
             };

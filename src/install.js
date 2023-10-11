@@ -492,10 +492,8 @@ async function createInitialBug() {
     console.log('Creating initial bug!');
 
     await Bugs.post({
-        bid: 1,
         title: 'Bug default Title',
         description: 'Bug default description',
-        // timestamp: '2022 09 24',
         resolved: false,
     });
 }

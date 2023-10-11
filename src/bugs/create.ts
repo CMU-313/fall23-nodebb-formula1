@@ -48,17 +48,13 @@ export = function (Bugs: BugsInterface) {
     };
 
     Bugs.post = async function (data: Bug): Promise<PostData> {
-        // if (!data) {
-        //     return { bugData: data };
-        // }
-
-        console.log(data)
         const bid = await Bugs.create(data);
         const bugData: Bug = data;
         bugData.bid = bid;
 
         await plugins.hooks.fire('action:bug.post', { bug: bugData, data: data });
 
+        console.log('bug', bugData)
         return {
             bugData: bugData,
         };
