@@ -8,6 +8,6 @@ const routeHelpers = require('../helpers');
 const { setupApiRoute } = routeHelpers;
 
 module.exports = function () {
-    setupApiRoute(router, 'post', '/', [middleware.checkRequired.bind(null, ['name', 'email', 'description'])], controllers.write.bugs.submitData);
+    setupApiRoute(router, 'post', '/', [middleware.checkRequired.bind(null, [])], controllers.write.bugs.submitData);
     return router;
 };

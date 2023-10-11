@@ -5,6 +5,6 @@ const bugsCreate = require('../../bugs');
 const helpers = require('../helpers');
 
 bugsController.submitData = async function (req, res) {
-    bugsCreate.post(req.body);
-    helpers.formatApiResponse(200, res);
+    const data = await bugsCreate.post(req.body);
+    helpers.formatApiResponse(200, res, data.bugData);
 };

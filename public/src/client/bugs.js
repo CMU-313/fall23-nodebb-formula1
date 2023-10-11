@@ -12,24 +12,20 @@ define('forum/bug-report', [
     function handleSubmitBug() {
         $('form').on('submit', function () {
             const name = $('#name').val();
+            // eslint-disable-next-line no-unused-vars
             const email = $('#email').val();
             const date = $('#date').val();
             const description = $('#description').val();
             const bugData = {
-                name: name,
-                email: email,
-                date: date,
+                title: name,
                 description: description,
+                timestamp: date,
+                resolved: false,
             };
             console.log(bugData);
             Promise.all([
-                api.put(`/bugs`, bugData),
+                api.post(`/bugs`, bugData),
             ]).catch(alerts.error);
-            // api.put(`/bugs`, bugData)
-            //     .then(() => alerts.success('Bug Report Submitted'))
-            //     .catch(alerts.error);
-            // e.preventDefault();
-            // api.post(`/bugs`, bugData);
         });
     }
     return Bugs;

@@ -4,7 +4,7 @@ import plugins from '../plugins';
 
 type Bug = {
     bid: number,
-    title: string,
+    name: string,
     description: string,
     timestamp: string,
     resolved: boolean,
@@ -51,7 +51,6 @@ export = function (Bugs: BugsInterface) {
         if (data) {
             return { bugData: data };
         }
-
         await Bugs.create(data);
         const bugData: Bug = data;
 

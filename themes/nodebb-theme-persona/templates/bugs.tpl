@@ -11,10 +11,6 @@
     <h6> (required) </h6>
     <input type="text" name="name" id="name" placeholder="Your name" required><br><br>
 
-    <h4> <label for="email">Email</label> </h4>
-    <h6> (required) </h6>
-    <input type="email" name="email" id="email" placeholder="Email" required><br><br>
-
     <h4> <label for="date">Date</label> </h4>
     <h6> (required) </h6>
     <input type="date" name="date" id="date" placeholder="Date" required><br><br>
