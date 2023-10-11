@@ -89,7 +89,6 @@ _mounts.category = (app, name, middleware, controllers) => {
 
 _mounts.bugs = (app, name, middleware, controllers) => {
     const middlewares = [middleware.canViewUsers];
-    console.log('controller bug');
     setupPageRoute(app, `/${name}`, middlewares, controllers.bugs.get);
 };
 

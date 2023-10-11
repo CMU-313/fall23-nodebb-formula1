@@ -36,7 +36,7 @@
                     <input type="checkbox" autocomplete="off" />
                     {{{ end }}}
                     <strong>{{{ if posts.data.tid }}}[[post-queue:reply]]{{{ else }}}[[post-queue:topic]]{{{ end }}}</strong>
-                    <span class="timeago pull-right" title=x{posts.data.timestampISO}></span>
+                    <span class="timeago pull-right" title={posts.data.timestampISO}></span>
                 </div>
                 <div class="panel-body">
 
