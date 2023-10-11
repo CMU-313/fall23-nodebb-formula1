@@ -5,5 +5,6 @@ const bugCreate = require('../../bugs');
 
 bugController.submitData = async function (req, res) {
     bugCreate.post(req.body);
-    res.render('successful submit', req);
+    console.log(req.body);
+    res.render('Successful Bug Form Submit', req);
 };
