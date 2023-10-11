@@ -9,6 +9,8 @@ define('forum/bug-report', [
         handleSubmitBug();
     };
 
+    console.log('hello');
+
     function handleSubmitBug() {
         $('form').on('submit', function () {
             const name = $('#name').val();

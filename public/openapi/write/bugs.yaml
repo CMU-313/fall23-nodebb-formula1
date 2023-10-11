@@ -24,8 +24,8 @@ post:
               example: this is a bug please help 
             timestamp:
               type: string
-              description: "`createtime` rendered as an ISO 8601 format"
-              example: 2022 09 24
+              description: Time created
+              example: '2023-11-01'
             resolved:
               type: boolean
               description: If the bug has been addressed or not

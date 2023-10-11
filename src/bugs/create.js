@@ -39,11 +39,13 @@ module.exports = function (Bugs) {
     };
     Bugs.post = function (data) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (data) {
-                return { bugData: data };
-            }
-            yield Bugs.create(data);
+            // if (!data) {
+            //     return { bugData: data };
+            // }
+            console.log(data);
+            const bid = yield Bugs.create(data);
             const bugData = data;
+            bugData.bid = bid;
             yield plugins_1.default.hooks.fire('action:bug.post', { bug: bugData, data: data });
             return {
                 bugData: bugData,
