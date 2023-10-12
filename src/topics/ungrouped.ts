@@ -13,7 +13,7 @@ interface Params {
     term?: string;
     sort?: string;
     query?: string;
-    cids?: number[] | string;
+    cids?: number[] | number;
     tags?: string[];
     uid?: number;
 }
@@ -25,6 +25,14 @@ interface TopicData {
     topics: TopicObject[];
 }
 
+/**
+ * Determines whether a groupname is invalid
+ * @param group string
+ * @returns true is group is empty, else false
+ */
+function isInvalidGroup(group: string) {
+    return !group || group === '';
+}
 
 export = function (Topics: TopicsI) {
     /**
@@ -38,7 +46,7 @@ export = function (Topics: TopicsI) {
         };
         const data = await Topics.getSortedTopics(params);
         const topics = await Topics.getTopics(data.tids, params);
-        const ungroupedTopics = topics.filter(topic => !topic.group || topic.group === '');
+        const ungroupedTopics = topics.filter(topic => isInvalidGroup(topic.group));
         data.topics = ungroupedTopics;
         return data;
     };

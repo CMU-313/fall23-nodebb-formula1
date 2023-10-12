@@ -8,6 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * Determines whether a groupname is invalid
+ * @param group string
+ * @returns true is group is empty, else false
+ */
+function isInvalidGroup(group) {
+    return !group || group === '';
+}
 module.exports = function (Topics) {
     /**
      * Fetches an array of ungrouped topics
@@ -21,7 +29,7 @@ module.exports = function (Topics) {
             };
             const data = yield Topics.getSortedTopics(params);
             const topics = yield Topics.getTopics(data.tids, params);
-            const ungroupedTopics = topics.filter(topic => !topic.group || topic.group === '');
+            const ungroupedTopics = topics.filter(topic => isInvalidGroup(topic.group));
             data.topics = ungroupedTopics;
             return data;
         });
