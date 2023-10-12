@@ -5,18 +5,14 @@ BugObject:
       type: number
       description: Bug idenitifier
       example: 1
-    title:
+    name:
       type: string
-      description: Title for the complaint
-      example: Broken bug on Routing page
+      description: Name of the bug reporter
+      example: Sebastian
     description:
       type: string
       description: String for the complaint
       example: this is a bug please help 
-    timestamp:
-      type: string
-      description: "`createtime` rendered as an ISO 8601 format"
-      example: 2022 09 24
     resolved:
       type: boolean
       description: If the bug has been addressed or not

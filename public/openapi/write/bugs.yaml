@@ -1,0 +1,43 @@
+post:
+  tags:
+    - bugs
+  summary: create a bug report
+  description: This operation creates a new bug report.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            bid: 
+              type: number
+              description: Bug idenitifier
+              example: 1
+            name:
+              type: string
+              description: Name of the bug reporter
+              example: Sebastian
+            description:
+              type: string
+              description: String for the complaint
+              example: this is a bug please help 
+            resolved:
+              type: boolean
+              description: If the bug has been addressed or not
+              example: false
+  responses:
+    '200':
+      description: bug report successfully created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                $ref: ../components/schemas/Status.yaml#/Status
+              response:
+                $ref: ../components/schemas/BugObject.yaml#/BugObject
+    '404':
+      description: Did not work
+                

@@ -1,10 +1,9 @@
+/* eslint-disable no-unused-vars */
+
 'use strict';
 
-// import { Request, Response } from 'express';
-// import bugs from '../bugs';
+const bugsController = module.exports;
 
-const bugFunctions = module.exports;
-
-bugFunctions.get = async function (req, res) {
+bugsController.get = async function (req, res) {
     res.render('bugs', {});
 };
