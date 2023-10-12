@@ -42,7 +42,6 @@ module.exports = function (Bugs) {
             const bid = yield Bugs.create(data);
             const bugData = data;
             bugData.bid = bid;
-            console.log(bugData);
             yield plugins_1.default.hooks.fire('action:bug.post', { bug: bugData, data: data });
             return {
                 bugData: bugData,
@@ -51,14 +50,10 @@ module.exports = function (Bugs) {
     };
     Bugs.get = function (data, fields) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('yooo');
-            console.log(data);
-            console.log(fields);
             /* eslint-disable max-len */
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const bugs = yield database_1.default.getObjectFields(data, fields);
             /* eslint-enable max-len */
-            console.log('hello', bugs);
             return bugs;
         });
     };
