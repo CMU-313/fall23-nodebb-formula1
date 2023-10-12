@@ -59,7 +59,11 @@ export = function (Bugs: BugsInterface) {
         };
     };
 
-    Bugs.get = async function(data: string[], fields: string[]): Promise<Bug[]> {
-        return await db.getObjectFields(data, fields)
+    Bugs.get = async function (data: string[], fields: string[]): Promise<Bug[]> {
+        /* eslint-disable max-len */
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        const bugs: Bug[] = await db.getObjectFields(data, fields);
+        /* eslint-enable max-len */
+        return bugs;
     };
 }

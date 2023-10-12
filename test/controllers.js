@@ -12,6 +12,7 @@ const db = require('./mocks/databasemock');
 const categories = require('../src/categories');
 const topics = require('../src/topics');
 const posts = require('../src/posts');
+const bugs = require('../src/bugs');
 const user = require('../src/user');
 const groups = require('../src/groups');
 const meta = require('../src/meta');
@@ -2650,17 +2651,17 @@ describe('Controllers', () => {
         }
     });
 
-    describe("Bugs test suite", () => {
+    describe('Bugs test suite', () => {
         const bug = {
             name: 'BugSubmitterOne',
             description: 'Very first bug description',
             resolved: false,
         };
 
-        it("should check that report form exists", (done) => {
+        it('should check that report form exists', (done) => {
             meta.configs.set('homePageRoute', 'bugs', (err) => {
                 assert.ifError(err);
-    
+
                 request(nconf.get('url'), (err, res, body) => {
                     assert.ifError(err);
                     assert.equal(res.statusCode, 200);
@@ -2670,23 +2671,17 @@ describe('Controllers', () => {
             });
         });
 
-        it('submit a new bug', (done) => {
-            done();
-            bugs.post(bug, (err, result) => {
+        it('should submit a new bug', async () => {
+            await bugs.post(bug, (err) => {
                 assert.ifError(err);
-                bug.bid = result.bugData.bid
             });
         });
 
-        it('retrieve created bug', (done) => {
-            done();
-            bugs.get(`bug:${bug.bid}`, (err, result) => {
-                assert.ifError(err);
-                const postedBug = result[0];
-                assert.equal(bug.name, postedBug.name);
-                assert.equal(bug.description, postedBug.description);
-                assert.equal(bug.resolved, postedBug.resolved);
-            });
+        it('should retrieve created bug', async () => {
+            const bugResult = await bugs.get([`bug:${1}`], ['name', 'description', 'resolved']);
+            assert.equal(bug.name, bugResult.name);
+            assert.equal(bug.description, bugResult.description);
+            assert.equal(String(bug.resolved), bugResult.resolved);
         });
     });
 
