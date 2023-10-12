@@ -2650,8 +2650,14 @@ describe('Controllers', () => {
         }
     });
 
-    describe("Test bugs", () => {
-        it("Bug report form should exist", (done) => {
+    describe("Bugs test suite", () => {
+        const bug = {
+            name: 'BugSubmitterOne',
+            description: 'Very first bug description',
+            resolved: false,
+        };
+
+        it("should check that report form exists", (done) => {
             meta.configs.set('homePageRoute', 'bugs', (err) => {
                 assert.ifError(err);
     
@@ -2664,15 +2670,24 @@ describe('Controllers', () => {
             });
         });
 
-        // it('Bug form should submit a bug', (done) => {
-        //     const bug = bugs.post({
-        //         name: 'BugSubmitterOne',
-        //         description: 'Very first bug description',
-        //         resolved: false,
-        //     }, (err) => {
-        //         assert.ifError(err);
-        //     });
-        // });
+        it('submit a new bug', (done) => {
+            done();
+            bugs.post(bug, (err, result) => {
+                assert.ifError(err);
+                bug.bid = result.bugData.bid
+            });
+        });
+
+        it('retrieve created bug', (done) => {
+            done();
+            bugs.get(`bug:${bug.bid}`, (err, result) => {
+                assert.ifError(err);
+                const postedBug = result[0];
+                assert.equal(bug.name, postedBug.name);
+                assert.equal(bug.description, postedBug.description);
+                assert.equal(bug.resolved, postedBug.resolved);
+            });
+        });
     });
 
     after((done) => {

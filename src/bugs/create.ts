@@ -16,6 +16,7 @@ type PostData = {
 interface BugsInterface {
     create: (data: Bug) => Promise<number>,
     post: (data: Bug) => Promise<PostData>,
+    get: (data: string[], fields: string[]) => Promise<Bug[]>,
 }
 
 export = function (Bugs: BugsInterface) {
@@ -56,5 +57,9 @@ export = function (Bugs: BugsInterface) {
         return {
             bugData: bugData,
         };
+    };
+
+    Bugs.get = async function(data: string[], fields: string[]): Promise<Bug[]> {
+        return await db.getObjectFields(data, fields)
     };
 }

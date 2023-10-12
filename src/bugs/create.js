@@ -48,4 +48,9 @@ module.exports = function (Bugs) {
             };
         });
     };
+    Bugs.get = function (data, fields) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield database_1.default.getObjectFields(data, fields);
+        });
+    };
 };
