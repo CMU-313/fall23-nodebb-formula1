@@ -3024,17 +3024,17 @@ describe('User', () => {
     });
 
     describe('User.getGroupOnlineCount', () => {
-        it('should return the count of online users when there are none', async () => {
-            const groupName = 'testGroup';
-            const onlineUserIds = [];
+        it('should return the count of online users in a group when 0 users are online', async () => {
+            const groupName = 'testGroup'; // group that we want to check for online users in
+            const onlineUserIds = []; // users that are online
             const count = await User.getGroupOnlineCount(groupName);
             assert.strictEqual(count, onlineUserIds.length);
         });
         // mock inward functions with jest (getUidsFromSet and isMembers)
         // TA says that a comment is sufficient for mocking inward functions to show our thought process for testing
-        it('should return the count of online users when the count is greater than zero', async () => {
-            const mockOnlineUids = [1, 2, 3];
-            const mockGroupName = 'testGroup';
+        it('should return the count of online users in a group when 3 users are online', async () => {
+            const mockOnlineUids = [1, 2, 3]; // users that are online
+            const mockGroupName = 'testGroup'; // group that we want to check for online users in
 
             // Mock the User.getUidsFromSet and groups.isMembers functions
             beforeEach(() => {
@@ -3042,7 +3042,7 @@ describe('User', () => {
                 // jest.spyOn(groups, 'isMembers').mockResolvedValue([true, false, true]);
             });
             // mockOnlineUids returns [1,2,3]
-            // isMembers returns [true, false, true]
+            // isMembers returns [true, false, true], meaning that uid 2 is not in testGroup
 
             // Restore the mocked functions after each test
             afterEach(() => {
@@ -3051,6 +3051,31 @@ describe('User', () => {
             const result = await User.getGroupOnlineCount(mockGroupName);
             // result = [1,3]
             // assert.strict(2, result.length);
+        });
+
+        // mock inward functions with jest (getUidsFromSet and isMembers)
+        // TA says that a comment is sufficient for mocking inward functions to show our thought process for testing
+        it('should return the count of online users in a group when 9 users are online', async () => {
+            const mockOnlineUids = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            const mockGroupName = 'testGroup';
+
+            // Mock the User.getUidsFromSet and groups.isMembers functions
+            beforeEach(() => {
+                // jest.spyOn(User, 'getUidsFromSet').mockResolvedValue(mockOnlineUids);
+                // jest.spyOn(groups, 'isMembers').mockResolvedValue(
+                // [true, false, true, false, true, false, true, false, true]);
+            });
+            // mockOnlineUids returns [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            // isMembers returns [true, false, true, false, true, false, true, false, true]
+            // 5 of the uids are in testGroup
+
+            // Restore the mocked functions after each test
+            afterEach(() => {
+                // jest.restoreAllMocks();
+            });
+            const result = await User.getGroupOnlineCount(mockGroupName);
+            // result = [1,3,5,7,9]
+            // assert.strict(5, result.length);
         });
     });
 
