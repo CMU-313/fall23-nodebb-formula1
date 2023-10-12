@@ -3024,7 +3024,7 @@ describe('User', () => {
     });
 
     describe('User.getGroupOnlineCount', () => {
-        it('should return the count of online users in the specified group', async () => {
+        it('should return the count of online users when there are none', async () => {
             const groupName = 'testGroup';
             const onlineUserIds = [];
             const count = await User.getGroupOnlineCount(groupName);
@@ -3032,7 +3032,7 @@ describe('User', () => {
         });
         // mock inward functions with jest (getUidsFromSet and isMembers)
         // TA says that a comment is sufficient for mocking inward functions to show our thought process for testing
-        it('should return the count of online users', async () => {
+        it('should return the count of online users when the count is greater than zero', async () => {
             const mockOnlineUids = [1, 2, 3];
             const mockGroupName = 'testGroup';
 
