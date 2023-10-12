@@ -3036,17 +3036,20 @@ describe('User', () => {
             const mockOnlineUids = [1, 2, 3];
             const mockGroupName = 'testGroup';
 
+            // Mock the User.getUidsFromSet and groups.isMembers functions
             beforeEach(() => {
-                // Mock the User.getUidsFromSet and groups.isMembers functions
-                jest.spyOn(User, 'getUidsFromSet').mockResolvedValue(mockOnlineUids);
-                jest.spyOn(groups, 'isMembers').mockResolvedValue([true, false, true]);
+                // jest.spyOn(User, 'getUidsFromSet').mockResolvedValue(mockOnlineUids);
+                // jest.spyOn(groups, 'isMembers').mockResolvedValue([true, false, true]);
             });
+            // mockOnlineUids returns [1,2,3]
+            // isMembers returns [true, false, true]
 
+            // Restore the mocked functions after each test
             afterEach(() => {
-                // Restore the mocked functions after each test
-                jest.restoreAllMocks();
+                // jest.restoreAllMocks();
             });
             const result = await User.getGroupOnlineCount(mockGroupName);
+            // result = [1,3]
             // assert.strict(2, result.length);
         });
     });
