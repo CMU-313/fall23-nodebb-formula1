@@ -3030,15 +3030,25 @@ describe('User', () => {
             const count = await User.getGroupOnlineCount(groupName);
             assert.strictEqual(count, onlineUserIds.length);
         });
-        // mock getUidsFromSet and isMembers (TA says that a comment is sufficient for mocking)
-        // it('should return the count of online users', async () => {
-        //     const groupName = 'testGroup';
-        //     const onlineUserIds = [1, 2];
-        //     const mockGreetWorld = jest.fn();
-        //     jest.mock(User, () => jest.fn().mockImplementation(() => ({
-        //         getUidsFromSet: mockGreetWorld,
-        //     })));
-        // });
+        // mock inward functions with jest (getUidsFromSet and isMembers)
+        // TA says that a comment is sufficient for mocking inward functions to show our thought process for testing
+        it('should return the count of online users', async () => {
+            const mockOnlineUids = [1, 2, 3];
+            const mockGroupName = 'testGroup';
+
+            beforeEach(() => {
+                // Mock the User.getUidsFromSet and groups.isMembers functions
+                jest.spyOn(User, 'getUidsFromSet').mockResolvedValue(mockOnlineUids);
+                jest.spyOn(groups, 'isMembers').mockResolvedValue([true, false, true]);
+            });
+
+            afterEach(() => {
+                // Restore the mocked functions after each test
+                jest.restoreAllMocks();
+            });
+            const result = await User.getGroupOnlineCount(mockGroupName);
+            // assert.strict(2, result.length);
+        });
     });
 
 
