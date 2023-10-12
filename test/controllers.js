@@ -2650,6 +2650,31 @@ describe('Controllers', () => {
         }
     });
 
+    describe("Test bugs", () => {
+        it("Bug report form should exist", (done) => {
+            meta.configs.set('homePageRoute', 'bugs', (err) => {
+                assert.ifError(err);
+    
+                request(nconf.get('url'), (err, res, body) => {
+                    assert.ifError(err);
+                    assert.equal(res.statusCode, 200);
+                    assert(body);
+                    done();
+                });
+            });
+        });
+
+        // it('Bug form should submit a bug', (done) => {
+        //     const bug = bugs.post({
+        //         name: 'BugSubmitterOne',
+        //         description: 'Very first bug description',
+        //         resolved: false,
+        //     }, (err) => {
+        //         assert.ifError(err);
+        //     });
+        // });
+    });
+
     after((done) => {
         const analytics = require('../src/analytics');
         analytics.writeData(done);
