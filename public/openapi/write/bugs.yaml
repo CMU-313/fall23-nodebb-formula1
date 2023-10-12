@@ -14,10 +14,10 @@ post:
               type: number
               description: Bug idenitifier
               example: 1
-            title:
+            name:
               type: string
-              description: Title for the complaint
-              example: Broken bug on Routing page
+              description: Name of the bug reporter
+              example: Sebastian
             description:
               type: string
               description: String for the complaint

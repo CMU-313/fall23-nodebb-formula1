@@ -6,7 +6,6 @@ type Bug = {
     bid: number,
     name: string,
     description: string,
-    timestamp: string,
     resolved: boolean,
 }
 
@@ -21,7 +20,7 @@ interface BugsInterface {
 
 export = function (Bugs: BugsInterface) {
     Bugs.create = async function (data : Bug): Promise<number> {
-        const timestamp = data.timestamp || Date.now();
+        const timestamp = Date.now();
 
         /* eslint-disable max-len */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment

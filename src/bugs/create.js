@@ -17,7 +17,7 @@ const plugins_1 = __importDefault(require("../plugins"));
 module.exports = function (Bugs) {
     Bugs.create = function (data) {
         return __awaiter(this, void 0, void 0, function* () {
-            const timestamp = data.timestamp || Date.now();
+            const timestamp = Date.now();
             /* eslint-disable max-len */
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
             const bid = yield database_1.default.incrObjectField('global', 'nextBid');

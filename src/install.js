@@ -492,7 +492,7 @@ async function createInitialBug() {
     console.log('Creating initial bug!');
 
     await Bugs.post({
-        title: 'Bug default Title',
+        name: 'Default name',
         description: 'Bug default description',
         resolved: false,
     });
