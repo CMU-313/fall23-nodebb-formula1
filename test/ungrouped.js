@@ -39,6 +39,8 @@ describe('Ungrouped', () => {
 
     describe('ungrouped', () => {
         before((done) => {
+            // Post a topic
+            // Start off as ungrouped
             topics.post({
                 uid: topic.userId,
                 title: topic.title,
@@ -51,26 +53,27 @@ describe('Ungrouped', () => {
             });
         });
 
-        it('should create a fetch the ungrouped topic with proper parameters', async (done) => {
+        it('should fetch the ungrouped topic with proper parameters', async (done) => {
             done();
             topics.getUngroupedTopics(topic.uid, (err, data) => {
                 assert.ifError(err);
                 const ungrouped_topic = data.topics[0];
                 assert(ungrouped_topic);
+                assert.equal(data.topics.length, 1);
                 assert.equal(ungrouped_topic.title, topic.title);
                 assert.equal(ungrouped_topic.content, topic.content);
                 assert.equal(ungrouped_topic.uid, topic.userId);
             });
         });
 
-        it('should assign a topic to a group', async (done) => {
+        it('should assign a topic to admin group', async (done) => {
             done();
             topics.assignTopicToGroup(topic.tid, 'administrators', (err) => {
                 assert.ifError(err);
             });
         });
 
-        it('should assert no more topics are unassigned', async (done) => {
+        it('should ensure no more topics are unassigned', async (done) => {
             done();
             topics.getUngroupedTopics(topic.uid, (err, data) => {
                 assert.ifError(err);
@@ -78,7 +81,7 @@ describe('Ungrouped', () => {
             });
         });
 
-        it('should find topic in group', async (done) => {
+        it('should fetch topic in admin group', async (done) => {
             done();
             topics.getGroupedTopics('administrators', topic.userId, (err, data) => {
                 assert.ifError(err);

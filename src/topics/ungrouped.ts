@@ -1,25 +1,25 @@
 import { TopicObject } from '../types';
 
 interface TopicsI {
-  getUngroupedTopics: (uid: string) => Promise<TopicData>;
-  getGroupedTopics: (group: string, uid: string) => Promise<TopicData>;
+  getUngroupedTopics: (uid: number) => Promise<TopicData>;
+  getGroupedTopics: (group: string, uid: number) => Promise<TopicData>;
   getSortedTopics: (params: Params) => Promise<TopicData>;
-  getTopics: (tids: string[], params: Params) => Promise<TopicObject[]>;
-  assignTopicToGroup: (tid: string, groupName: string) => Promise<void>;
-  setTopicFields: (tid: string, data: {[key: string]: string}) => Promise<void>;
+  getTopics: (tids: number[], params: Params) => Promise<TopicObject[]>;
+  assignTopicToGroup: (tid: number, groupName: string) => Promise<void>;
+  setTopicFields: (tid: number, data: {[key: string]: string}) => Promise<void>;
 }
 
 interface Params {
     term?: string;
     sort?: string;
     query?: string;
-    cids?: string[] | string;
+    cids?: number[] | string;
     tags?: string[];
-    uid?: string;
+    uid?: number;
 }
 
 interface TopicData {
-    tids: string[];
+    tids: number[];
     nextStart: number;
     topicsCount: number;
     topics: TopicObject[];
