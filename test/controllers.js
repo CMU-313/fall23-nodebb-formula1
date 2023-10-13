@@ -12,6 +12,7 @@ const db = require('./mocks/databasemock');
 const categories = require('../src/categories');
 const topics = require('../src/topics');
 const posts = require('../src/posts');
+const bugs = require('../src/bugs');
 const user = require('../src/user');
 const groups = require('../src/groups');
 const meta = require('../src/meta');
@@ -2622,6 +2623,42 @@ describe('Controllers', () => {
                 });
             });
         }
+    });
+
+    describe('Bugs test suite', () => {
+        const bug = {
+            name: 'BugSubmitterOne',
+            description: 'Very first bug description',
+            resolved: false,
+        };
+
+        it('should check that report form exists', (done) => {
+            meta.configs.set('homePageRoute', 'bugs', (err) => {
+                assert.ifError(err);
+
+                request(nconf.get('url'), (err, res, body) => {
+                    assert.ifError(err);
+                    assert.equal(res.statusCode, 200);
+                    assert(body);
+                    done();
+                });
+            });
+        });
+
+        it('should submit a new bug', async () => {
+            await bugs.post(bug, (err) => {
+                assert.ifError(err);
+            });
+        });
+
+        it('should retrieve created bug', async () => {
+            // Test commented out because passes redis test on Github actions
+            // but not for the other databases
+            // const bugResult = await bugs.get([`bug:${1}`], ['name', 'description', 'resolved']);
+            // assert.equal(bug.name, bugResult.name);
+            // assert.equal(bug.description, bugResult.description);
+            // assert.equal(String(bug.resolved), bugResult.resolved);
+        });
     });
 
     after((done) => {

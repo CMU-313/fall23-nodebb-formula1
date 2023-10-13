@@ -16,6 +16,7 @@ type PostData = {
 interface BugsInterface {
     create: (data: Bug) => Promise<number>,
     post: (data: Bug) => Promise<PostData>,
+    get: (data: string[], fields: string[]) => Promise<Bug[]>,
 }
 
 export = function (Bugs: BugsInterface) {
@@ -56,5 +57,13 @@ export = function (Bugs: BugsInterface) {
         return {
             bugData: bugData,
         };
+    };
+
+    Bugs.get = async function (data: string[], fields: string[]): Promise<Bug[]> {
+        /* eslint-disable max-len */
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        const bugs: Bug[] = await db.getObjectFields(data, fields);
+        /* eslint-enable max-len */
+        return bugs;
     };
 }

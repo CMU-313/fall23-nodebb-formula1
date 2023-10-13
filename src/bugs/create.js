@@ -48,4 +48,13 @@ module.exports = function (Bugs) {
             };
         });
     };
+    Bugs.get = function (data, fields) {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* eslint-disable max-len */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            const bugs = yield database_1.default.getObjectFields(data, fields);
+            /* eslint-enable max-len */
+            return bugs;
+        });
+    };
 };
