@@ -16,7 +16,15 @@
 
       <!-- IF loggedIn -->
           <!-- IF isAdminOrMod -->
-            <p>You are an Admin</p>
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Bug ID</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+            </table>
           <!-- ENDIF isAdminOrMod -->
       <!-- ENDIF loggedIn -->
 </body>
