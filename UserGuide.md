@@ -7,10 +7,10 @@ Welcome to Team Formula1’s NodeBB user guide. This user guide describes how to
 
 **Viewing the count of users online:**
 
-<u>UsersOnlineonNodeBB</u>
+<u>Users Online on NodeBB</u>
 To check the total number of users online, navigate to the Users page. The online count of all users on NodeBB is displayed in the brackets next to the “Online” tab (e.g. Online (10)).
 
-<u>UsersOnlineinEachGroup</u>
+<u>Users Online in Each Group</u>
 To check the online users within each group (for groups you are a member of), navigate to the Group’s page. The count of users online within each group is displayed under the list of members, as “Currently Online: #”. 
 
 &nbsp;
