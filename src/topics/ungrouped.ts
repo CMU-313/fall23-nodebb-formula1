@@ -1,30 +1,38 @@
 import { TopicObject } from '../types';
 
 interface TopicsI {
-  getUngroupedTopics: (uid: string) => Promise<TopicData>;
-  getGroupedTopics: (group: string, uid: string) => Promise<TopicData>;
+  getUngroupedTopics: (uid: number) => Promise<TopicData>;
+  getGroupedTopics: (group: string, uid: number) => Promise<TopicData>;
   getSortedTopics: (params: Params) => Promise<TopicData>;
-  getTopics: (tids: string[], params: Params) => Promise<TopicObject[]>;
-  assignTopicToGroup: (tid: string, groupName: string) => Promise<void>;
-  setTopicFields: (tid: string, data: {[key: string]: string}) => Promise<void>;
+  getTopics: (tids: number[], params: Params) => Promise<TopicObject[]>;
+  assignTopicToGroup: (tid: number, groupName: string) => Promise<void>;
+  setTopicFields: (tid: number, data: {[key: string]: string}) => Promise<void>;
 }
 
 interface Params {
     term?: string;
     sort?: string;
     query?: string;
-    cids?: string[] | string;
+    cids?: number[] | number;
     tags?: string[];
-    uid?: string;
+    uid?: number;
 }
 
 interface TopicData {
-    tids: string[];
+    tids: number[];
     nextStart: number;
     topicsCount: number;
     topics: TopicObject[];
 }
 
+/**
+ * Determines whether a groupname is invalid
+ * @param group string
+ * @returns true is group is empty, else false
+ */
+function isInvalidGroup(group: string) {
+    return !group || group === '';
+}
 
 export = function (Topics: TopicsI) {
     /**
@@ -38,7 +46,7 @@ export = function (Topics: TopicsI) {
         };
         const data = await Topics.getSortedTopics(params);
         const topics = await Topics.getTopics(data.tids, params);
-        const ungroupedTopics = topics.filter(topic => !topic.group || topic.group === '');
+        const ungroupedTopics = topics.filter(topic => isInvalidGroup(topic.group));
         data.topics = ungroupedTopics;
         return data;
     };

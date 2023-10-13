@@ -20,7 +20,7 @@ interface UngroupedOutputData extends TopicData {
 }
 
 interface TopicData { // Consistent with inteface in src/topics/ungrouped.js
-  tids: string[];
+  tids: number[];
   nextStart: number;
   topicsCount: number;
   topics: TopicObject[];
