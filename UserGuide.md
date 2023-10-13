@@ -5,8 +5,6 @@ Welcome to Team Formula1’s NodeBB user guide. This user guide describes how to
 &nbsp;
 # New Features Added:
 
-&nbsp;
-
 **Viewing the count of users online:**
 
 <u>UsersOnlineonNodeBB</u>
@@ -43,8 +41,6 @@ Originally we envisioned the ability to select/assign a group while creating the
 &nbsp;
 # Tests:
 
-&nbsp;
-
 **Running the tests:**
 
 ```
@@ -52,7 +48,6 @@ Originally we envisioned the ability to select/assign a group while creating the
 - Flush the redis server with `redis-cli` and `flushdb`
 - Run `./nodebb setup` and then `npm run test`
 - Individual file tests case be run with `npx mocha test/{FILENAME}`
-
 ```
 
 &nbsp;
