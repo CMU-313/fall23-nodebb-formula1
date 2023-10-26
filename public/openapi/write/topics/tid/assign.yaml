@@ -22,7 +22,7 @@ put:
               description: a valid group name
               example: My Group
   responses:
-    '200':
+    "200":
       description: Topic successfully assigned to group
       content:
         application/json:

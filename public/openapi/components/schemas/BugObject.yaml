@@ -1,7 +1,7 @@
 BugObject:
   type: object
   properties:
-    bid: 
+    bid:
       type: number
       description: Bug idenitifier
       example: 1
@@ -12,7 +12,7 @@ BugObject:
     description:
       type: string
       description: String for the complaint
-      example: this is a bug please help 
+      example: this is a bug please help
     resolved:
       type: boolean
       description: If the bug has been addressed or not
