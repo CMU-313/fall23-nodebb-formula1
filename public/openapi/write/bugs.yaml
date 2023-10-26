@@ -10,7 +10,7 @@ post:
         schema:
           type: object
           properties:
-            bid: 
+            bid:
               type: number
               description: Bug idenitifier
               example: 1
@@ -21,13 +21,13 @@ post:
             description:
               type: string
               description: String for the complaint
-              example: this is a bug please help 
+              example: this is a bug please help
             resolved:
               type: boolean
               description: If the bug has been addressed or not
               example: false
   responses:
-    '200':
+    "200":
       description: bug report successfully created
       content:
         application/json:
@@ -38,6 +38,5 @@ post:
                 $ref: ../components/schemas/Status.yaml#/Status
               response:
                 $ref: ../components/schemas/BugObject.yaml#/BugObject
-    '404':
+    "404":
       description: Did not work
-                

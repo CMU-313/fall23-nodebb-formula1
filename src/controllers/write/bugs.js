@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 const bugsController = module.exports;
-const bugsCreate = require('../../bugs');
-const helpers = require('../helpers');
+const bugsCreate = require("../../bugs");
+const helpers = require("../helpers");
 
 bugsController.submitData = async function (req, res) {
     const data = await bugsCreate.post(req.body);

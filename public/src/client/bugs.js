@@ -1,8 +1,6 @@
-'use strict';
+"use strict";
 
-define('forum/bug-report', [
-    'api', 'alerts',
-], function (api, alerts) {
+define("forum/bug-report", ["api", "alerts"], function (api, alerts) {
     const Bugs = {};
 
     Bugs.init = function () {
@@ -10,18 +8,16 @@ define('forum/bug-report', [
     };
 
     function handleSubmitBug() {
-        $('form').on('submit', function () {
-            const name = $('#name').val();
-            const description = $('#description').val();
+        $("form").on("submit", function () {
+            const name = $("#name").val();
+            const description = $("#description").val();
             const bugData = {
                 name: name,
                 description: description,
                 resolved: false,
             };
 
-            Promise.all([
-                api.post(`/bugs`, bugData),
-            ]).catch(alerts.error);
+            Promise.all([api.post(`/bugs`, bugData)]).catch(alerts.error);
         });
     }
     return Bugs;

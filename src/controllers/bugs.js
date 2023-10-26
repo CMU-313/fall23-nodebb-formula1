@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 
-'use strict';
+"use strict";
 
 const bugsController = module.exports;
 
 bugsController.get = async function (req, res) {
-    res.render('bugs', {});
+    res.render("bugs", {});
 };
