@@ -1,0 +1,8 @@
+{
+  "output_limit": 100,
+  "score_cap": 90,
+  "exclude_directories": ["public", "build", "node_modules"],
+  "extensions": [".js", ".ts"],
+  "include_comments": false,
+  "exclude_under": 10
+}
