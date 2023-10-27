@@ -15,6 +15,7 @@ function runIroh(code) {
         stage = new Iroh.Stage(code);
         eval(stage.script)
 
+        // console.log(stage)
         // Create a listener for variables
         stage.addListener(Iroh.VAR)
         .on("after", (e) => {
