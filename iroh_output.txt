@@ -1,0 +1,669 @@
+Stage {
+  input: "'use strict';\n" +
+    '\n' +
+    "const { merge } = require('webpack-merge');\n" +
+    "const common = require('./webpack.common');\n" +
+    '\n' +
+    'module.exports = merge(common, {\n' +
+    "    mode: 'development',\n" +
+    "    // devtool: 'inline-source-map',\n" +
+    '});\n',
+  key: '$$STx472',
+  links: {
+    '$DEBUG_PROGRAM': { fn: undefined, key: '$0' },
+    '$DEBUG_FUNCTION_RETURN': { fn: [Function: DEBUG_FUNCTION_RETURN], key: '$1' },
+    '$DEBUG_FUNCTION_CALL': { fn: [Function: DEBUG_FUNCTION_CALL], key: '$2' },
+    '$DEBUG_FUNCTION_CALL_END': { fn: undefined, key: '$3' },
+    '$DEBUG_FUNCTION_ENTER': { fn: [Function: DEBUG_FUNCTION_ENTER], key: '$4' },
+    '$DEBUG_FUNCTION_LEAVE': { fn: [Function: DEBUG_FUNCTION_LEAVE], key: '$5' },
+    '$DEBUG_LOOP_TEST': { fn: [Function: DEBUG_LOOP_TEST], key: '$6' },
+    '$DEBUG_LOOP_ENTER': { fn: [Function: DEBUG_LOOP_ENTER], key: '$7' },
+    '$DEBUG_LOOP_LEAVE': { fn: [Function: DEBUG_LOOP_LEAVE], key: '$8' },
+    '$DEBUG_BREAK': { fn: [Function: DEBUG_BREAK], key: '$9' },
+    '$DEBUG_CONTINUE': { fn: [Function: DEBUG_CONTINUE], key: '$10' },
+    '$DEBUG_SWITCH_TEST': { fn: [Function: DEBUG_SWITCH_TEST], key: '$11' },
+    '$DEBUG_SWITCH_ENTER': { fn: [Function: DEBUG_SWITCH_ENTER], key: '$12' },
+    '$DEBUG_SWITCH_LEAVE': { fn: [Function: DEBUG_SWITCH_LEAVE], key: '$13' },
+    '$DEBUG_CASE_TEST': { fn: [Function: DEBUG_CASE_TEST], key: '$14' },
+    '$DEBUG_CASE_ENTER': { fn: [Function: DEBUG_CASE_ENTER], key: '$15' },
+    '$DEBUG_CASE_LEAVE': { fn: [Function: DEBUG_CASE_LEAVE], key: '$16' },
+    '$DEBUG_IF_TEST': { fn: [Function: DEBUG_IF_TEST], key: '$17' },
+    '$DEBUG_IF_ENTER': { fn: [Function: DEBUG_IF_ENTER], key: '$18' },
+    '$DEBUG_IF_LEAVE': { fn: [Function: DEBUG_IF_LEAVE], key: '$19' },
+    '$DEBUG_ELSE_ENTER': { fn: [Function: DEBUG_ELSE_ENTER], key: '$20' },
+    '$DEBUG_ELSE_LEAVE': { fn: [Function: DEBUG_ELSE_LEAVE], key: '$21' },
+    '$DEBUG_VAR_INIT': { fn: [Function: DEBUG_VAR_INIT], key: '$22' },
+    '$DEBUG_VAR_DECLARE': { fn: [Function: DEBUG_VAR_DECLARE], key: '$23' },
+    '$DEBUG_OP_NEW': { fn: [Function: DEBUG_OP_NEW], key: '$24' },
+    '$DEBUG_OP_NEW_END': { fn: [Function: DEBUG_OP_NEW_END], key: '$25' },
+    '$DEBUG_UNARY': { fn: [Function: DEBUG_UNARY], key: '$26' },
+    '$DEBUG_UPDATE': { fn: [Function: DEBUG_UPDATE], key: '$27' },
+    '$DEBUG_SUPER': { fn: [Function: DEBUG_SUPER], key: '$28' },
+    '$DEBUG_THIS': { fn: [Function: DEBUG_THIS], key: '$29' },
+    '$DEBUG_LITERAL': { fn: [Function: DEBUG_LITERAL], key: '$30' },
+    '$DEBUG_IDENTIFIER': { fn: undefined, key: '$31' },
+    '$DEBUG_BINARY': { fn: [Function: DEBUG_BINARY], key: '$32' },
+    '$DEBUG_LOGICAL': { fn: [Function: DEBUG_LOGICAL], key: '$33' },
+    '$DEBUG_TERNARY': { fn: [Function: DEBUG_TERNARY], key: '$34' },
+    '$DEBUG_ASSIGN': { fn: [Function: DEBUG_ASSIGN], key: '$35' },
+    '$DEBUG_METHOD_ENTER': { fn: [Function: DEBUG_METHOD_ENTER], key: '$36' },
+    '$DEBUG_METHOD_LEAVE': { fn: [Function: DEBUG_METHOD_LEAVE], key: '$37' },
+    '$DEBUG_TRY_ENTER': { fn: [Function: DEBUG_TRY_ENTER], key: '$38' },
+    '$DEBUG_TRY_LEAVE': { fn: [Function: DEBUG_TRY_LEAVE], key: '$39' },
+    '$DEBUG_CATCH_ENTER': { fn: [Function: DEBUG_CATCH_ENTER], key: '$40' },
+    '$DEBUG_CATCH_LEAVE': { fn: [Function: DEBUG_CATCH_LEAVE], key: '$41' },
+    '$DEBUG_FINAL_ENTER': { fn: [Function: DEBUG_FINAL_ENTER], key: '$42' },
+    '$DEBUG_FINAL_LEAVE': { fn: [Function: DEBUG_FINAL_LEAVE], key: '$43' },
+    '$DEBUG_ALLOC': { fn: [Function: DEBUG_ALLOC], key: '$44' },
+    '$DEBUG_MEMBER_EXPR': { fn: [Function: DEBUG_MEMBER_EXPR], key: '$45' },
+    '$DEBUG_BLOCK_ENTER': { fn: [Function: DEBUG_BLOCK_ENTER], key: '$46' },
+    '$DEBUG_BLOCK_LEAVE': { fn: [Function: DEBUG_BLOCK_LEAVE], key: '$47' },
+    '$DEBUG_PROGRAM_FRAME_VALUE': { fn: [Function: DEBUG_PROGRAM_FRAME_VALUE], key: '$48' },
+    '$DEBUG_PROGRAM_ENTER': { fn: [Function: DEBUG_PROGRAM_ENTER], key: '$49' },
+    '$DEBUG_PROGRAM_LEAVE': { fn: [Function: DEBUG_PROGRAM_LEAVE], key: '$50' }
+  },
+  nodes: {
+    '1035': { hash: 1035, node: [Object] },
+    '1036': { hash: 1036, node: [Object] },
+    '1037': { hash: 1037, node: [Object] },
+    '1038': { hash: 1038, node: [Object] },
+    '1039': { hash: 1039, node: [Object] },
+    '1040': { hash: 1040, node: [Object] },
+    '1041': { hash: 1041, node: [Object] },
+    '1042': { hash: 1042, node: [Object] },
+    '1043': { hash: 1043, node: [Object] },
+    '1044': { hash: 1044, node: [Object] },
+    '1045': { hash: 1045, node: [Object] },
+    '1046': { hash: 1046, node: [Object] },
+    '1047': { hash: 1047, node: [Object] },
+    '1048': { hash: 1048, node: [Object] }
+  },
+  symbols: {},
+  options: {},
+  indent: 0,
+  frame: Frame {
+    uid: 474,
+    hash: 0,
+    type: 0,
+    isSloppy: false,
+    isBreakable: false,
+    isReturnable: false,
+    isCatchClause: false,
+    isFinalClause: false,
+    isTryStatement: false,
+    isSwitchDefault: false,
+    isInstantiation: false,
+    cleanType: 'PROGRAM',
+    parent: null,
+    values: [],
+    children: [],
+    isSwitchCase: false,
+    isContinuable: false
+  },
+  '$$frameHash': 0,
+  currentScope: null,
+  previousScope: null,
+  listeners: {
+    '0': [],
+    '1': [],
+    '2': [],
+    '3': [],
+    '4': [],
+    '5': [],
+    '6': [],
+    '7': [],
+    '8': [],
+    '9': [],
+    '10': [],
+    '11': [],
+    '12': [],
+    '13': [],
+    '14': [],
+    '15': [],
+    '16': [],
+    '17': [],
+    '18': [],
+    '19': [],
+    '20': [],
+    '21': [],
+    '22': [],
+    '23': [],
+    '24': [],
+    '25': [],
+    '26': [],
+    '27': [],
+    '28': []
+  },
+  '$0': undefined,
+  '$1': [Function: DEBUG_FUNCTION_RETURN],
+  '$2': [Function: DEBUG_FUNCTION_CALL],
+  '$3': undefined,
+  '$4': [Function: DEBUG_FUNCTION_ENTER],
+  '$5': [Function: DEBUG_FUNCTION_LEAVE],
+  '$6': [Function: DEBUG_LOOP_TEST],
+  '$7': [Function: DEBUG_LOOP_ENTER],
+  '$8': [Function: DEBUG_LOOP_LEAVE],
+  '$9': [Function: DEBUG_BREAK],
+  '$10': [Function: DEBUG_CONTINUE],
+  '$11': [Function: DEBUG_SWITCH_TEST],
+  '$12': [Function: DEBUG_SWITCH_ENTER],
+  '$13': [Function: DEBUG_SWITCH_LEAVE],
+  '$14': [Function: DEBUG_CASE_TEST],
+  '$15': [Function: DEBUG_CASE_ENTER],
+  '$16': [Function: DEBUG_CASE_LEAVE],
+  '$17': [Function: DEBUG_IF_TEST],
+  '$18': [Function: DEBUG_IF_ENTER],
+  '$19': [Function: DEBUG_IF_LEAVE],
+  '$20': [Function: DEBUG_ELSE_ENTER],
+  '$21': [Function: DEBUG_ELSE_LEAVE],
+  '$22': [Function: DEBUG_VAR_INIT],
+  '$23': [Function: DEBUG_VAR_DECLARE],
+  '$24': [Function: DEBUG_OP_NEW],
+  '$25': [Function: DEBUG_OP_NEW_END],
+  '$26': [Function: DEBUG_UNARY],
+  '$27': [Function: DEBUG_UPDATE],
+  '$28': [Function: DEBUG_SUPER],
+  '$29': [Function: DEBUG_THIS],
+  '$30': [Function: DEBUG_LITERAL],
+  '$31': undefined,
+  '$32': [Function: DEBUG_BINARY],
+  '$33': [Function: DEBUG_LOGICAL],
+  '$34': [Function: DEBUG_TERNARY],
+  '$35': [Function: DEBUG_ASSIGN],
+  '$36': [Function: DEBUG_METHOD_ENTER],
+  '$37': [Function: DEBUG_METHOD_LEAVE],
+  '$38': [Function: DEBUG_TRY_ENTER],
+  '$39': [Function: DEBUG_TRY_LEAVE],
+  '$40': [Function: DEBUG_CATCH_ENTER],
+  '$41': [Function: DEBUG_CATCH_LEAVE],
+  '$42': [Function: DEBUG_FINAL_ENTER],
+  '$43': [Function: DEBUG_FINAL_LEAVE],
+  '$44': [Function: DEBUG_ALLOC],
+  '$45': [Function: DEBUG_MEMBER_EXPR],
+  '$46': [Function: DEBUG_BLOCK_ENTER],
+  '$47': [Function: DEBUG_BLOCK_LEAVE],
+  '$48': [Function: DEBUG_PROGRAM_FRAME_VALUE],
+  '$49': [Function: DEBUG_PROGRAM_ENTER],
+  '$50': [Function: DEBUG_PROGRAM_LEAVE],
+  script: 'const $$STx472 = Iroh.stages["$$STx472"];\n' +
+    'var $$frameValue = void 0;\n' +
+    '$$STx472.$49(1048)\n' +
+    "$$STx472.$30(1035, 'use strict');\n" +
+    `const {merge} = $$STx472.$22(1036, $$STx472.$23(1039, "undefined"), $$STx472.$2(1038, this, require, null, [$$STx472.$30(1037, 'webpack-merge')]));\n` +
+    `const common = $$STx472.$22(1040, $$STx472.$23(1043, "common"), $$STx472.$2(1042, this, require, null, [$$STx472.$30(1041, './webpack.common')]));\n` +
+    '$$STx472.$48($$frameValue = $$STx472.$35(1044, 0, module, "exports", $$STx472.$2(1047, this, merge, null, [common, $$STx472.$44(1045, {\n' +
+    "  mode: $$STx472.$30(1046, 'development')\n" +
+    '})])));\n' +
+    '$$STx472.$50(1048, $$frameValue)\n'
+}
+Stage {
+  input: '// webpack config for webinstaller\n' +
+    '\n' +
+    "'use strict';\n" +
+    '\n' +
+    "const path = require('path');\n" +
+    '\n' +
+    'module.exports = {\n' +
+    "    mode: 'production',\n" +
+    '    entry: {\n' +
+    "        installer: './public/src/installer/install.js',\n" +
+    '    },\n' +
+    '    output: {\n' +
+    "        filename: '[name].min.js',\n" +
+    "        path: path.resolve(__dirname, 'build/public'),\n" +
+    '        publicPath: `/assets/`,\n' +
+    '    },\n' +
+    '    resolve: {\n' +
+    '        symlinks: false,\n' +
+    '        modules: [\n' +
+    "            'public/src',\n" +
+    "            'node_modules',\n" +
+    '        ],\n' +
+    '    },\n' +
+    '};\n',
+  key: '$$STx489',
+  links: {
+    '$DEBUG_PROGRAM': { fn: undefined, key: '$0' },
+    '$DEBUG_FUNCTION_RETURN': { fn: [Function: DEBUG_FUNCTION_RETURN], key: '$1' },
+    '$DEBUG_FUNCTION_CALL': { fn: [Function: DEBUG_FUNCTION_CALL], key: '$2' },
+    '$DEBUG_FUNCTION_CALL_END': { fn: undefined, key: '$3' },
+    '$DEBUG_FUNCTION_ENTER': { fn: [Function: DEBUG_FUNCTION_ENTER], key: '$4' },
+    '$DEBUG_FUNCTION_LEAVE': { fn: [Function: DEBUG_FUNCTION_LEAVE], key: '$5' },
+    '$DEBUG_LOOP_TEST': { fn: [Function: DEBUG_LOOP_TEST], key: '$6' },
+    '$DEBUG_LOOP_ENTER': { fn: [Function: DEBUG_LOOP_ENTER], key: '$7' },
+    '$DEBUG_LOOP_LEAVE': { fn: [Function: DEBUG_LOOP_LEAVE], key: '$8' },
+    '$DEBUG_BREAK': { fn: [Function: DEBUG_BREAK], key: '$9' },
+    '$DEBUG_CONTINUE': { fn: [Function: DEBUG_CONTINUE], key: '$10' },
+    '$DEBUG_SWITCH_TEST': { fn: [Function: DEBUG_SWITCH_TEST], key: '$11' },
+    '$DEBUG_SWITCH_ENTER': { fn: [Function: DEBUG_SWITCH_ENTER], key: '$12' },
+    '$DEBUG_SWITCH_LEAVE': { fn: [Function: DEBUG_SWITCH_LEAVE], key: '$13' },
+    '$DEBUG_CASE_TEST': { fn: [Function: DEBUG_CASE_TEST], key: '$14' },
+    '$DEBUG_CASE_ENTER': { fn: [Function: DEBUG_CASE_ENTER], key: '$15' },
+    '$DEBUG_CASE_LEAVE': { fn: [Function: DEBUG_CASE_LEAVE], key: '$16' },
+    '$DEBUG_IF_TEST': { fn: [Function: DEBUG_IF_TEST], key: '$17' },
+    '$DEBUG_IF_ENTER': { fn: [Function: DEBUG_IF_ENTER], key: '$18' },
+    '$DEBUG_IF_LEAVE': { fn: [Function: DEBUG_IF_LEAVE], key: '$19' },
+    '$DEBUG_ELSE_ENTER': { fn: [Function: DEBUG_ELSE_ENTER], key: '$20' },
+    '$DEBUG_ELSE_LEAVE': { fn: [Function: DEBUG_ELSE_LEAVE], key: '$21' },
+    '$DEBUG_VAR_INIT': { fn: [Function: DEBUG_VAR_INIT], key: '$22' },
+    '$DEBUG_VAR_DECLARE': { fn: [Function: DEBUG_VAR_DECLARE], key: '$23' },
+    '$DEBUG_OP_NEW': { fn: [Function: DEBUG_OP_NEW], key: '$24' },
+    '$DEBUG_OP_NEW_END': { fn: [Function: DEBUG_OP_NEW_END], key: '$25' },
+    '$DEBUG_UNARY': { fn: [Function: DEBUG_UNARY], key: '$26' },
+    '$DEBUG_UPDATE': { fn: [Function: DEBUG_UPDATE], key: '$27' },
+    '$DEBUG_SUPER': { fn: [Function: DEBUG_SUPER], key: '$28' },
+    '$DEBUG_THIS': { fn: [Function: DEBUG_THIS], key: '$29' },
+    '$DEBUG_LITERAL': { fn: [Function: DEBUG_LITERAL], key: '$30' },
+    '$DEBUG_IDENTIFIER': { fn: undefined, key: '$31' },
+    '$DEBUG_BINARY': { fn: [Function: DEBUG_BINARY], key: '$32' },
+    '$DEBUG_LOGICAL': { fn: [Function: DEBUG_LOGICAL], key: '$33' },
+    '$DEBUG_TERNARY': { fn: [Function: DEBUG_TERNARY], key: '$34' },
+    '$DEBUG_ASSIGN': { fn: [Function: DEBUG_ASSIGN], key: '$35' },
+    '$DEBUG_METHOD_ENTER': { fn: [Function: DEBUG_METHOD_ENTER], key: '$36' },
+    '$DEBUG_METHOD_LEAVE': { fn: [Function: DEBUG_METHOD_LEAVE], key: '$37' },
+    '$DEBUG_TRY_ENTER': { fn: [Function: DEBUG_TRY_ENTER], key: '$38' },
+    '$DEBUG_TRY_LEAVE': { fn: [Function: DEBUG_TRY_LEAVE], key: '$39' },
+    '$DEBUG_CATCH_ENTER': { fn: [Function: DEBUG_CATCH_ENTER], key: '$40' },
+    '$DEBUG_CATCH_LEAVE': { fn: [Function: DEBUG_CATCH_LEAVE], key: '$41' },
+    '$DEBUG_FINAL_ENTER': { fn: [Function: DEBUG_FINAL_ENTER], key: '$42' },
+    '$DEBUG_FINAL_LEAVE': { fn: [Function: DEBUG_FINAL_LEAVE], key: '$43' },
+    '$DEBUG_ALLOC': { fn: [Function: DEBUG_ALLOC], key: '$44' },
+    '$DEBUG_MEMBER_EXPR': { fn: [Function: DEBUG_MEMBER_EXPR], key: '$45' },
+    '$DEBUG_BLOCK_ENTER': { fn: [Function: DEBUG_BLOCK_ENTER], key: '$46' },
+    '$DEBUG_BLOCK_LEAVE': { fn: [Function: DEBUG_BLOCK_LEAVE], key: '$47' },
+    '$DEBUG_PROGRAM_FRAME_VALUE': { fn: [Function: DEBUG_PROGRAM_FRAME_VALUE], key: '$48' },
+    '$DEBUG_PROGRAM_ENTER': { fn: [Function: DEBUG_PROGRAM_ENTER], key: '$49' },
+    '$DEBUG_PROGRAM_LEAVE': { fn: [Function: DEBUG_PROGRAM_LEAVE], key: '$50' }
+  },
+  nodes: {
+    '1049': { hash: 1049, node: [Object] },
+    '1050': { hash: 1050, node: [Object] },
+    '1051': { hash: 1051, node: [Object] },
+    '1052': { hash: 1052, node: [Object] },
+    '1053': { hash: 1053, node: [Object] },
+    '1054': { hash: 1054, node: [Object] },
+    '1055': { hash: 1055, node: [Object] },
+    '1056': { hash: 1056, node: [Object] },
+    '1057': { hash: 1057, node: [Object] },
+    '1058': { hash: 1058, node: [Object] },
+    '1059': { hash: 1059, node: [Object] },
+    '1060': { hash: 1060, node: [Object] },
+    '1061': { hash: 1061, node: [Object] },
+    '1062': { hash: 1062, node: [Object] },
+    '1063': { hash: 1063, node: [Object] },
+    '1064': { hash: 1064, node: [Object] },
+    '1065': { hash: 1065, node: [Object] },
+    '1066': { hash: 1066, node: [Object] },
+    '1067': { hash: 1067, node: [Object] },
+    '1068': { hash: 1068, node: [Object] },
+    '1069': { hash: 1069, node: [Object] }
+  },
+  symbols: {},
+  options: {},
+  indent: 0,
+  frame: Frame {
+    uid: 491,
+    hash: 0,
+    type: 0,
+    isSloppy: false,
+    isBreakable: false,
+    isReturnable: false,
+    isCatchClause: false,
+    isFinalClause: false,
+    isTryStatement: false,
+    isSwitchDefault: false,
+    isInstantiation: false,
+    cleanType: 'PROGRAM',
+    parent: null,
+    values: [],
+    children: [],
+    isSwitchCase: false,
+    isContinuable: false
+  },
+  '$$frameHash': 0,
+  currentScope: null,
+  previousScope: null,
+  listeners: {
+    '0': [],
+    '1': [],
+    '2': [],
+    '3': [],
+    '4': [],
+    '5': [],
+    '6': [],
+    '7': [],
+    '8': [],
+    '9': [],
+    '10': [],
+    '11': [],
+    '12': [],
+    '13': [],
+    '14': [],
+    '15': [],
+    '16': [],
+    '17': [],
+    '18': [],
+    '19': [],
+    '20': [],
+    '21': [],
+    '22': [],
+    '23': [],
+    '24': [],
+    '25': [],
+    '26': [],
+    '27': [],
+    '28': []
+  },
+  '$0': undefined,
+  '$1': [Function: DEBUG_FUNCTION_RETURN],
+  '$2': [Function: DEBUG_FUNCTION_CALL],
+  '$3': undefined,
+  '$4': [Function: DEBUG_FUNCTION_ENTER],
+  '$5': [Function: DEBUG_FUNCTION_LEAVE],
+  '$6': [Function: DEBUG_LOOP_TEST],
+  '$7': [Function: DEBUG_LOOP_ENTER],
+  '$8': [Function: DEBUG_LOOP_LEAVE],
+  '$9': [Function: DEBUG_BREAK],
+  '$10': [Function: DEBUG_CONTINUE],
+  '$11': [Function: DEBUG_SWITCH_TEST],
+  '$12': [Function: DEBUG_SWITCH_ENTER],
+  '$13': [Function: DEBUG_SWITCH_LEAVE],
+  '$14': [Function: DEBUG_CASE_TEST],
+  '$15': [Function: DEBUG_CASE_ENTER],
+  '$16': [Function: DEBUG_CASE_LEAVE],
+  '$17': [Function: DEBUG_IF_TEST],
+  '$18': [Function: DEBUG_IF_ENTER],
+  '$19': [Function: DEBUG_IF_LEAVE],
+  '$20': [Function: DEBUG_ELSE_ENTER],
+  '$21': [Function: DEBUG_ELSE_LEAVE],
+  '$22': [Function: DEBUG_VAR_INIT],
+  '$23': [Function: DEBUG_VAR_DECLARE],
+  '$24': [Function: DEBUG_OP_NEW],
+  '$25': [Function: DEBUG_OP_NEW_END],
+  '$26': [Function: DEBUG_UNARY],
+  '$27': [Function: DEBUG_UPDATE],
+  '$28': [Function: DEBUG_SUPER],
+  '$29': [Function: DEBUG_THIS],
+  '$30': [Function: DEBUG_LITERAL],
+  '$31': undefined,
+  '$32': [Function: DEBUG_BINARY],
+  '$33': [Function: DEBUG_LOGICAL],
+  '$34': [Function: DEBUG_TERNARY],
+  '$35': [Function: DEBUG_ASSIGN],
+  '$36': [Function: DEBUG_METHOD_ENTER],
+  '$37': [Function: DEBUG_METHOD_LEAVE],
+  '$38': [Function: DEBUG_TRY_ENTER],
+  '$39': [Function: DEBUG_TRY_LEAVE],
+  '$40': [Function: DEBUG_CATCH_ENTER],
+  '$41': [Function: DEBUG_CATCH_LEAVE],
+  '$42': [Function: DEBUG_FINAL_ENTER],
+  '$43': [Function: DEBUG_FINAL_LEAVE],
+  '$44': [Function: DEBUG_ALLOC],
+  '$45': [Function: DEBUG_MEMBER_EXPR],
+  '$46': [Function: DEBUG_BLOCK_ENTER],
+  '$47': [Function: DEBUG_BLOCK_LEAVE],
+  '$48': [Function: DEBUG_PROGRAM_FRAME_VALUE],
+  '$49': [Function: DEBUG_PROGRAM_ENTER],
+  '$50': [Function: DEBUG_PROGRAM_LEAVE],
+  script: 'const $$STx489 = Iroh.stages["$$STx489"];\n' +
+    'var $$frameValue = void 0;\n' +
+    '$$STx489.$49(1069)\n' +
+    "$$STx489.$30(1049, 'use strict');\n" +
+    `const path = $$STx489.$22(1050, $$STx489.$23(1053, "path"), $$STx489.$2(1052, this, require, null, [$$STx489.$30(1051, 'path')]));\n` +
+    '$$STx489.$48($$frameValue = $$STx489.$35(1054, 0, module, "exports", $$STx489.$44(1055, {\n' +
+    "  mode: $$STx489.$30(1056, 'production'),\n" +
+    '  entry: $$STx489.$44(1057, {\n' +
+    "    installer: $$STx489.$30(1058, './public/src/installer/install.js')\n" +
+    '  }),\n' +
+    '  output: $$STx489.$44(1059, {\n' +
+    "    filename: $$STx489.$30(1060, '[name].min.js'),\n" +
+    `    path: $$STx489.$2(1063, this, $$STx489.$45(1061, path, "resolve"), "resolve", [__dirname, $$STx489.$30(1062, 'build/public')]),\n` +
+    '    publicPath: `/assets/`\n' +
+    '  }),\n' +
+    '  resolve: $$STx489.$44(1064, {\n' +
+    '    symlinks: $$STx489.$30(1065, false),\n' +
+    "    modules: $$STx489.$44(1066, [$$STx489.$30(1067, 'public/src'), $$STx489.$30(1068, 'node_modules')])\n" +
+    '  })\n' +
+    '})));\n' +
+    '$$STx489.$50(1069, $$frameValue)\n'
+}
+Stage {
+  input: "'use strict';\n" +
+    '\n' +
+    "const { merge } = require('webpack-merge');\n" +
+    "const TerserPlugin = require('terser-webpack-plugin');\n" +
+    "const ProgressPlugin = require('progress-webpack-plugin');\n" +
+    '\n' +
+    "const common = require('./webpack.common');\n" +
+    '\n' +
+    'module.exports = merge(common, {\n' +
+    "    mode: 'production',\n" +
+    '    plugins: [\n' +
+    '        new ProgressPlugin(true),\n' +
+    '    ],\n' +
+    '    optimization: {\n' +
+    '        minimize: true,\n' +
+    '        minimizer: [\n' +
+    '            new TerserPlugin({\n' +
+    '                minify: TerserPlugin.esbuildMinify,\n' +
+    '                terserOptions: {},\n' +
+    '            }),\n' +
+    '        ],\n' +
+    '    },\n' +
+    '});\n',
+  key: '$$STx504',
+  links: {
+    '$DEBUG_PROGRAM': { fn: undefined, key: '$0' },
+    '$DEBUG_FUNCTION_RETURN': { fn: [Function: DEBUG_FUNCTION_RETURN], key: '$1' },
+    '$DEBUG_FUNCTION_CALL': { fn: [Function: DEBUG_FUNCTION_CALL], key: '$2' },
+    '$DEBUG_FUNCTION_CALL_END': { fn: undefined, key: '$3' },
+    '$DEBUG_FUNCTION_ENTER': { fn: [Function: DEBUG_FUNCTION_ENTER], key: '$4' },
+    '$DEBUG_FUNCTION_LEAVE': { fn: [Function: DEBUG_FUNCTION_LEAVE], key: '$5' },
+    '$DEBUG_LOOP_TEST': { fn: [Function: DEBUG_LOOP_TEST], key: '$6' },
+    '$DEBUG_LOOP_ENTER': { fn: [Function: DEBUG_LOOP_ENTER], key: '$7' },
+    '$DEBUG_LOOP_LEAVE': { fn: [Function: DEBUG_LOOP_LEAVE], key: '$8' },
+    '$DEBUG_BREAK': { fn: [Function: DEBUG_BREAK], key: '$9' },
+    '$DEBUG_CONTINUE': { fn: [Function: DEBUG_CONTINUE], key: '$10' },
+    '$DEBUG_SWITCH_TEST': { fn: [Function: DEBUG_SWITCH_TEST], key: '$11' },
+    '$DEBUG_SWITCH_ENTER': { fn: [Function: DEBUG_SWITCH_ENTER], key: '$12' },
+    '$DEBUG_SWITCH_LEAVE': { fn: [Function: DEBUG_SWITCH_LEAVE], key: '$13' },
+    '$DEBUG_CASE_TEST': { fn: [Function: DEBUG_CASE_TEST], key: '$14' },
+    '$DEBUG_CASE_ENTER': { fn: [Function: DEBUG_CASE_ENTER], key: '$15' },
+    '$DEBUG_CASE_LEAVE': { fn: [Function: DEBUG_CASE_LEAVE], key: '$16' },
+    '$DEBUG_IF_TEST': { fn: [Function: DEBUG_IF_TEST], key: '$17' },
+    '$DEBUG_IF_ENTER': { fn: [Function: DEBUG_IF_ENTER], key: '$18' },
+    '$DEBUG_IF_LEAVE': { fn: [Function: DEBUG_IF_LEAVE], key: '$19' },
+    '$DEBUG_ELSE_ENTER': { fn: [Function: DEBUG_ELSE_ENTER], key: '$20' },
+    '$DEBUG_ELSE_LEAVE': { fn: [Function: DEBUG_ELSE_LEAVE], key: '$21' },
+    '$DEBUG_VAR_INIT': { fn: [Function: DEBUG_VAR_INIT], key: '$22' },
+    '$DEBUG_VAR_DECLARE': { fn: [Function: DEBUG_VAR_DECLARE], key: '$23' },
+    '$DEBUG_OP_NEW': { fn: [Function: DEBUG_OP_NEW], key: '$24' },
+    '$DEBUG_OP_NEW_END': { fn: [Function: DEBUG_OP_NEW_END], key: '$25' },
+    '$DEBUG_UNARY': { fn: [Function: DEBUG_UNARY], key: '$26' },
+    '$DEBUG_UPDATE': { fn: [Function: DEBUG_UPDATE], key: '$27' },
+    '$DEBUG_SUPER': { fn: [Function: DEBUG_SUPER], key: '$28' },
+    '$DEBUG_THIS': { fn: [Function: DEBUG_THIS], key: '$29' },
+    '$DEBUG_LITERAL': { fn: [Function: DEBUG_LITERAL], key: '$30' },
+    '$DEBUG_IDENTIFIER': { fn: undefined, key: '$31' },
+    '$DEBUG_BINARY': { fn: [Function: DEBUG_BINARY], key: '$32' },
+    '$DEBUG_LOGICAL': { fn: [Function: DEBUG_LOGICAL], key: '$33' },
+    '$DEBUG_TERNARY': { fn: [Function: DEBUG_TERNARY], key: '$34' },
+    '$DEBUG_ASSIGN': { fn: [Function: DEBUG_ASSIGN], key: '$35' },
+    '$DEBUG_METHOD_ENTER': { fn: [Function: DEBUG_METHOD_ENTER], key: '$36' },
+    '$DEBUG_METHOD_LEAVE': { fn: [Function: DEBUG_METHOD_LEAVE], key: '$37' },
+    '$DEBUG_TRY_ENTER': { fn: [Function: DEBUG_TRY_ENTER], key: '$38' },
+    '$DEBUG_TRY_LEAVE': { fn: [Function: DEBUG_TRY_LEAVE], key: '$39' },
+    '$DEBUG_CATCH_ENTER': { fn: [Function: DEBUG_CATCH_ENTER], key: '$40' },
+    '$DEBUG_CATCH_LEAVE': { fn: [Function: DEBUG_CATCH_LEAVE], key: '$41' },
+    '$DEBUG_FINAL_ENTER': { fn: [Function: DEBUG_FINAL_ENTER], key: '$42' },
+    '$DEBUG_FINAL_LEAVE': { fn: [Function: DEBUG_FINAL_LEAVE], key: '$43' },
+    '$DEBUG_ALLOC': { fn: [Function: DEBUG_ALLOC], key: '$44' },
+    '$DEBUG_MEMBER_EXPR': { fn: [Function: DEBUG_MEMBER_EXPR], key: '$45' },
+    '$DEBUG_BLOCK_ENTER': { fn: [Function: DEBUG_BLOCK_ENTER], key: '$46' },
+    '$DEBUG_BLOCK_LEAVE': { fn: [Function: DEBUG_BLOCK_LEAVE], key: '$47' },
+    '$DEBUG_PROGRAM_FRAME_VALUE': { fn: [Function: DEBUG_PROGRAM_FRAME_VALUE], key: '$48' },
+    '$DEBUG_PROGRAM_ENTER': { fn: [Function: DEBUG_PROGRAM_ENTER], key: '$49' },
+    '$DEBUG_PROGRAM_LEAVE': { fn: [Function: DEBUG_PROGRAM_LEAVE], key: '$50' }
+  },
+  nodes: {
+    '1070': { hash: 1070, node: [Object] },
+    '1071': { hash: 1071, node: [Object] },
+    '1072': { hash: 1072, node: [Object] },
+    '1073': { hash: 1073, node: [Object] },
+    '1074': { hash: 1074, node: [Object] },
+    '1075': { hash: 1075, node: [Object] },
+    '1076': { hash: 1076, node: [Object] },
+    '1077': { hash: 1077, node: [Object] },
+    '1078': { hash: 1078, node: [Object] },
+    '1079': { hash: 1079, node: [Object] },
+    '1080': { hash: 1080, node: [Object] },
+    '1081': { hash: 1081, node: [Object] },
+    '1082': { hash: 1082, node: [Object] },
+    '1083': { hash: 1083, node: [Object] },
+    '1084': { hash: 1084, node: [Object] },
+    '1085': { hash: 1085, node: [Object] },
+    '1086': { hash: 1086, node: [Object] },
+    '1087': { hash: 1087, node: [Object] },
+    '1088': { hash: 1088, node: [Object] },
+    '1089': { hash: 1089, node: [Object] },
+    '1090': { hash: 1090, node: [Object] },
+    '1091': { hash: 1091, node: [Object] },
+    '1092': { hash: 1092, node: [Object] },
+    '1093': { hash: 1093, node: [Object] },
+    '1094': { hash: 1094, node: [Object] },
+    '1095': { hash: 1095, node: [Object] },
+    '1096': { hash: 1096, node: [Object] },
+    '1097': { hash: 1097, node: [Object] },
+    '1098': { hash: 1098, node: [Object] },
+    '1099': { hash: 1099, node: [Object] },
+    '1100': { hash: 1100, node: [Object] },
+    '1101': { hash: 1101, node: [Object] }
+  },
+  symbols: {},
+  options: {},
+  indent: 0,
+  frame: Frame {
+    uid: 506,
+    hash: 0,
+    type: 0,
+    isSloppy: false,
+    isBreakable: false,
+    isReturnable: false,
+    isCatchClause: false,
+    isFinalClause: false,
+    isTryStatement: false,
+    isSwitchDefault: false,
+    isInstantiation: false,
+    cleanType: 'PROGRAM',
+    parent: null,
+    values: [],
+    children: [],
+    isSwitchCase: false,
+    isContinuable: false
+  },
+  '$$frameHash': 0,
+  currentScope: null,
+  previousScope: null,
+  listeners: {
+    '0': [],
+    '1': [],
+    '2': [],
+    '3': [],
+    '4': [],
+    '5': [],
+    '6': [],
+    '7': [],
+    '8': [],
+    '9': [],
+    '10': [],
+    '11': [],
+    '12': [],
+    '13': [],
+    '14': [],
+    '15': [],
+    '16': [],
+    '17': [],
+    '18': [],
+    '19': [],
+    '20': [],
+    '21': [],
+    '22': [],
+    '23': [],
+    '24': [],
+    '25': [],
+    '26': [],
+    '27': [],
+    '28': []
+  },
+  '$0': undefined,
+  '$1': [Function: DEBUG_FUNCTION_RETURN],
+  '$2': [Function: DEBUG_FUNCTION_CALL],
+  '$3': undefined,
+  '$4': [Function: DEBUG_FUNCTION_ENTER],
+  '$5': [Function: DEBUG_FUNCTION_LEAVE],
+  '$6': [Function: DEBUG_LOOP_TEST],
+  '$7': [Function: DEBUG_LOOP_ENTER],
+  '$8': [Function: DEBUG_LOOP_LEAVE],
+  '$9': [Function: DEBUG_BREAK],
+  '$10': [Function: DEBUG_CONTINUE],
+  '$11': [Function: DEBUG_SWITCH_TEST],
+  '$12': [Function: DEBUG_SWITCH_ENTER],
+  '$13': [Function: DEBUG_SWITCH_LEAVE],
+  '$14': [Function: DEBUG_CASE_TEST],
+  '$15': [Function: DEBUG_CASE_ENTER],
+  '$16': [Function: DEBUG_CASE_LEAVE],
+  '$17': [Function: DEBUG_IF_TEST],
+  '$18': [Function: DEBUG_IF_ENTER],
+  '$19': [Function: DEBUG_IF_LEAVE],
+  '$20': [Function: DEBUG_ELSE_ENTER],
+  '$21': [Function: DEBUG_ELSE_LEAVE],
+  '$22': [Function: DEBUG_VAR_INIT],
+  '$23': [Function: DEBUG_VAR_DECLARE],
+  '$24': [Function: DEBUG_OP_NEW],
+  '$25': [Function: DEBUG_OP_NEW_END],
+  '$26': [Function: DEBUG_UNARY],
+  '$27': [Function: DEBUG_UPDATE],
+  '$28': [Function: DEBUG_SUPER],
+  '$29': [Function: DEBUG_THIS],
+  '$30': [Function: DEBUG_LITERAL],
+  '$31': undefined,
+  '$32': [Function: DEBUG_BINARY],
+  '$33': [Function: DEBUG_LOGICAL],
+  '$34': [Function: DEBUG_TERNARY],
+  '$35': [Function: DEBUG_ASSIGN],
+  '$36': [Function: DEBUG_METHOD_ENTER],
+  '$37': [Function: DEBUG_METHOD_LEAVE],
+  '$38': [Function: DEBUG_TRY_ENTER],
+  '$39': [Function: DEBUG_TRY_LEAVE],
+  '$40': [Function: DEBUG_CATCH_ENTER],
+  '$41': [Function: DEBUG_CATCH_LEAVE],
+  '$42': [Function: DEBUG_FINAL_ENTER],
+  '$43': [Function: DEBUG_FINAL_LEAVE],
+  '$44': [Function: DEBUG_ALLOC],
+  '$45': [Function: DEBUG_MEMBER_EXPR],
+  '$46': [Function: DEBUG_BLOCK_ENTER],
+  '$47': [Function: DEBUG_BLOCK_LEAVE],
+  '$48': [Function: DEBUG_PROGRAM_FRAME_VALUE],
+  '$49': [Function: DEBUG_PROGRAM_ENTER],
+  '$50': [Function: DEBUG_PROGRAM_LEAVE],
+  script: 'const $$STx504 = Iroh.stages["$$STx504"];\n' +
+    'var $$frameValue = void 0;\n' +
+    '$$STx504.$49(1101)\n' +
+    "$$STx504.$30(1070, 'use strict');\n" +
+    `const {merge} = $$STx504.$22(1071, $$STx504.$23(1074, "undefined"), $$STx504.$2(1073, this, require, null, [$$STx504.$30(1072, 'webpack-merge')]));\n` +
+    `const TerserPlugin = $$STx504.$22(1075, $$STx504.$23(1078, "TerserPlugin"), $$STx504.$2(1077, this, require, null, [$$STx504.$30(1076, 'terser-webpack-plugin')]));\n` +
+    `const ProgressPlugin = $$STx504.$22(1079, $$STx504.$23(1082, "ProgressPlugin"), $$STx504.$2(1081, this, require, null, [$$STx504.$30(1080, 'progress-webpack-plugin')]));\n` +
+    `const common = $$STx504.$22(1083, $$STx504.$23(1086, "common"), $$STx504.$2(1085, this, require, null, [$$STx504.$30(1084, './webpack.common')]));\n` +
+    '$$STx504.$48($$frameValue = $$STx504.$35(1087, 0, module, "exports", $$STx504.$2(1100, this, merge, null, [common, $$STx504.$44(1088, {\n' +
+    "  mode: $$STx504.$30(1089, 'production'),\n" +
+    '  plugins: $$STx504.$44(1090, [new $$STx504.$25(1092, $$STx504, $$STx504.$24(1092, ProgressPlugin, [$$STx504.$30(1091, true)]))]),\n' +
+    '  optimization: $$STx504.$44(1093, {\n' +
+    '    minimize: $$STx504.$30(1094, true),\n' +
+    '    minimizer: $$STx504.$44(1095, [new $$STx504.$25(1099, $$STx504, $$STx504.$24(1099, TerserPlugin, [$$STx504.$44(1096, {\n' +
+    '      minify: $$STx504.$45(1097, TerserPlugin, "esbuildMinify").esbuildMinify,\n' +
+    '      terserOptions: $$STx504.$44(1098, {})\n' +
+    '    })]))])\n' +
+    '  })\n' +
+    '})])));\n' +
+    '$$STx504.$50(1101, $$frameValue)\n'
+}
