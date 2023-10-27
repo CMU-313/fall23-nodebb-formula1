@@ -21,6 +21,8 @@ feeds/recent.rss
 .eslintcache
 .svn
 dump.rdb
+lib/
+.flowconfig
 
 logs/
 
