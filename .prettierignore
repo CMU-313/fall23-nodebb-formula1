@@ -1,0 +1,61 @@
+dist/
+yarn.lock
+npm-debug.log
+node_modules/
+sftp-config.json
+config.json
+jsconfig.json
+public/src/nodebb.min.js
+!src/views/config.json
+public/css/*.css
+*.sublime-project
+*.sublime-workspace
+.project
+*.swp
+Vagrantfile
+.vagrant
+provision.sh
+*.komodoproject
+.DS_Store
+feeds/recent.rss
+.eslintcache
+.svn
+dump.rdb
+
+logs/
+
+pidfile
+src
+
+public
+
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
+*.iml
+
+## Directory-based project format:
+.idea/
+.vscode/
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Transifex
+tx.exe
+.transifexrc
+
+##Coverage output
+coverage
+.nyc_output
+
+*.log
+test/files/normalise.jpg.png
+test/files/normalise-resized.jpg
+package-lock.json
+/package.json
+*.mongodb
+link-plugins.sh
+test.sh
+
+# Theme ignore
+theme
