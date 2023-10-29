@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -12,11 +11,8 @@ module.exports = function (Topics) {
     Topics.getSuggestedTopics = async function (tid, uid, start, stop, cutoff = 0) {
         let tids;
         tid = parseInt(tid, 10);
-        cutoff = cutoff === 0 ? cutoff : (cutoff * 2592000000);
-        const [tagTids, searchTids] = await Promise.all([
-            getTidsWithSameTags(tid, cutoff),
-            getSearchTids(tid, uid, cutoff),
-        ]);
+        cutoff = cutoff === 0 ? cutoff : cutoff * 2592000000;
+        const [tagTids, searchTids] = await Promise.all([getTidsWithSameTags(tid, cutoff), getSearchTids(tid, uid, cutoff)]);
 
         tids = _.uniq(tagTids.concat(searchTids));
 
@@ -30,16 +26,26 @@ module.exports = function (Topics) {
         let topicData = await Topics.getTopicsByTids(tids, uid);
         topicData = topicData.filter(topic => topic && topic.tid !== tid);
         topicData = await user.blocks.filter(uid, topicData);
-        topicData = topicData.slice(start, stop !== -1 ? stop + 1 : undefined)
-            .sort((t1, t2) => t2.timestamp - t1.timestamp);
+        topicData = topicData.slice(start, stop !== -1 ? stop + 1 : undefined).sort((t1, t2) => t2.timestamp - t1.timestamp);
         return topicData;
     };
 
     async function getTidsWithSameTags(tid, cutoff) {
         const tags = await Topics.getTopicTags(tid);
-        let tids = cutoff === 0 ?
-            await db.getSortedSetRevRange(tags.map(tag => `tag:${tag}:topics`), 0, -1) :
-            await db.getSortedSetRevRangeByScore(tags.map(tag => `tag:${tag}:topics`), 0, -1, '+inf', Date.now() - cutoff);
+        let tids =
+            cutoff === 0
+                ? await db.getSortedSetRevRange(
+                      tags.map(tag => `tag:${tag}:topics`),
+                      0,
+                      -1
+                  )
+                : await db.getSortedSetRevRangeByScore(
+                      tags.map(tag => `tag:${tag}:topics`),
+                      0,
+                      -1,
+                      '+inf',
+                      Date.now() - cutoff
+                  );
         tids = tids.filter(_tid => _tid !== tid); // remove self
         return _.shuffle(_.uniq(tids)).slice(0, 10).map(Number);
     }
@@ -62,9 +68,7 @@ module.exports = function (Topics) {
 
     async function getCategoryTids(tid, cutoff) {
         const cid = await Topics.getTopicField(tid, 'cid');
-        const tids = cutoff === 0 ?
-            await db.getSortedSetRevRange(`cid:${cid}:tids:lastposttime`, 0, 9) :
-            await db.getSortedSetRevRangeByScore(`cid:${cid}:tids:lastposttime`, 0, 9, '+inf', Date.now() - cutoff);
+        const tids = cutoff === 0 ? await db.getSortedSetRevRange(`cid:${cid}:tids:lastposttime`, 0, 9) : await db.getSortedSetRevRangeByScore(`cid:${cid}:tids:lastposttime`, 0, 9, '+inf', Date.now() - cutoff);
         return _.shuffle(tids.map(Number).filter(_tid => _tid !== tid));
     }
 };

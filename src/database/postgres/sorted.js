@@ -345,7 +345,7 @@ SELECT o."_key" k,
             values: [keys, value],
         });
 
-        return keys.map((k) => {
+        return keys.map(k => {
             const s = res.rows.find(r => r.k === k);
             return s ? parseFloat(s.s) : null;
         });
@@ -374,7 +374,7 @@ SELECT z."value" v,
             values: [key, values],
         });
 
-        return values.map((v) => {
+        return values.map(v => {
             const s = res.rows.find(r => r.v === v);
             return s ? parseFloat(s.s) : null;
         });
@@ -482,7 +482,7 @@ SELECT "_key" k,
         value = helpers.valueToString(value);
         increment = parseFloat(increment);
 
-        return await module.transaction(async (client) => {
+        return await module.transaction(async client => {
             await helpers.ensureLegacyObjectType(client, key, 'zset');
             const res = await client.query({
                 name: 'sortedSetIncrBy',
@@ -642,14 +642,19 @@ SELECT z."value",
     module.processSortedSet = async function (setKey, process, options) {
         const client = await module.pool.connect();
         const batchSize = (options || {}).batch || 100;
-        const cursor = client.query(new Cursor(`
+        const cursor = client.query(
+            new Cursor(
+                `
 SELECT z."value", z."score"
   FROM "legacy_object_live" o
  INNER JOIN "legacy_zset" z
          ON o."_key" = z."_key"
         AND o."type" = z."type"
  WHERE o."_key" = $1::TEXT
- ORDER BY z."score" ASC, z."value" ASC`, [setKey]));
+ ORDER BY z."score" ASC, z."value" ASC`,
+                [setKey]
+            )
+        );
 
         if (process && process.constructor && process.constructor.name !== 'AsyncFunction') {
             process = util.promisify(process);

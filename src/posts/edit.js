@@ -15,7 +15,7 @@ const slugify = require('../slugify');
 const translator = require('../translator');
 
 module.exports = function (Posts) {
-    pubsub.on('post:edit', (pid) => {
+    pubsub.on('post:edit', pid => {
         require('./cache').del(pid);
     });
 
@@ -29,9 +29,7 @@ module.exports = function (Posts) {
             throw new Error('[[error:no-post]]');
         }
 
-        const topicData = await topics.getTopicFields(postData.tid, [
-            'cid', 'mainPid', 'title', 'timestamp', 'scheduled', 'slug', 'tags',
-        ]);
+        const topicData = await topics.getTopicFields(postData.tid, ['cid', 'mainPid', 'title', 'timestamp', 'scheduled', 'slug', 'tags']);
 
         await scheduledTopicCheck(data, topicData);
 
@@ -49,15 +47,10 @@ module.exports = function (Posts) {
             uid: data.uid,
         });
 
-        const [editor, topic] = await Promise.all([
-            user.getUserFields(data.uid, ['username', 'userslug']),
-            editMainPost(data, postData, topicData),
-        ]);
+        const [editor, topic] = await Promise.all([user.getUserFields(data.uid, ['username', 'userslug']), editMainPost(data, postData, topicData)]);
 
         await Posts.setPostFields(data.pid, result.post);
-        const contentChanged = data.content !== oldContent ||
-            topic.renamed ||
-            topic.tagsupdated;
+        const contentChanged = data.content !== oldContent || topic.renamed || topic.tagsupdated;
 
         if (meta.config.enablePostHistory === 1 && contentChanged) {
             await Posts.diffs.save({
@@ -131,8 +124,12 @@ module.exports = function (Posts) {
             newTopicData.slug = `${tid}/${slugify(title) || 'topic'}`;
         }
 
-        const tagsupdated = Array.isArray(data.tags) &&
-            !_.isEqual(data.tags, topicData.tags.map(tag => tag.value));
+        const tagsupdated =
+            Array.isArray(data.tags) &&
+            !_.isEqual(
+                data.tags,
+                topicData.tags.map(tag => tag.value)
+            );
 
         if (tagsupdated) {
             const canTag = await privileges.categories.can('topics:tag', topicData.cid, data.uid);

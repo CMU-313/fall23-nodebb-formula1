@@ -13,10 +13,7 @@ const utils = require('../../utils');
 
 const usersController = module.exports;
 
-const userFields = [
-    'uid', 'username', 'userslug', 'email', 'postcount', 'joindate', 'banned',
-    'reputation', 'picture', 'flags', 'lastonline', 'email:confirmed',
-];
+const userFields = ['uid', 'username', 'userslug', 'email', 'postcount', 'joindate', 'banned', 'reputation', 'picture', 'flags', 'lastonline', 'email:confirmed'];
 
 usersController.index = async function (req, res) {
     if (req.query.query) {
@@ -36,7 +33,7 @@ async function getUsers(req, res) {
         resultsPerPage = 50;
     }
     let sortBy = validator.escape(req.query.sortBy || '');
-    const filterBy = Array.isArray(req.query.filters || []) ? (req.query.filters || []) : [req.query.filters];
+    const filterBy = Array.isArray(req.query.filters || []) ? req.query.filters || [] : [req.query.filters];
     const start = Math.max(0, page - 1) * resultsPerPage;
     const stop = start + resultsPerPage - 1;
 
@@ -94,10 +91,7 @@ async function getUsers(req, res) {
 
     const set = buildSet();
     const uids = await getUids(set);
-    const [count, users] = await Promise.all([
-        getCount(set),
-        loadUserInfo(req.uid, uids),
-    ]);
+    const [count, users] = await Promise.all([getCount(set), loadUserInfo(req.uid, uids)]);
 
     await render(req, res, {
         users: users.filter(user => user && parseInt(user.uid, 10)),
@@ -139,7 +133,7 @@ usersController.search = async function (req, res) {
             const data = await db.getSortedSetScan({
                 key: `${searchBy}:sorted`,
                 match: query,
-                limit: hardCap || (resultsPerPage * 10),
+                limit: hardCap || resultsPerPage * 10,
             });
             return data.map(data => data.split(':').pop());
         },
@@ -148,7 +142,7 @@ usersController.search = async function (req, res) {
     const uids = searchData.users.map(user => user && user.uid);
     searchData.users = await loadUserInfo(req.uid, uids);
     if (req.query.searchBy === 'ip') {
-        searchData.users.forEach((user) => {
+        searchData.users.forEach(user => {
             user.ip = user.ips.find(ip => ip.includes(String(req.query.query)));
         });
     }
@@ -164,12 +158,7 @@ async function loadUserInfo(callerUid, uids) {
     async function getIPs() {
         return await Promise.all(uids.map(uid => db.getSortedSetRevRange(`uid:${uid}:ip`, 0, -1)));
     }
-    const [isAdmin, userData, lastonline, ips] = await Promise.all([
-        user.isAdministrator(uids),
-        user.getUsersWithFields(uids, userFields, callerUid),
-        db.sortedSetScores('users:online', uids),
-        getIPs(),
-    ]);
+    const [isAdmin, userData, lastonline, ips] = await Promise.all([user.isAdministrator(uids), user.getUsersWithFields(uids, userFields, callerUid), db.sortedSetScores('users:online', uids), getIPs()]);
     userData.forEach((user, index) => {
         if (user) {
             user.administrator = isAdmin[index];
@@ -213,7 +202,10 @@ async function getInvites() {
     });
 
     async function getUsernamesByEmails(emails) {
-        const uids = await db.sortedSetScores('email:uid', emails.map(email => String(email).toLowerCase()));
+        const uids = await db.sortedSetScores(
+            'email:uid',
+            emails.map(email => String(email).toLowerCase())
+        );
         const usernames = await user.getUsersFields(uids, ['username']);
         return usernames.map(user => user.username);
     }
@@ -240,8 +232,8 @@ async function render(req, res, data) {
     if (req.query.searchBy) {
         data[`searchBy_${validator.escape(String(req.query.searchBy))}`] = true;
     }
-    const filterBy = Array.isArray(req.query.filters || []) ? (req.query.filters || []) : [req.query.filters];
-    filterBy.forEach((filter) => {
+    const filterBy = Array.isArray(req.query.filters || []) ? req.query.filters || [] : [req.query.filters];
+    filterBy.forEach(filter => {
         data[`filterBy_${validator.escape(String(filter))}`] = true;
     });
     data.userCount = parseInt(await db.getObjectField('global', 'userCount'), 10);
@@ -262,19 +254,23 @@ usersController.getCSV = async function (req, res, next) {
     });
     const path = require('path');
     const { baseDir } = require('../../constants').paths;
-    res.sendFile('users.csv', {
-        root: path.join(baseDir, 'build/export'),
-        headers: {
-            'Content-Type': 'text/csv',
-            'Content-Disposition': 'attachment; filename=users.csv',
+    res.sendFile(
+        'users.csv',
+        {
+            root: path.join(baseDir, 'build/export'),
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': 'attachment; filename=users.csv',
+            },
         },
-    }, (err) => {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                res.locals.isAPI = false;
-                return next();
+        err => {
+            if (err) {
+                if (err.code === 'ENOENT') {
+                    res.locals.isAPI = false;
+                    return next();
+                }
+                return next(err);
             }
-            return next(err);
         }
-    });
+    );
 };

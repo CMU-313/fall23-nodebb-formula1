@@ -19,31 +19,35 @@ function getLatestVersion(callback) {
         headers['If-Modified-Since'] = versionCacheLastModified;
     }
 
-    request('https://api.github.com/repos/NodeBB/NodeBB/releases/latest', {
-        json: true,
-        headers: headers,
-        timeout: 2000,
-    }, (err, res, latestRelease) => {
-        if (err) {
-            return callback(err);
-        }
+    request(
+        'https://api.github.com/repos/NodeBB/NodeBB/releases/latest',
+        {
+            json: true,
+            headers: headers,
+            timeout: 2000,
+        },
+        (err, res, latestRelease) => {
+            if (err) {
+                return callback(err);
+            }
 
-        if (res.statusCode === 304) {
-            return callback(null, versionCache);
-        }
+            if (res.statusCode === 304) {
+                return callback(null, versionCache);
+            }
 
-        if (res.statusCode !== 200) {
-            return callback(new Error(res.statusMessage));
-        }
+            if (res.statusCode !== 200) {
+                return callback(new Error(res.statusMessage));
+            }
 
-        if (!latestRelease || !latestRelease.tag_name) {
-            return callback(new Error('[[error:cant-get-latest-release]]'));
+            if (!latestRelease || !latestRelease.tag_name) {
+                return callback(new Error('[[error:cant-get-latest-release]]'));
+            }
+            const tagName = latestRelease.tag_name.replace(/^v/, '');
+            versionCache = tagName;
+            versionCacheLastModified = res.headers['last-modified'];
+            callback(null, versionCache);
         }
-        const tagName = latestRelease.tag_name.replace(/^v/, '');
-        versionCache = tagName;
-        versionCacheLastModified = res.headers['last-modified'];
-        callback(null, versionCache);
-    });
+    );
 }
 
 exports.getLatestVersion = getLatestVersion;

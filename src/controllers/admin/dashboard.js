@@ -19,14 +19,7 @@ const emailer = require('../../emailer');
 const dashboardController = module.exports;
 
 dashboardController.get = async function (req, res) {
-    const [stats, notices, latestVersion, lastrestart, isAdmin, popularSearches] = await Promise.all([
-        getStats(),
-        getNotices(),
-        getLatestVersion(),
-        getLastRestart(),
-        user.isAdministrator(req.uid),
-        getPopularSearches(),
-    ]);
+    const [stats, notices, latestVersion, lastrestart, isAdmin, popularSearches] = await Promise.all([getStats(), getNotices(), getLatestVersion(), getLastRestart(), user.isAdministrator(req.uid), getPopularSearches()]);
     const version = nconf.get('version');
 
     res.render('admin/dashboard', {
@@ -127,13 +120,7 @@ async function getStats() {
         return cachedStats;
     }
 
-    let results = await Promise.all([
-        getStatsForSet('ip:recent', 'uniqueIPCount'),
-        getStatsFromAnalytics('logins', 'loginCount'),
-        getStatsForSet('users:joindate', 'userCount'),
-        getStatsForSet('posts:pid', 'postCount'),
-        getStatsForSet('topics:tid', 'topicCount'),
-    ]);
+    let results = await Promise.all([getStatsForSet('ip:recent', 'uniqueIPCount'), getStatsFromAnalytics('logins', 'loginCount'), getStatsForSet('users:joindate', 'userCount'), getStatsForSet('posts:pid', 'postCount'), getStatsForSet('topics:tid', 'topicCount')]);
     results[0].name = '[[admin/dashboard:unique-visitors]]';
 
     results[1].name = '[[admin/dashboard:logins]]';
@@ -165,11 +152,11 @@ async function getStatsForSet(set, field) {
 
     const now = Date.now();
     const results = await utils.promiseParallel({
-        yesterday: db.sortedSetCount(set, now - (terms.day * 2), '+inf'),
+        yesterday: db.sortedSetCount(set, now - terms.day * 2, '+inf'),
         today: db.sortedSetCount(set, now - terms.day, '+inf'),
-        lastweek: db.sortedSetCount(set, now - (terms.week * 2), '+inf'),
+        lastweek: db.sortedSetCount(set, now - terms.week * 2, '+inf'),
         thisweek: db.sortedSetCount(set, now - terms.week, '+inf'),
-        lastmonth: db.sortedSetCount(set, now - (terms.month * 2), '+inf'),
+        lastmonth: db.sortedSetCount(set, now - terms.month * 2, '+inf'),
         thismonth: db.sortedSetCount(set, now - terms.month, '+inf'),
         alltime: getGlobalField(field),
     });
@@ -207,7 +194,7 @@ function calculateDeltas(results) {
     }
 
     function increasePercent(last, now) {
-        const percent = last ? (now - last) / last * 100 : 0;
+        const percent = last ? ((now - last) / last) * 100 : 0;
         return percent.toFixed(1);
     }
     results.yesterday -= results.today;
@@ -248,10 +235,12 @@ async function getPopularSearches() {
 
 dashboardController.getLogins = async (req, res) => {
     let stats = await getStats();
-    stats = stats.filter(stat => stat.name === '[[admin/dashboard:logins]]').map(({ ...stat }) => {
-        delete stat.href;
-        return stat;
-    });
+    stats = stats
+        .filter(stat => stat.name === '[[admin/dashboard:logins]]')
+        .map(({ ...stat }) => {
+            delete stat.href;
+            return stat;
+        });
     const summary = {
         day: stats[0].today,
         week: stats[0].thisweek,
@@ -259,17 +248,19 @@ dashboardController.getLogins = async (req, res) => {
     };
 
     // List recent sessions
-    const start = Date.now() - (1000 * 60 * 60 * 24 * meta.config.loginDays);
+    const start = Date.now() - 1000 * 60 * 60 * 24 * meta.config.loginDays;
     const uids = await db.getSortedSetRangeByScore('users:online', 0, 500, start, Date.now());
     const usersData = await user.getUsersData(uids);
-    let sessions = await Promise.all(uids.map(async (uid) => {
-        const sessions = await user.auth.getSessions(uid);
-        sessions.forEach((session) => {
-            session.user = usersData[uids.indexOf(uid)];
-        });
+    let sessions = await Promise.all(
+        uids.map(async uid => {
+            const sessions = await user.auth.getSessions(uid);
+            sessions.forEach(session => {
+                session.user = usersData[uids.indexOf(uid)];
+            });
 
-        return sessions;
-    }));
+            return sessions;
+        })
+    );
     sessions = _.flatten(sessions).sort((a, b) => b.datetime - a.datetime);
 
     res.render('admin/dashboard/logins', {
@@ -284,10 +275,12 @@ dashboardController.getLogins = async (req, res) => {
 
 dashboardController.getUsers = async (req, res) => {
     let stats = await getStats();
-    stats = stats.filter(stat => stat.name === '[[admin/dashboard:new-users]]').map(({ ...stat }) => {
-        delete stat.href;
-        return stat;
-    });
+    stats = stats
+        .filter(stat => stat.name === '[[admin/dashboard:new-users]]')
+        .map(({ ...stat }) => {
+            delete stat.href;
+            return stat;
+        });
     const summary = {
         day: stats[0].today,
         week: stats[0].thisweek,
@@ -296,7 +289,7 @@ dashboardController.getUsers = async (req, res) => {
 
     // List of users registered within time frame
     const end = parseInt(req.query.until, 10) || Date.now();
-    const start = end - (1000 * 60 * 60 * (req.query.units === 'days' ? 24 : 1) * (req.query.count || (req.query.units === 'days' ? 30 : 24)));
+    const start = end - 1000 * 60 * 60 * (req.query.units === 'days' ? 24 : 1) * (req.query.count || (req.query.units === 'days' ? 30 : 24));
     const uids = await db.getSortedSetRangeByScore('users:joindate', 0, 500, start, end);
     const users = await user.getUsersData(uids);
 
@@ -311,10 +304,12 @@ dashboardController.getUsers = async (req, res) => {
 
 dashboardController.getTopics = async (req, res) => {
     let stats = await getStats();
-    stats = stats.filter(stat => stat.name === '[[admin/dashboard:topics]]').map(({ ...stat }) => {
-        delete stat.href;
-        return stat;
-    });
+    stats = stats
+        .filter(stat => stat.name === '[[admin/dashboard:topics]]')
+        .map(({ ...stat }) => {
+            delete stat.href;
+            return stat;
+        });
     const summary = {
         day: stats[0].today,
         week: stats[0].thisweek,
@@ -323,7 +318,7 @@ dashboardController.getTopics = async (req, res) => {
 
     // List of topics created within time frame
     const end = parseInt(req.query.until, 10) || Date.now();
-    const start = end - (1000 * 60 * 60 * (req.query.units === 'days' ? 24 : 1) * (req.query.count || (req.query.units === 'days' ? 30 : 24)));
+    const start = end - 1000 * 60 * 60 * (req.query.units === 'days' ? 24 : 1) * (req.query.count || (req.query.units === 'days' ? 30 : 24));
     const tids = await db.getSortedSetRangeByScore('topics:tid', 0, 500, start, end);
     const topicData = await topics.getTopicsByTids(tids);
 

@@ -61,7 +61,7 @@ async function renderWidget(widget, uid, options) {
     }
 
     const userLang = config.userLang || meta.config.defaultLang || 'en-GB';
-    const templateData = _.assign({ }, options.templateData, { config: config });
+    const templateData = _.assign({}, options.templateData, { config: config });
     const data = await plugins.hooks.fire(`filter:widget.render:${widget.widget}`, {
         uid: uid,
         area: options,
@@ -116,7 +116,7 @@ widgets.getWidgetDataForTemplates = async function (templates) {
         const templateWidgetData = data[index] || {};
         const locations = Object.keys(templateWidgetData);
 
-        locations.forEach((location) => {
+        locations.forEach(location => {
             if (templateWidgetData && templateWidgetData[location]) {
                 try {
                     returnData[template][location] = parseWidgetData(templateWidgetData[location]);
@@ -143,7 +143,7 @@ widgets.getArea = async function (template, location) {
 
 function parseWidgetData(data) {
     const widgets = JSON.parse(data);
-    widgets.forEach((widget) => {
+    widgets.forEach(widget => {
         if (widget) {
             widget.data.groups = widget.data.groups || [];
             if (widget.data.groups && !Array.isArray(widget.data.groups)) {
@@ -169,7 +169,7 @@ widgets.setArea = async function (area) {
 
 widgets.setAreas = async function (areas) {
     const templates = {};
-    areas.forEach((area) => {
+    areas.forEach(area => {
         if (!area.location || !area.template) {
             throw new Error('Missing location and template data');
         }
@@ -177,9 +177,7 @@ widgets.setAreas = async function (areas) {
         templates[area.template][area.location] = JSON.stringify(area.widgets);
     });
 
-    await db.setObjectBulk(
-        Object.keys(templates).map(tpl => [`widgets:${tpl}`, templates[tpl]])
-    );
+    await db.setObjectBulk(Object.keys(templates).map(tpl => [`widgets:${tpl}`, templates[tpl]]));
 };
 
 widgets.reset = async function () {
@@ -189,10 +187,7 @@ widgets.reset = async function () {
         { name: 'Draft Zone', template: 'global', location: 'sidebar' },
     ];
 
-    const [areas, drafts] = await Promise.all([
-        plugins.hooks.fire('filter:widgets.getAreas', defaultAreas),
-        widgets.getArea('global', 'drafts'),
-    ]);
+    const [areas, drafts] = await Promise.all([plugins.hooks.fire('filter:widgets.getAreas', defaultAreas), widgets.getArea('global', 'drafts')]);
 
     let saveDrafts = drafts || [];
     for (const area of areas) {

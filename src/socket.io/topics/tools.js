@@ -13,10 +13,7 @@ module.exports = function (SocketTopics) {
             throw new Error('[[error:invalid-data]]');
         }
 
-        const [topicData, userPrivileges] = await Promise.all([
-            topics.getTopicData(data.tid),
-            privileges.topics.get(data.tid, socket.uid),
-        ]);
+        const [topicData, userPrivileges] = await Promise.all([topics.getTopicData(data.tid), privileges.topics.get(data.tid, socket.uid)]);
 
         if (!topicData) {
             throw new Error('[[error:no-topic]]');

@@ -22,37 +22,36 @@ Themes.get = async () => {
 
     let themes = await getThemes(themePath);
     themes = _.flatten(themes).filter(Boolean);
-    themes = await Promise.all(themes.map(async (theme) => {
-        const config = path.join(themePath, theme, 'theme.json');
-        const pack = path.join(themePath, theme, 'package.json');
-        try {
-            const [configFile, packageFile] = await Promise.all([
-                fs.promises.readFile(config, 'utf8'),
-                fs.promises.readFile(pack, 'utf8'),
-            ]);
-            const configObj = JSON.parse(configFile);
-            const packageObj = JSON.parse(packageFile);
+    themes = await Promise.all(
+        themes.map(async theme => {
+            const config = path.join(themePath, theme, 'theme.json');
+            const pack = path.join(themePath, theme, 'package.json');
+            try {
+                const [configFile, packageFile] = await Promise.all([fs.promises.readFile(config, 'utf8'), fs.promises.readFile(pack, 'utf8')]);
+                const configObj = JSON.parse(configFile);
+                const packageObj = JSON.parse(packageFile);
 
-            configObj.id = packageObj.name;
+                configObj.id = packageObj.name;
 
-            // Minor adjustments for API output
-            configObj.type = 'local';
-            if (configObj.screenshot) {
-                configObj.screenshot_url = `${nconf.get('relative_path')}/css/previews/${encodeURIComponent(configObj.id)}`;
-            } else {
-                configObj.screenshot_url = `${nconf.get('relative_path')}/assets/images/themes/default.png`;
-            }
+                // Minor adjustments for API output
+                configObj.type = 'local';
+                if (configObj.screenshot) {
+                    configObj.screenshot_url = `${nconf.get('relative_path')}/css/previews/${encodeURIComponent(configObj.id)}`;
+                } else {
+                    configObj.screenshot_url = `${nconf.get('relative_path')}/assets/images/themes/default.png`;
+                }
 
-            return configObj;
-        } catch (err) {
-            if (err.code === 'ENOENT') {
+                return configObj;
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    return false;
+                }
+
+                winston.error(`[themes] Unable to parse theme.json ${theme}`);
                 return false;
             }
-
-            winston.error(`[themes] Unable to parse theme.json ${theme}`);
-            return false;
-        }
-    }));
+        })
+    );
 
     return themes.filter(Boolean);
 };
@@ -60,73 +59,75 @@ Themes.get = async () => {
 async function getThemes(themePath) {
     let dirs = await fs.promises.readdir(themePath);
     dirs = dirs.filter(dir => themeNamePattern.test(dir) || dir.startsWith('@'));
-    return await Promise.all(dirs.map(async (dir) => {
-        try {
-            const dirpath = path.join(themePath, dir);
-            const stat = await fs.promises.stat(dirpath);
-            if (!stat.isDirectory()) {
-                return false;
-            }
+    return await Promise.all(
+        dirs.map(async dir => {
+            try {
+                const dirpath = path.join(themePath, dir);
+                const stat = await fs.promises.stat(dirpath);
+                if (!stat.isDirectory()) {
+                    return false;
+                }
 
-            if (!dir.startsWith('@')) {
-                return dir;
-            }
+                if (!dir.startsWith('@')) {
+                    return dir;
+                }
 
-            const themes = await getThemes(path.join(themePath, dir));
-            return themes.map(theme => path.join(dir, theme));
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return false;
-            }
+                const themes = await getThemes(path.join(themePath, dir));
+                return themes.map(theme => path.join(dir, theme));
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    return false;
+                }
 
-            throw err;
-        }
-    }));
+                throw err;
+            }
+        })
+    );
 }
 
-Themes.set = async (data) => {
+Themes.set = async data => {
     switch (data.type) {
-    case 'local': {
-        const current = await Meta.configs.get('theme:id');
+        case 'local': {
+            const current = await Meta.configs.get('theme:id');
 
-        if (current !== data.id) {
-            const pathToThemeJson = path.join(nconf.get('themes_path'), data.id, 'theme.json');
-            if (!pathToThemeJson.startsWith(nconf.get('themes_path'))) {
-                throw new Error('[[error:invalid-theme-id]]');
+            if (current !== data.id) {
+                const pathToThemeJson = path.join(nconf.get('themes_path'), data.id, 'theme.json');
+                if (!pathToThemeJson.startsWith(nconf.get('themes_path'))) {
+                    throw new Error('[[error:invalid-theme-id]]');
+                }
+
+                let config = await fs.promises.readFile(pathToThemeJson, 'utf8');
+                config = JSON.parse(config);
+
+                // Re-set the themes path (for when NodeBB is reloaded)
+                Themes.setPath(config);
+
+                await Meta.configs.setMultiple({
+                    'theme:type': data.type,
+                    'theme:id': data.id,
+                    'theme:staticDir': config.staticDir ? config.staticDir : '',
+                    'theme:templates': config.templates ? config.templates : '',
+                    'theme:src': '',
+                    bootswatchSkin: '',
+                });
+
+                await events.log({
+                    type: 'theme-set',
+                    uid: parseInt(data.uid, 10) || 0,
+                    ip: data.ip || '127.0.0.1',
+                    text: data.id,
+                });
+
+                Meta.reloadRequired = true;
             }
-
-            let config = await fs.promises.readFile(pathToThemeJson, 'utf8');
-            config = JSON.parse(config);
-
-            // Re-set the themes path (for when NodeBB is reloaded)
-            Themes.setPath(config);
-
-            await Meta.configs.setMultiple({
-                'theme:type': data.type,
-                'theme:id': data.id,
-                'theme:staticDir': config.staticDir ? config.staticDir : '',
-                'theme:templates': config.templates ? config.templates : '',
-                'theme:src': '',
-                bootswatchSkin: '',
-            });
-
-            await events.log({
-                type: 'theme-set',
-                uid: parseInt(data.uid, 10) || 0,
-                ip: data.ip || '127.0.0.1',
-                text: data.id,
-            });
-
-            Meta.reloadRequired = true;
+            break;
         }
-        break;
-    }
-    case 'bootswatch':
-        await Meta.configs.setMultiple({
-            'theme:src': data.src,
-            bootswatchSkin: data.id.toLowerCase(),
-        });
-        break;
+        case 'bootswatch':
+            await Meta.configs.setMultiple({
+                'theme:src': data.src,
+                bootswatchSkin: data.id.toLowerCase(),
+            });
+            break;
     }
 };
 

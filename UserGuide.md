@@ -1,8 +1,9 @@
 # Introduction:
 
-Welcome to Team Formula1’s NodeBB user guide. This user guide describes how to effectively use and test the different features added as part of the user stories implemented. These include the bug report form, and grouped posting. 
+Welcome to Team Formula1’s NodeBB user guide. This user guide describes how to effectively use and test the different features added as part of the user stories implemented. These include the bug report form, and grouped posting.
 
 &nbsp;
+
 # New Features Added:
 
 **Viewing the count of users online:**
@@ -11,7 +12,7 @@ Welcome to Team Formula1’s NodeBB user guide. This user guide describes how to
 To check the total number of users online, navigate to the Users page. The online count of all users on NodeBB is displayed in the brackets next to the “Online” tab (e.g. Online (10)).
 
 <u>Users Online in Each Group</u>
-To check the online users within each group (for groups you are a member of), navigate to the Group’s page. The count of users online within each group is displayed under the list of members, as “Currently Online: #”. 
+To check the online users within each group (for groups you are a member of), navigate to the Group’s page. The count of users online within each group is displayed under the list of members, as “Currently Online: #”.
 
 &nbsp;
 
@@ -27,7 +28,6 @@ Future work can be done to develop a “bugs” controller to fetch the data fro
 
 Begin by creating a new topic. Once a new topic is created navigate to the Ungrouped page (link with slash icon in navbar). Here you will see the list of ungrouped topics. All created topics will be moved here by default. To move/ assign a topic to a specific group click the assign to group icon. This will open a dropdown menu of the groups you are a member of. Once selected the topic will be moved to that specific group. This can be seen by navigating to the group details page.
 
-
 <u>Possible bugs</u>
 
 Previously groups were only used as labels so they do not contain group ids. In the event a group gets renamed the assigned topics will be lost since they are no longer linking to a valid group name.
@@ -36,9 +36,10 @@ Previously groups were only used as labels so they do not contain group ids. In 
 
 The group details page no longer displays response posts. This clutters up the screen and provides no value to the user. Now only topic/main posts that are assigned to the specific group are displayed in this page. The user can still view the replies by clicking on the main post link.
 
-Originally we envisioned the ability to select/assign a group while creating the topic. However, the popup/form for creating posts and topics is handled inside of a Nodebb plugin. This would prevent us from using this method. The next best alternative was to create the ‘ungrouped’ page where users could assign topics to groups from there. 
+Originally we envisioned the ability to select/assign a group while creating the topic. However, the popup/form for creating posts and topics is handled inside of a Nodebb plugin. This would prevent us from using this method. The next best alternative was to create the ‘ungrouped’ page where users could assign topics to groups from there.
 
 &nbsp;
+
 # Tests:
 
 **Running the tests:**
@@ -54,13 +55,13 @@ Originally we envisioned the ability to select/assign a group while creating the
 
 **Online Count Tests**
 
-The tests for the number of users online can be found in `test/user.js`. These tests check that the online user count displays the correct number. The tests that test for nonzero online user counts are currently commented out due to challenges in mocking the inward functions of our function that calculates the total number of online users. However, these can be uncommented and fixed in the future by figuring out how to create mock resolved values in NodeBB tests. 
+The tests for the number of users online can be found in `test/user.js`. These tests check that the online user count displays the correct number. The tests that test for nonzero online user counts are currently commented out due to challenges in mocking the inward functions of our function that calculates the total number of online users. However, these can be uncommented and fixed in the future by figuring out how to create mock resolved values in NodeBB tests.
 
 &nbsp;
 
 **Bug Report Tests**
 
-The tests for the bug report can be found in `test/controllers.js`. These tests check that the post and create function for bugs functions as intended (mimic a report from the user). It also tests the get function for retrieving the latest submitted bug from the database. Note, however, that this test only works for redis when last checked (Does not pass all Github actions for postgres/mongo) so it is currently commented out. These are sufficient as they are the main functions that are being used in reporting and retrieving bugs. 
+The tests for the bug report can be found in `test/controllers.js`. These tests check that the post and create function for bugs functions as intended (mimic a report from the user). It also tests the get function for retrieving the latest submitted bug from the database. Note, however, that this test only works for redis when last checked (Does not pass all Github actions for postgres/mongo) so it is currently commented out. These are sufficient as they are the main functions that are being used in reporting and retrieving bugs.
 
 An additional manual test can be conducted for posting bugs to the database by using redis to show what bugs have been submitted. With a redis server instance running, type `redis-cli` followed by `keys *`. Then CTRL-F for “bug” and check that it exists. The properties of this object can be viewed by using `hgetall bug:{ID}`.
 

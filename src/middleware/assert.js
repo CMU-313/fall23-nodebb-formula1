@@ -23,7 +23,7 @@ const controllerHelpers = require('../controllers/helpers');
 const Assert = module.exports;
 
 Assert.user = helpers.try(async (req, res, next) => {
-    if (!await user.exists(req.params.uid)) {
+    if (!(await user.exists(req.params.uid))) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-user]]'));
     }
 
@@ -32,7 +32,7 @@ Assert.user = helpers.try(async (req, res, next) => {
 
 Assert.group = helpers.try(async (req, res, next) => {
     const name = await groups.getGroupNameByGroupSlug(req.params.slug);
-    if (!name || !await groups.exists(name)) {
+    if (!name || !(await groups.exists(name))) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-group]]'));
     }
 
@@ -40,7 +40,7 @@ Assert.group = helpers.try(async (req, res, next) => {
 });
 
 Assert.topic = helpers.try(async (req, res, next) => {
-    if (!await topics.exists(req.params.tid)) {
+    if (!(await topics.exists(req.params.tid))) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-topic]]'));
     }
 
@@ -48,7 +48,7 @@ Assert.topic = helpers.try(async (req, res, next) => {
 });
 
 Assert.post = helpers.try(async (req, res, next) => {
-    if (!await posts.exists(req.params.pid)) {
+    if (!(await posts.exists(req.params.pid))) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-post]]'));
     }
 
@@ -83,7 +83,7 @@ Assert.path = helpers.try(async (req, res, next) => {
         return controllerHelpers.formatApiResponse(403, res, new Error('[[error:invalid-path]]'));
     }
 
-    if (!await file.exists(pathToFile)) {
+    if (!(await file.exists(pathToFile))) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:invalid-path]]'));
     }
 
@@ -112,10 +112,7 @@ Assert.room = helpers.try(async (req, res, next) => {
         return controllerHelpers.formatApiResponse(400, res, new Error('[[error:invalid-data]]'));
     }
 
-    const [exists, inRoom] = await Promise.all([
-        await messaging.roomExists(req.params.roomId),
-        await messaging.isUserInRoom(req.uid, req.params.roomId),
-    ]);
+    const [exists, inRoom] = await Promise.all([await messaging.roomExists(req.params.roomId), await messaging.isUserInRoom(req.uid, req.params.roomId)]);
 
     if (!exists) {
         return controllerHelpers.formatApiResponse(404, res, new Error('[[error:chat-room-does-not-exist]]'));
@@ -129,11 +126,7 @@ Assert.room = helpers.try(async (req, res, next) => {
 });
 
 Assert.message = helpers.try(async (req, res, next) => {
-    if (
-        !isFinite(req.params.mid) ||
-        !(await messaging.messageExists(req.params.mid)) ||
-        !(await messaging.canViewMessage(req.params.mid, req.params.roomId, req.uid))
-    ) {
+    if (!isFinite(req.params.mid) || !(await messaging.messageExists(req.params.mid)) || !(await messaging.canViewMessage(req.params.mid, req.params.roomId, req.uid))) {
         return controllerHelpers.formatApiResponse(400, res, new Error('[[error:invalid-mid]]'));
     }
 

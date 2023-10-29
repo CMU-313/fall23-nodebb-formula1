@@ -22,7 +22,7 @@ prestart.setupWinston();
 const db = require('../../database');
 const batch = require('../../batch');
 
-process.on('message', async (msg) => {
+process.on('message', async msg => {
     if (msg && msg.uid) {
         await db.init();
 
@@ -32,18 +32,24 @@ process.on('message', async (msg) => {
         const posts = require('../../posts');
 
         let payload = [];
-        await batch.processSortedSet(`uid:${targetUid}:posts`, async (pids) => {
-            let postData = await posts.getPostsData(pids);
-            // Remove empty post references and convert newlines in content
-            postData = postData.filter(Boolean).map((post) => {
-                post.content = `"${String(post.content || '').replace(/\n/g, '\\n').replace(/"/g, '\\"')}"`;
-                return post;
-            });
-            payload = payload.concat(postData);
-        }, {
-            batch: 500,
-            interval: 1000,
-        });
+        await batch.processSortedSet(
+            `uid:${targetUid}:posts`,
+            async pids => {
+                let postData = await posts.getPostsData(pids);
+                // Remove empty post references and convert newlines in content
+                postData = postData.filter(Boolean).map(post => {
+                    post.content = `"${String(post.content || '')
+                        .replace(/\n/g, '\\n')
+                        .replace(/"/g, '\\"')}"`;
+                    return post;
+                });
+                payload = payload.concat(postData);
+            },
+            {
+                batch: 500,
+                interval: 1000,
+            }
+        );
 
         const fields = payload.length ? Object.keys(payload[0]) : [];
         const opts = { fields };

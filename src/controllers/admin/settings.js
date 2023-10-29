@@ -57,7 +57,7 @@ settingsController.advanced = async (req, res) => {
 
 settingsController.languages = async function (req, res) {
     const languageData = await languages.list();
-    languageData.forEach((language) => {
+    languageData.forEach(language => {
         language.selected = language.code === meta.config.defaultLang;
     });
 
@@ -68,10 +68,7 @@ settingsController.languages = async function (req, res) {
 };
 
 settingsController.navigation = async function (req, res) {
-    const [admin, allGroups] = await Promise.all([
-        navigationAdmin.getAdmin(),
-        groups.getNonPrivilegeGroups('groups:createtime', 0, -1),
-    ]);
+    const [admin, allGroups] = await Promise.all([navigationAdmin.getAdmin(), groups.getNonPrivilegeGroups('groups:createtime', 0, -1)]);
 
     allGroups.sort((a, b) => b.system - a.system);
 
@@ -88,7 +85,7 @@ settingsController.navigation = async function (req, res) {
         }));
     });
 
-    admin.available.forEach((available) => {
+    admin.available.forEach(available => {
         available.groups = admin.groups;
     });
 

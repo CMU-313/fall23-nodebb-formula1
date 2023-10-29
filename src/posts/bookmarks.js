@@ -19,10 +19,7 @@ module.exports = function (Posts) {
 
         const isBookmarking = type === 'bookmark';
 
-        const [postData, hasBookmarked] = await Promise.all([
-            Posts.getPostFields(pid, ['pid', 'uid']),
-            Posts.hasBookmarked(pid, uid),
-        ]);
+        const [postData, hasBookmarked] = await Promise.all([Posts.getPostFields(pid, ['pid', 'uid']), Posts.hasBookmarked(pid, uid)]);
 
         if (isBookmarking && hasBookmarked) {
             throw new Error('[[error:already-bookmarked]]');

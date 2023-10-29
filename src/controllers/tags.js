@@ -25,19 +25,11 @@ tagsController.getTag = async function (req, res) {
         breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[tags:tags]]', url: '/tags' }, { text: tag }]),
         title: `[[pages:tag, ${tag}]]`,
     };
-    const [settings, cids, categoryData, isPrivileged] = await Promise.all([
-        user.getSettings(req.uid),
-        cid || categories.getCidsByPrivilege('categories:cid', req.uid, 'topics:read'),
-        helpers.getSelectedCategory(cid),
-        user.isPrivileged(req.uid),
-    ]);
+    const [settings, cids, categoryData, isPrivileged] = await Promise.all([user.getSettings(req.uid), cid || categories.getCidsByPrivilege('categories:cid', req.uid, 'topics:read'), helpers.getSelectedCategory(cid), user.isPrivileged(req.uid)]);
     const start = Math.max(0, (page - 1) * settings.topicsPerPage);
     const stop = start + settings.topicsPerPage - 1;
 
-    const [topicCount, tids] = await Promise.all([
-        topics.getTagTopicCount(tag, cids),
-        topics.getTagTidsByCids(tag, cids, start, stop),
-    ]);
+    const [topicCount, tids] = await Promise.all([topics.getTagTopicCount(tag, cids), topics.getTagTidsByCids(tag, cids, start, stop)]);
 
     templateData.topics = await topics.getTopics(tids, req.uid);
     templateData.showSelect = isPrivileged;
@@ -68,10 +60,7 @@ tagsController.getTag = async function (req, res) {
 
 tagsController.getTags = async function (req, res) {
     const cids = await categories.getCidsByPrivilege('categories:cid', req.uid, 'topics:read');
-    const [canSearch, tags] = await Promise.all([
-        privileges.global.can('search:tags', req.uid),
-        topics.getCategoryTagsData(cids, 0, 99),
-    ]);
+    const [canSearch, tags] = await Promise.all([privileges.global.can('search:tags', req.uid), topics.getCategoryTagsData(cids, 0, 99)]);
 
     res.render('tags', {
         tags: tags.filter(Boolean),

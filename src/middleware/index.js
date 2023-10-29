@@ -75,10 +75,7 @@ middleware.stripLeadingSlashes = function stripLeadingSlashes(req, res, next) {
 
 middleware.pageView = helpers.try(async (req, res, next) => {
     if (req.loggedIn) {
-        await Promise.all([
-            user.updateOnlineUsers(req.uid),
-            user.updateLastOnlineTime(req.uid),
-        ]);
+        await Promise.all([user.updateOnlineUsers(req.uid), user.updateLastOnlineTime(req.uid)]);
     }
     next();
     await analytics.pageView({ ip: req.ip, uid: req.uid });
@@ -196,7 +193,7 @@ middleware.delayLoading = function delayLoading(req, res, next) {
     if (timesSeen > 10) {
         return res.sendStatus(429);
     }
-    delayCache.set(req.ip, timesSeen += 1);
+    delayCache.set(req.ip, (timesSeen += 1));
 
     setTimeout(next, 1000);
 };

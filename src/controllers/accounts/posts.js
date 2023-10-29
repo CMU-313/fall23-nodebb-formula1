@@ -62,7 +62,7 @@ const templateToData = {
             const postObjs = await posts.getPostSummaryByPids(pids, req.uid, { stripTags: false });
             return { posts: postObjs, nextStart: stop + 1 };
         },
-        getItemCount: async (sets) => {
+        getItemCount: async sets => {
             const counts = await Promise.all(sets.map(set => db.sortedSetCount(set, 1, '+inf')));
             return counts.reduce((acc, val) => acc + val, 0);
         },
@@ -81,7 +81,7 @@ const templateToData = {
             const postObjs = await posts.getPostSummaryByPids(pids, req.uid, { stripTags: false });
             return { posts: postObjs, nextStart: stop + 1 };
         },
-        getItemCount: async (sets) => {
+        getItemCount: async sets => {
             const counts = await Promise.all(sets.map(set => db.sortedSetCount(set, '-inf', -1)));
             return counts.reduce((acc, val) => acc + val, 0);
         },
@@ -109,7 +109,8 @@ const templateToData = {
             const sortSet = map[sort];
             let tids = await db.getSortedSetRevRange(set, 0, -1);
             const scores = await db.sortedSetScores(sortSet, tids);
-            tids = tids.map((tid, i) => ({ tid: tid, score: scores[i] }))
+            tids = tids
+                .map((tid, i) => ({ tid: tid, score: scores[i] }))
                 .sort((a, b) => b.score - a.score)
                 .slice(start, stop + 1)
                 .map(t => t.tid);
@@ -178,10 +179,7 @@ async function getPostsFromUserSet(template, req, res, next) {
     const data = templateToData[template];
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
 
-    const [userData, settings] = await Promise.all([
-        accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query),
-        user.getSettings(req.uid),
-    ]);
+    const [userData, settings] = await Promise.all([accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query), user.getSettings(req.uid)]);
 
     if (!userData) {
         return next();
@@ -220,7 +218,7 @@ async function getPostsFromUserSet(template, req, res, next) {
     userData.title = `[[pages:${template}, ${userData.username}]]`;
     userData.breadcrumbs = helpers.buildBreadcrumbs([{ text: userData.username, url: `/user/${userData.userslug}` }, { text: data.crumb }]);
     userData.showSort = template === 'account/watched';
-    const baseUrl = (req.baseUrl + req.path.replace(/^\/api/, ''));
+    const baseUrl = req.baseUrl + req.path.replace(/^\/api/, '');
     userData.sortOptions = [
         { url: `${baseUrl}?sort=votes`, name: '[[global:votes]]' },
         { url: `${baseUrl}?sort=posts`, name: '[[global:posts]]' },
@@ -228,7 +226,7 @@ async function getPostsFromUserSet(template, req, res, next) {
         { url: `${baseUrl}?sort=lastpost`, name: '[[global:lastpost]]' },
         { url: `${baseUrl}?sort=firstpost`, name: '[[global:firstpost]]' },
     ];
-    userData.sortOptions.forEach((option) => {
+    userData.sortOptions.forEach(option => {
         option.selected = option.url.includes(`sort=${req.query.sort}`);
     });
 

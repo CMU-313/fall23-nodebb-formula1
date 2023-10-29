@@ -25,7 +25,7 @@ module.exports = function (Posts) {
             const ids = await db.getSortedSetRange('post:queue', 0, -1);
             const keys = ids.map(id => `post:queue:${id}`);
             postData = await db.getObjects(keys);
-            postData.forEach((data) => {
+            postData.forEach(data => {
                 if (data) {
                     data.data = JSON.parse(data.data);
                     data.data.timestampISO = utils.toISOString(data.data.timestamp);
@@ -55,9 +55,7 @@ module.exports = function (Posts) {
             postData = postData.filter(item => item.data.tid && parseInt(item.data.tid, 10) === tid);
         } else if (Array.isArray(filter.tid)) {
             const tids = filter.tid.map(tid => parseInt(tid, 10));
-            postData = postData.filter(
-                item => item.data.tid && tids.includes(parseInt(item.data.tid, 10))
-            );
+            postData = postData.filter(item => item.data.tid && tids.includes(parseInt(item.data.tid, 10)));
         }
 
         return postData;
@@ -79,16 +77,9 @@ module.exports = function (Posts) {
     }
 
     Posts.shouldQueue = async function (uid, data) {
-        const [userData, isMemberOfExempt, categoryQueueEnabled] = await Promise.all([
-            user.getUserFields(uid, ['uid', 'reputation', 'postcount']),
-            groups.isMemberOfAny(uid, meta.config.groupsExemptFromPostQueue),
-            isCategoryQueueEnabled(data),
-        ]);
+        const [userData, isMemberOfExempt, categoryQueueEnabled] = await Promise.all([user.getUserFields(uid, ['uid', 'reputation', 'postcount']), groups.isMemberOfAny(uid, meta.config.groupsExemptFromPostQueue), isCategoryQueueEnabled(data)]);
 
-        const shouldQueue = meta.config.postQueue && categoryQueueEnabled &&
-            !isMemberOfExempt &&
-            (!userData.uid || userData.reputation < meta.config.postQueueReputationThreshold ||
-                userData.postcount <= 0);
+        const shouldQueue = meta.config.postQueue && categoryQueueEnabled && !isMemberOfExempt && (!userData.uid || userData.reputation < meta.config.postQueueReputationThreshold || userData.postcount <= 0);
         const result = await plugins.hooks.fire('filter:post.shouldQueue', {
             shouldQueue: !!shouldQueue,
             uid: uid,
@@ -127,10 +118,7 @@ module.exports = function (Posts) {
     }
 
     async function getNotificationUids(cid) {
-        const results = await Promise.all([
-            groups.getMembersOfGroups(['administrators', 'Global Moderators']),
-            categories.getModeratorUids([cid]),
-        ]);
+        const results = await Promise.all([groups.getMembersOfGroups(['administrators', 'Global Moderators']), categories.getModeratorUids([cid])]);
         return _.uniq(_.flattenDeep(results));
     }
 
@@ -177,11 +165,7 @@ module.exports = function (Posts) {
 
     async function parseBodyLong(cid, type, data) {
         const url = nconf.get('url');
-        const [content, category, userData] = await Promise.all([
-            plugins.hooks.fire('filter:parse.raw', data.content),
-            categories.getCategoryFields(cid, ['name', 'slug']),
-            user.getUserFields(data.uid, ['uid', 'username']),
-        ]);
+        const [content, category, userData] = await Promise.all([plugins.hooks.fire('filter:parse.raw', data.content), categories.getCategoryFields(cid, ['name', 'slug']), user.getUserFields(data.uid, ['uid', 'username'])]);
 
         category.url = `${url}/category/${category.slug}`;
         if (userData.uid > 0) {
@@ -226,10 +210,7 @@ module.exports = function (Posts) {
             }
         }
 
-        const [canPost] = await Promise.all([
-            privileges.categories.can(typeToPrivilege[type], cid, data.uid),
-            user.isReadyToQueue(data.uid, cid),
-        ]);
+        const [canPost] = await Promise.all([privileges.categories.can(typeToPrivilege[type], cid, data.uid), user.isReadyToQueue(data.uid, cid)]);
         if (!canPost) {
             throw new Error('[[error:no-privileges]]');
         }
@@ -326,10 +307,7 @@ module.exports = function (Posts) {
     };
 
     Posts.canEditQueue = async function (uid, editData, action) {
-        const [isAdminOrGlobalMod, data] = await Promise.all([
-            user.isAdminOrGlobalMod(uid),
-            getParsedObject(editData.id),
-        ]);
+        const [isAdminOrGlobalMod, data] = await Promise.all([user.isAdminOrGlobalMod(uid), getParsedObject(editData.id)]);
         if (!data) {
             return false;
         }
@@ -355,12 +333,10 @@ module.exports = function (Posts) {
     Posts.updateQueuedPostsTopic = async function (newTid, tids) {
         const postData = await Posts.getQueuedPosts({ tid: tids }, { metadata: false });
         if (postData.length) {
-            postData.forEach((post) => {
+            postData.forEach(post => {
                 post.data.tid = newTid;
             });
-            await db.setObjectBulk(
-                postData.map(p => [`post:queue:${p.id}`, { data: JSON.stringify(p.data) }]),
-            );
+            await db.setObjectBulk(postData.map(p => [`post:queue:${p.id}`, { data: JSON.stringify(p.data) }]));
             cache.del('post-queue');
         }
     };

@@ -55,7 +55,7 @@ module.exports = function (User) {
         const data = {
             subject: `[[email:banned.subject, ${siteTitle}]]`,
             username: username,
-            until: until ? (new Date(until)).toUTCString().replace(/,/g, '\\,') : false,
+            until: until ? new Date(until).toUTCString().replace(/,/g, '\\,') : false,
             reason: reason,
         };
         await emailer.send('banned', uid, data).catch(err => winston.error(`[emailer.send] ${err.stack}`));
@@ -67,14 +67,14 @@ module.exports = function (User) {
         uids = Array.isArray(uids) ? uids : [uids];
         const userData = await User.getUsersFields(uids, ['email:confirmed']);
 
-        await db.setObject(uids.map(uid => `user:${uid}`), { 'banned:expire': 0 });
+        await db.setObject(
+            uids.map(uid => `user:${uid}`),
+            { 'banned:expire': 0 }
+        );
 
         /* eslint-disable no-await-in-loop */
         for (const user of userData) {
-            const systemGroupsToJoin = [
-                'registered-users',
-                (parseInt(user['email:confirmed'], 10) === 1 ? 'verified-users' : 'unverified-users'),
-            ];
+            const systemGroupsToJoin = ['registered-users', parseInt(user['email:confirmed'], 10) === 1 ? 'verified-users' : 'unverified-users'];
             await groups.leave(groups.BANNED_USERS, user.uid);
             // An unbanned user would lost its previous "Global Moderator" status
             await groups.join(systemGroupsToJoin, user.uid);
@@ -115,7 +115,10 @@ module.exports = function (User) {
     User.bans.calcExpiredFromUserData = async function (userData) {
         const isArray = Array.isArray(userData);
         userData = isArray ? userData : [userData];
-        const banned = await groups.isMembers(userData.map(u => u.uid), groups.BANNED_USERS);
+        const banned = await groups.isMembers(
+            userData.map(u => u.uid),
+            groups.BANNED_USERS
+        );
         userData = userData.map((userData, index) => ({
             banned: banned[index],
             'banned:expire': userData && userData['banned:expire'],

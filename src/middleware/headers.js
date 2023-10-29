@@ -19,11 +19,11 @@ module.exports = function (middleware) {
 
         if (meta.config['csp-frame-ancestors']) {
             headers['Content-Security-Policy'] = `frame-ancestors ${meta.config['csp-frame-ancestors']}`;
-            if (meta.config['csp-frame-ancestors'] === '\'none\'') {
+            if (meta.config['csp-frame-ancestors'] === "'none'") {
                 headers['X-Frame-Options'] = 'DENY';
             }
         } else {
-            headers['Content-Security-Policy'] = 'frame-ancestors \'self\'';
+            headers['Content-Security-Policy'] = "frame-ancestors 'self'";
             headers['X-Frame-Options'] = 'SAMEORIGIN';
         }
 
@@ -39,7 +39,7 @@ module.exports = function (middleware) {
 
         if (meta.config['access-control-allow-origin-regex']) {
             let originsRegex = meta.config['access-control-allow-origin-regex'].split(',');
-            originsRegex = originsRegex.map((origin) => {
+            originsRegex = originsRegex.map(origin => {
                 try {
                     origin = new RegExp(origin.trim());
                 } catch (err) {
@@ -49,7 +49,7 @@ module.exports = function (middleware) {
                 return origin;
             });
 
-            originsRegex.forEach((regex) => {
+            originsRegex.forEach(regex => {
                 if (regex && regex.test(req.get('origin'))) {
                     headers['Access-Control-Allow-Origin'] = encodeURI(req.get('origin'));
                     headers.Vary = headers.Vary ? `${headers.Vary}, Origin` : 'Origin';

@@ -38,17 +38,8 @@ Emailer.transports = {
 Emailer.listServices = () => Object.keys(wellKnownServices);
 Emailer._defaultPayload = {};
 
-const smtpSettingsChanged = (config) => {
-    const settings = [
-        'email:smtpTransport:enabled',
-        'email:smtpTransport:pool',
-        'email:smtpTransport:user',
-        'email:smtpTransport:pass',
-        'email:smtpTransport:service',
-        'email:smtpTransport:port',
-        'email:smtpTransport:host',
-        'email:smtpTransport:security',
-    ];
+const smtpSettingsChanged = config => {
+    const settings = ['email:smtpTransport:enabled', 'email:smtpTransport:pool', 'email:smtpTransport:user', 'email:smtpTransport:pass', 'email:smtpTransport:service', 'email:smtpTransport:port', 'email:smtpTransport:host', 'email:smtpTransport:security'];
     // config only has these properties if settings are saved on /admin/settings/email
     return settings.some(key => config.hasOwnProperty(key) && config[key] !== prevConfig[key]);
 };
@@ -59,11 +50,10 @@ const getHostname = () => {
     return parsed.hostname;
 };
 
-const buildCustomTemplates = async (config) => {
+const buildCustomTemplates = async config => {
     try {
         // If the new config contains any email override values, re-compile those templates
-        const toBuild = Object
-            .keys(config)
+        const toBuild = Object.keys(config)
             .filter(prop => prop.startsWith('email:custom:'))
             .map(key => key.split(':')[2]);
 
@@ -71,22 +61,23 @@ const buildCustomTemplates = async (config) => {
             return;
         }
 
-        const [templates, allPaths] = await Promise.all([
-            Emailer.getTemplates(config),
-            file.walk(viewsDir),
-        ]);
+        const [templates, allPaths] = await Promise.all([Emailer.getTemplates(config), file.walk(viewsDir)]);
 
         const templatesToBuild = templates.filter(template => toBuild.includes(template.path));
-        const paths = _.fromPairs(allPaths.map((p) => {
-            const relative = path.relative(viewsDir, p).replace(/\\/g, '/');
-            return [relative, p];
-        }));
+        const paths = _.fromPairs(
+            allPaths.map(p => {
+                const relative = path.relative(viewsDir, p).replace(/\\/g, '/');
+                return [relative, p];
+            })
+        );
 
-        await Promise.all(templatesToBuild.map(async (template) => {
-            const source = await meta.templates.processImports(paths, template.path, template.text);
-            const compiled = await Benchpress.precompile(source, { filename: template.path });
-            await fs.promises.writeFile(template.fullpath.replace(/\.tpl$/, '.js'), compiled);
-        }));
+        await Promise.all(
+            templatesToBuild.map(async template => {
+                const source = await meta.templates.processImports(paths, template.path, template.text);
+                const compiled = await Benchpress.precompile(source, { filename: template.path });
+                await fs.promises.writeFile(template.fullpath.replace(/\.tpl$/, '.js'), compiled);
+            })
+        );
 
         Benchpress.flush();
         winston.verbose('[emailer] Built custom email templates');
@@ -95,27 +86,29 @@ const buildCustomTemplates = async (config) => {
     }
 };
 
-Emailer.getTemplates = async (config) => {
+Emailer.getTemplates = async config => {
     const emailsPath = path.join(viewsDir, 'emails');
     let emails = await file.walk(emailsPath);
     emails = emails.filter(email => !email.endsWith('.js'));
 
-    const templates = await Promise.all(emails.map(async (email) => {
-        const path = email.replace(emailsPath, '').slice(1).replace('.tpl', '');
-        const original = await fs.promises.readFile(email, 'utf8');
+    const templates = await Promise.all(
+        emails.map(async email => {
+            const path = email.replace(emailsPath, '').slice(1).replace('.tpl', '');
+            const original = await fs.promises.readFile(email, 'utf8');
 
-        return {
-            path: path,
-            fullpath: email,
-            text: config[`email:custom:${path}`] || original,
-            original: original,
-            isCustom: !!config[`email:custom:${path}`],
-        };
-    }));
+            return {
+                path: path,
+                fullpath: email,
+                text: config[`email:custom:${path}`] || original,
+                original: original,
+                isCustom: !!config[`email:custom:${path}`],
+            };
+        })
+    );
     return templates;
 };
 
-Emailer.setupFallbackTransport = (config) => {
+Emailer.setupFallbackTransport = config => {
     winston.verbose('[emailer] Setting up fallback transport');
     // Enable SMTP transport if enabled in ACP
     if (parseInt(config['email:smtpTransport:enabled'], 10) === 1) {
@@ -160,7 +153,7 @@ Emailer.setupFallbackTransport = (config) => {
     }
 };
 
-Emailer.registerApp = (expressApp) => {
+Emailer.registerApp = expressApp => {
     app = expressApp;
 
     let logo = null;
@@ -186,7 +179,7 @@ Emailer.registerApp = (expressApp) => {
     // which is updated before the pubsub handler is called
     prevConfig = { ...meta.config };
 
-    pubsub.on('config:update', (config) => {
+    pubsub.on('config:update', config => {
         // config object only contains properties for the specific acp settings page
         // not the entire meta.config object
         if (config) {
@@ -253,7 +246,7 @@ Emailer.send = async (template, uid, params) => {
     params = { ...Emailer._defaultPayload, ...params };
     params.uid = uid;
     params.username = userData.username;
-    params.rtl = await translator.translate('[[language:dir]]', userSettings.userLang) === 'rtl';
+    params.rtl = (await translator.translate('[[language:dir]]', userSettings.userLang)) === 'rtl';
 
     const result = await Plugins.hooks.fire('filter:email.cancel', {
         cancel: false, // set to true in plugin to cancel sending email
@@ -306,10 +299,7 @@ Emailer.sendToEmail = async (template, email, language, params) => {
     email = result.email;
     params = result.params;
 
-    const [html, subject] = await Promise.all([
-        Emailer.renderAndTranslate(template, params, result.language),
-        translator.translate(params.subject, result.language),
-    ]);
+    const [html, subject] = await Promise.all([Emailer.renderAndTranslate(template, params, result.language), translator.translate(params.subject, result.language)]);
 
     const data = await Plugins.hooks.fire('filter:email.modify', {
         _raw: params,
@@ -328,8 +318,7 @@ Emailer.sendToEmail = async (template, email, language, params) => {
         headers: params.headers,
         rtl: params.rtl,
     });
-    const usingFallback = !Plugins.hooks.hasListeners('filter:email.send') &&
-        !Plugins.hooks.hasListeners('static:email.send');
+    const usingFallback = !Plugins.hooks.hasListeners('filter:email.send') && !Plugins.hooks.hasListeners('static:email.send');
     try {
         if (Plugins.hooks.hasListeners('filter:email.send')) {
             // Deprecated, remove in v1.19.0
@@ -349,7 +338,7 @@ Emailer.sendToEmail = async (template, email, language, params) => {
     }
 };
 
-Emailer.sendViaFallback = async (data) => {
+Emailer.sendViaFallback = async data => {
     // Some minor alterations to the data to conform to nodemailer standard
     data.text = data.plaintext;
     delete data.plaintext;

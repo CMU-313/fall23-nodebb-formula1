@@ -18,13 +18,7 @@ infoController.get = async function (req, res, next) {
     const start = (page - 1) * itemsPerPage;
     const stop = start + itemsPerPage - 1;
 
-    const [history, sessions, usernames, emails, notes] = await Promise.all([
-        user.getModerationHistory(userData.uid),
-        user.auth.getSessions(userData.uid, req.sessionID),
-        user.getHistory(`user:${userData.uid}:usernames`),
-        user.getHistory(`user:${userData.uid}:emails`),
-        getNotes(userData, start, stop),
-    ]);
+    const [history, sessions, usernames, emails, notes] = await Promise.all([user.getModerationHistory(userData.uid), user.auth.getSessions(userData.uid, req.sessionID), user.getHistory(`user:${userData.uid}:usernames`), user.getHistory(`user:${userData.uid}:emails`), getNotes(userData, start, stop)]);
 
     userData.history = history;
     userData.sessions = sessions;
@@ -46,9 +40,6 @@ async function getNotes(userData, start, stop) {
     if (!userData.isAdminOrGlobalModeratorOrModerator) {
         return;
     }
-    const [notes, count] = await Promise.all([
-        user.getModerationNotes(userData.uid, start, stop),
-        db.sortedSetCard(`uid:${userData.uid}:moderation:notes`),
-    ]);
+    const [notes, count] = await Promise.all([user.getModerationNotes(userData.uid, start, stop), db.sortedSetCard(`uid:${userData.uid}:moderation:notes`)]);
     return { notes: notes, count: count };
 }

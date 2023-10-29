@@ -25,16 +25,13 @@ const relative_path = nconf_1.default.get('relative_path');
 const list = function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const sort = req.query.sort || 'alpha';
-        const [groupsData, allowGroupCreation] = yield Promise.all([
-            groups_1.default.getGroupsBySort(sort, 0, 14),
-            privileges_1.default.global.can('group:create', req.uid),
-        ]);
+        const [groupsData, allowGroupCreation] = yield Promise.all([groups_1.default.getGroupsBySort(sort, 0, 14), privileges_1.default.global.can('group:create', req.uid)]);
         // get GroupObject with the current online user count (onlineUserCount property)
         function withOnineUserCount(groupData) {
             return __awaiter(this, void 0, void 0, function* () {
                 return Object.assign(Object.assign({}, groupData), { 
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                    onlineUserCount: yield user_1.default.getGroupOnlineCount(groupData.name) });
+                    onlineUserCount: (yield user_1.default.getGroupOnlineCount(groupData.name)) });
             });
         }
         // Get online group count for all groups
@@ -60,16 +57,11 @@ const details = function (req, res, next) {
                 return res.redirect(`${relative_path}/groups/${lowercaseSlug}`);
             }
         }
-        const groupName = yield groups_1.default.getGroupNameByGroupSlug(req.params.slug);
+        const groupName = (yield groups_1.default.getGroupNameByGroupSlug(req.params.slug));
         if (!groupName) {
             return next();
         }
-        const [exists, isHidden, isAdmin, isGlobalMod] = yield Promise.all([
-            groups_1.default.exists(groupName),
-            groups_1.default.isHidden(groupName),
-            user_1.default.isAdministrator(req.uid),
-            user_1.default.isGlobalModerator(req.uid),
-        ]);
+        const [exists, isHidden, isAdmin, isGlobalMod] = yield Promise.all([groups_1.default.exists(groupName), groups_1.default.isHidden(groupName), user_1.default.isAdministrator(req.uid), user_1.default.isGlobalModerator(req.uid)]);
         if (!exists) {
             return next();
         }
@@ -118,7 +110,7 @@ const members = function (req, res, next) {
         const usersPerPage = 50;
         const start = Math.max(0, (page - 1) * usersPerPage);
         const stop = start + usersPerPage - 1;
-        const groupName = yield groups_1.default.getGroupNameByGroupSlug(req.params.slug);
+        const groupName = (yield groups_1.default.getGroupNameByGroupSlug(req.params.slug));
         if (!groupName) {
             return next();
         }
@@ -133,12 +125,8 @@ const members = function (req, res, next) {
         if (isHidden && !isMember && !isAdminOrGlobalMod) {
             return next();
         }
-        const users = yield user_1.default.getUsersFromSet(`group:${groupName}:members`, req.uid, start, stop);
-        const breadcrumbs = helpers_1.default.buildBreadcrumbs([
-            { text: '[[pages:groups]]', url: '/groups' },
-            { text: validator_1.default.escape(String(groupName)), url: `/groups/${req.params.slug}` },
-            { text: '[[groups:details.members]]' },
-        ]);
+        const users = (yield user_1.default.getUsersFromSet(`group:${groupName}:members`, req.uid, start, stop));
+        const breadcrumbs = helpers_1.default.buildBreadcrumbs([{ text: '[[pages:groups]]', url: '/groups' }, { text: validator_1.default.escape(String(groupName)), url: `/groups/${req.params.slug}` }, { text: '[[groups:details.members]]' }]);
         const pageCount = Math.max(1, Math.ceil(groupData.memberCount / usersPerPage));
         res.render('groups/members', {
             users: users,

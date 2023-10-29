@@ -8,9 +8,7 @@ const common = require('./webpack.common');
 
 module.exports = merge(common, {
     mode: 'production',
-    plugins: [
-        new ProgressPlugin(true),
-    ],
+    plugins: [new ProgressPlugin(true)],
     optimization: {
         minimize: true,
         minimizer: [

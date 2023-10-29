@@ -1,4 +1,3 @@
-
 'use strict';
 
 const async = require('async');
@@ -21,9 +20,7 @@ module.exports = function (Topics) {
         }
 
         const cid = await Topics.getTopicField(tid, 'cid');
-        const topicSets = tags.map(tag => `tag:${tag}:topics`).concat(
-            tags.map(tag => `cid:${cid}:tag:${tag}:topics`)
-        );
+        const topicSets = tags.map(tag => `tag:${tag}:topics`).concat(tags.map(tag => `cid:${cid}:tag:${tag}:topics`));
         await db.sortedSetsAdd(topicSets, timestamp, tid);
         await Topics.updateCategoryTagsCount([cid], tags);
         await Promise.all(tags.map(updateTagCount));
@@ -39,27 +36,24 @@ module.exports = function (Topics) {
     };
 
     Topics.updateCategoryTagsCount = async function (cids, tags) {
-        await Promise.all(cids.map(async (cid) => {
-            const counts = await db.sortedSetsCard(
-                tags.map(tag => `cid:${cid}:tag:${tag}:topics`)
-            );
-            const tagToCount = _.zipObject(tags, counts);
-            const set = `cid:${cid}:tags`;
+        await Promise.all(
+            cids.map(async cid => {
+                const counts = await db.sortedSetsCard(tags.map(tag => `cid:${cid}:tag:${tag}:topics`));
+                const tagToCount = _.zipObject(tags, counts);
+                const set = `cid:${cid}:tags`;
 
-            const bulkAdd = tags.filter(tag => tagToCount[tag] > 0)
-                .map(tag => [set, tagToCount[tag], tag]);
+                const bulkAdd = tags.filter(tag => tagToCount[tag] > 0).map(tag => [set, tagToCount[tag], tag]);
 
-            const bulkRemove = tags.filter(tag => tagToCount[tag] <= 0)
-                .map(tag => [set, tag]);
+                const bulkRemove = tags.filter(tag => tagToCount[tag] <= 0).map(tag => [set, tag]);
 
-            await Promise.all([
-                db.sortedSetAddBulk(bulkAdd),
-                db.sortedSetRemoveBulk(bulkRemove),
-            ]);
-        }));
+                await Promise.all([db.sortedSetAddBulk(bulkAdd), db.sortedSetRemoveBulk(bulkRemove)]);
+            })
+        );
 
         await db.sortedSetsRemoveRangeByScore(
-            cids.map(cid => `cid:${cid}:tags`), '-inf', 0
+            cids.map(cid => `cid:${cid}:tags`),
+            '-inf',
+            0
         );
     };
 
@@ -68,11 +62,7 @@ module.exports = function (Topics) {
             throw new Error('[[error:invalid-data]]');
         }
         tags = _.uniq(tags);
-        const [categoryData, isPrivileged, currentTags] = await Promise.all([
-            categories.getCategoryFields(cid, ['minTags', 'maxTags']),
-            user.isPrivileged(uid),
-            tid ? Topics.getTopicTags(tid) : [],
-        ]);
+        const [categoryData, isPrivileged, currentTags] = await Promise.all([categories.getCategoryFields(cid, ['minTags', 'maxTags']), user.isPrivileged(uid), tid ? Topics.getTopicTags(tid) : []]);
         if (tags.length < parseInt(categoryData.minTags, 10)) {
             throw new Error(`[[error:not-enough-tags, ${categoryData.minTags}]]`);
         } else if (tags.length > parseInt(categoryData.maxTags, 10)) {
@@ -83,13 +73,11 @@ module.exports = function (Topics) {
         const removedTags = currentTags.filter(tag => !tags.includes(tag));
         const systemTags = (meta.config.systemTags || '').split(',');
 
-        if (!isPrivileged && systemTags.length &&
-            addedTags.length && addedTags.some(tag => systemTags.includes(tag))) {
+        if (!isPrivileged && systemTags.length && addedTags.length && addedTags.some(tag => systemTags.includes(tag))) {
             throw new Error('[[error:cant-use-system-tag]]');
         }
 
-        if (!isPrivileged && systemTags.length &&
-            removedTags.length && removedTags.some(tag => systemTags.includes(tag))) {
+        if (!isPrivileged && systemTags.length && removedTags.length && removedTags.some(tag => systemTags.includes(tag))) {
             throw new Error('[[error:cant-remove-system-tag]]');
         }
     };
@@ -117,10 +105,10 @@ module.exports = function (Topics) {
         }
         const allCids = await categories.getAllCidsFromSet('categories:cid');
         const isMembers = await db.isMemberOfSortedSets(
-            allCids.map(cid => `cid:${cid}:tags`), tag
+            allCids.map(cid => `cid:${cid}:tags`),
+            tag
         );
-        const bulkAdd = allCids.filter((cid, index) => !isMembers[index])
-            .map(cid => ([`cid:${cid}:tags`, 0, tag]));
+        const bulkAdd = allCids.filter((cid, index) => !isMembers[index]).map(cid => [`cid:${cid}:tags`, 0, tag]);
         await db.sortedSetAddBulk(bulkAdd);
     };
 
@@ -140,33 +128,38 @@ module.exports = function (Topics) {
         await Topics.createEmptyTag(newTagName);
         const allCids = {};
 
-        await batch.processSortedSet(`tag:${tag}:topics`, async (tids) => {
-            const topicData = await Topics.getTopicsFields(tids, ['tid', 'cid', 'tags']);
-            const cids = topicData.map(t => t.cid);
-            topicData.forEach((t) => { allCids[t.cid] = true; });
-            const scores = await db.sortedSetScores(`tag:${tag}:topics`, tids);
-            // update tag:<tag>:topics
-            await db.sortedSetAdd(`tag:${newTagName}:topics`, scores, tids);
-            await db.sortedSetRemove(`tag:${tag}:topics`, tids);
+        await batch.processSortedSet(
+            `tag:${tag}:topics`,
+            async tids => {
+                const topicData = await Topics.getTopicsFields(tids, ['tid', 'cid', 'tags']);
+                const cids = topicData.map(t => t.cid);
+                topicData.forEach(t => {
+                    allCids[t.cid] = true;
+                });
+                const scores = await db.sortedSetScores(`tag:${tag}:topics`, tids);
+                // update tag:<tag>:topics
+                await db.sortedSetAdd(`tag:${newTagName}:topics`, scores, tids);
+                await db.sortedSetRemove(`tag:${tag}:topics`, tids);
 
-            // update cid:<cid>:tag:<tag>:topics
-            await db.sortedSetAddBulk(topicData.map(
-                (t, index) => [`cid:${t.cid}:tag:${newTagName}:topics`, scores[index], t.tid]
-            ));
-            await db.sortedSetRemove(cids.map(cid => `cid:${cid}:tag:${tag}:topics`), tids);
+                // update cid:<cid>:tag:<tag>:topics
+                await db.sortedSetAddBulk(topicData.map((t, index) => [`cid:${t.cid}:tag:${newTagName}:topics`, scores[index], t.tid]));
+                await db.sortedSetRemove(
+                    cids.map(cid => `cid:${cid}:tag:${tag}:topics`),
+                    tids
+                );
 
-            // update 'tags' field in topic hash
-            topicData.forEach((topic) => {
-                topic.tags = topic.tags.map(tagItem => tagItem.value);
-                const index = topic.tags.indexOf(tag);
-                if (index !== -1) {
-                    topic.tags.splice(index, 1, newTagName);
-                }
-            });
-            await db.setObjectBulk(
-                topicData.map(t => [`topic:${t.tid}`, { tags: t.tags.join(',') }]),
-            );
-        }, {});
+                // update 'tags' field in topic hash
+                topicData.forEach(topic => {
+                    topic.tags = topic.tags.map(tagItem => tagItem.value);
+                    const index = topic.tags.indexOf(tag);
+                    if (index !== -1) {
+                        topic.tags.splice(index, 1, newTagName);
+                    }
+                });
+                await db.setObjectBulk(topicData.map(t => [`topic:${t.tid}`, { tags: t.tags.join(',') }]));
+            },
+            {}
+        );
         await Topics.deleteTag(tag);
         await updateTagCount(newTagName);
         await Topics.updateCategoryTagsCount(Object.keys(allCids), [newTagName]);
@@ -194,9 +187,7 @@ module.exports = function (Topics) {
     Topics.getTagTopicCount = async function (tag, cids = []) {
         let count = 0;
         if (cids.length) {
-            count = await db.sortedSetsCardSum(
-                cids.map(cid => `cid:${cid}:tag:${tag}:topics`)
-            );
+            count = await db.sortedSetsCardSum(cids.map(cid => `cid:${cid}:tag:${tag}:topics`));
         } else {
             count = await db.sortedSetCard(`tag:${tag}:topics`);
         }
@@ -216,12 +207,15 @@ module.exports = function (Topics) {
         cache.del('tags:topic:count');
         const cids = await categories.getAllCidsFromSet('categories:cid');
 
-        await db.sortedSetRemove(cids.map(cid => `cid:${cid}:tags`), tags);
+        await db.sortedSetRemove(
+            cids.map(cid => `cid:${cid}:tags`),
+            tags
+        );
 
         const deleteKeys = [];
-        tags.forEach((tag) => {
+        tags.forEach(tag => {
             deleteKeys.push(`tag:${tag}`);
-            cids.forEach((cid) => {
+            cids.forEach(cid => {
                 deleteKeys.push(`cid:${cid}:tag:${tag}:topics`);
             });
         });
@@ -229,7 +223,7 @@ module.exports = function (Topics) {
     };
 
     async function removeTagsFromTopics(tags) {
-        await async.eachLimit(tags, 50, async (tag) => {
+        await async.eachLimit(tags, 50, async tag => {
             const tids = await db.getSortedSetRange(`tag:${tag}:topics`, 0, -1);
             if (!tids.length) {
                 return;
@@ -237,7 +231,7 @@ module.exports = function (Topics) {
 
             await db.deleteObjectFields(
                 tids.map(tid => `topic:${tid}`),
-                ['tags'],
+                ['tags']
             );
         });
     }
@@ -262,11 +256,7 @@ module.exports = function (Topics) {
     };
 
     Topics.getCategoryTagsData = async function (cids, start, stop) {
-        return await getFromSet(
-            Array.isArray(cids) ? cids.map(cid => `cid:${cid}:tags`) : `cid:${cids}:tags`,
-            start,
-            stop
-        );
+        return await getFromSet(Array.isArray(cids) ? cids.map(cid => `cid:${cid}:tags`) : `cid:${cids}:tags`, start, stop);
     };
 
     async function getFromSet(set, start, stop) {
@@ -292,7 +282,7 @@ module.exports = function (Topics) {
         if (!tags.length) {
             return [];
         }
-        tags.forEach((tag) => {
+        tags.forEach(tag => {
             tag.valueEscaped = validator.escape(String(tag.value));
             tag.valueEncoded = encodeURIComponent(tag.valueEscaped);
             tag.class = tag.valueEscaped.replace(/\s/g, '-');
@@ -336,9 +326,9 @@ module.exports = function (Topics) {
         const topicData = await Topics.getTopicsFields(tids, ['tid', 'cid', 'timestamp', 'tags']);
         const bulkAdd = [];
         const bulkSet = [];
-        topicData.forEach((t) => {
+        topicData.forEach(t => {
             const topicTags = t.tags.map(tagItem => tagItem.value);
-            tags.forEach((tag) => {
+            tags.forEach(tag => {
                 bulkAdd.push([`tag:${tag}:topics`, t.timestamp, t.tid]);
                 bulkAdd.push([`cid:${t.cid}:tag:${tag}:topics`, t.timestamp, t.tid]);
                 if (!topicTags.includes(tag)) {
@@ -347,10 +337,7 @@ module.exports = function (Topics) {
             });
             bulkSet.push([`topic:${t.tid}`, { tags: topicTags.join(',') }]);
         });
-        await Promise.all([
-            db.sortedSetAddBulk(bulkAdd),
-            db.setObjectBulk(bulkSet),
-        ]);
+        await Promise.all([db.sortedSetAddBulk(bulkAdd), db.setObjectBulk(bulkSet)]);
 
         await Promise.all(tags.map(updateTagCount));
         await Topics.updateCategoryTagsCount(_.uniq(topicData.map(t => t.cid)), tags);
@@ -361,9 +348,9 @@ module.exports = function (Topics) {
         const bulkRemove = [];
         const bulkSet = [];
 
-        topicData.forEach((t) => {
+        topicData.forEach(t => {
             const topicTags = t.tags.map(tagItem => tagItem.value);
-            tags.forEach((tag) => {
+            tags.forEach(tag => {
                 bulkRemove.push([`tag:${tag}:topics`, t.tid]);
                 bulkRemove.push([`cid:${t.cid}:tag:${tag}:topics`, t.tid]);
                 if (topicTags.includes(tag)) {
@@ -372,10 +359,7 @@ module.exports = function (Topics) {
             });
             bulkSet.push([`topic:${t.tid}`, { tags: topicTags.join(',') }]);
         });
-        await Promise.all([
-            db.sortedSetRemoveBulk(bulkRemove),
-            db.setObjectBulk(bulkSet),
-        ]);
+        await Promise.all([db.sortedSetRemoveBulk(bulkRemove), db.setObjectBulk(bulkSet)]);
 
         await Promise.all(tags.map(updateTagCount));
         await Topics.updateCategoryTagsCount(_.uniq(topicData.map(t => t.cid)), tags);
@@ -395,8 +379,7 @@ module.exports = function (Topics) {
         const tags = topicData.tags.map(tagItem => tagItem.value);
         await db.deleteObjectField(`topic:${tid}`, 'tags');
 
-        const sets = tags.map(tag => `tag:${tag}:topics`)
-            .concat(tags.map(tag => `cid:${cid}:tag:${tag}:topics`));
+        const sets = tags.map(tag => `tag:${tag}:topics`).concat(tags.map(tag => `cid:${cid}:tag:${tag}:topics`));
         await db.sortedSetsRemove(sets, tid);
 
         await Topics.updateCategoryTagsCount([cid], tags);

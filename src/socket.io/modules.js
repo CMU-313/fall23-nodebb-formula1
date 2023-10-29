@@ -23,11 +23,7 @@ SocketModules.chats.getRaw = async function (socket, data) {
         throw new Error('[[error:invalid-data]]');
     }
     const roomId = await Messaging.getMessageField(data.mid, 'roomId');
-    const [isAdmin, hasMessage, inRoom] = await Promise.all([
-        user.isAdministrator(socket.uid),
-        db.isSortedSetMember(`uid:${socket.uid}:chat:room:${roomId}:mids`, data.mid),
-        Messaging.isUserInRoom(socket.uid, roomId),
-    ]);
+    const [isAdmin, hasMessage, inRoom] = await Promise.all([user.isAdministrator(socket.uid), db.isSortedSetMember(`uid:${socket.uid}:chat:room:${roomId}:mids`, data.mid), Messaging.isUserInRoom(socket.uid, roomId)]);
 
     if (!isAdmin && (!inRoom || !hasMessage)) {
         throw new Error('[[error:not-allowed]]');
@@ -174,10 +170,7 @@ SocketModules.chats.markRead = async function (socket, roomId) {
     if (!socket.uid || !roomId) {
         throw new Error('[[error:invalid-data]]');
     }
-    const [uidsInRoom] = await Promise.all([
-        Messaging.getUidsInRoom(roomId, 0, -1),
-        Messaging.markRead(socket.uid, roomId),
-    ]);
+    const [uidsInRoom] = await Promise.all([Messaging.getUidsInRoom(roomId, 0, -1), Messaging.markRead(socket.uid, roomId)]);
 
     Messaging.pushUnreadCount(socket.uid);
     server.in(`uid_${socket.uid}`).emit('event:chats.markedAsRead', { roomId: roomId });
@@ -187,8 +180,7 @@ SocketModules.chats.markRead = async function (socket, roomId) {
     }
 
     // Mark notification read
-    const nids = uidsInRoom.filter(uid => parseInt(uid, 10) !== socket.uid)
-        .map(uid => `chat_${uid}_${roomId}`);
+    const nids = uidsInRoom.filter(uid => parseInt(uid, 10) !== socket.uid).map(uid => `chat_${uid}_${roomId}`);
 
     await notifications.markReadMultiple(nids, socket.uid);
     await user.notifications.pushCount(socket.uid);

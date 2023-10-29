@@ -11,10 +11,10 @@ const fork = require('./meta/debugFork');
 function forkChild(message, callback) {
     const child = fork(path.join(__dirname, 'password'));
 
-    child.on('message', (msg) => {
+    child.on('message', msg => {
         callback(msg.err ? new Error(msg.err) : null, msg.result);
     });
-    child.on('error', (err) => {
+    child.on('error', err => {
         console.error(err.stack);
         callback(err);
     });
@@ -49,7 +49,7 @@ async function getFakeHash() {
 }
 
 // child process
-process.on('message', (msg) => {
+process.on('message', msg => {
     if (msg.type === 'hash') {
         tryMethod(hashPassword, msg);
     } else if (msg.type === 'compare') {

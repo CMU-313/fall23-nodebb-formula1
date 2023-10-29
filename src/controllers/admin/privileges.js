@@ -16,18 +16,21 @@ privilegesController.get = async function (req, res) {
         privilegesData = await (isAdminPriv ? privileges.admin.list(req.uid) : privileges.global.list());
     }
 
-    const categoriesData = [{
-        cid: 0,
-        name: '[[admin/manage/privileges:global]]',
-        icon: 'fa-list',
-    }, {
-        cid: 'admin',
-        name: '[[admin/manage/privileges:admin]]',
-        icon: 'fa-lock',
-    }];
+    const categoriesData = [
+        {
+            cid: 0,
+            name: '[[admin/manage/privileges:global]]',
+            icon: 'fa-list',
+        },
+        {
+            cid: 'admin',
+            name: '[[admin/manage/privileges:admin]]',
+            icon: 'fa-lock',
+        },
+    ];
 
     let selectedCategory;
-    categoriesData.forEach((category) => {
+    categoriesData.forEach(category => {
         if (category) {
             category.selected = category.cid === (!isAdminPriv ? cid : 'admin');
 

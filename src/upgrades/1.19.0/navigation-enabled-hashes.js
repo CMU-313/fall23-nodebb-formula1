@@ -10,7 +10,7 @@ module.exports = {
         const order = [];
         const bulkSet = [];
 
-        data.forEach((item) => {
+        data.forEach(item => {
             const navItem = JSON.parse(item.value);
             if (navItem.hasOwnProperty('properties') && navItem.properties) {
                 if (navItem.properties.hasOwnProperty('targetBlank')) {

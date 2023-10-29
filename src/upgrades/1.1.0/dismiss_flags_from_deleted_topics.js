@@ -1,6 +1,5 @@
 'use strict';
 
-
 const winston = require('winston');
 const db = require('../../database');
 
@@ -30,27 +29,12 @@ async function dismissFlag(pid) {
         return;
     }
     if (parseInt(postData.uid, 10) && parseInt(postData.flags, 10) > 0) {
-        await Promise.all([
-            db.sortedSetIncrBy('users:flags', -postData.flags, postData.uid),
-            db.incrObjectFieldBy(`user:${postData.uid}`, 'flags', -postData.flags),
-        ]);
+        await Promise.all([db.sortedSetIncrBy('users:flags', -postData.flags, postData.uid), db.incrObjectFieldBy(`user:${postData.uid}`, 'flags', -postData.flags)]);
     }
     const uids = await db.getSortedSetRange(`pid:${pid}:flag:uids`, 0, -1);
     const nids = uids.map(uid => `post_flag:${pid}:uid:${uid}`);
 
-    await Promise.all([
-        db.deleteAll(nids.map(nid => `notifications:${nid}`)),
-        db.sortedSetRemove('notifications', nids),
-        db.delete(`pid:${pid}:flag:uids`),
-        db.sortedSetsRemove([
-            'posts:flagged',
-            'posts:flags:count',
-            `uid:${postData.uid}:flag:pids`,
-        ], pid),
-        db.deleteObjectField(`post:${pid}`, 'flags'),
-        db.delete(`pid:${pid}:flag:uid:reason`),
-        db.deleteObjectFields(`post:${pid}`, ['flag:state', 'flag:assignee', 'flag:notes', 'flag:history']),
-    ]);
+    await Promise.all([db.deleteAll(nids.map(nid => `notifications:${nid}`)), db.sortedSetRemove('notifications', nids), db.delete(`pid:${pid}:flag:uids`), db.sortedSetsRemove(['posts:flagged', 'posts:flags:count', `uid:${postData.uid}:flag:pids`], pid), db.deleteObjectField(`post:${pid}`, 'flags'), db.delete(`pid:${pid}:flag:uid:reason`), db.deleteObjectFields(`post:${pid}`, ['flag:state', 'flag:assignee', 'flag:notes', 'flag:history'])]);
 
     await db.sortedSetsRemoveRangeByScore(['users:flags'], '-inf', 0);
 }

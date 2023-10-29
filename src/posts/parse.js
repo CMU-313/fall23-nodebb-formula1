@@ -14,8 +14,15 @@ const utils = require('../utils');
 let sanitizeConfig = {
     allowedTags: sanitize.defaults.allowedTags.concat([
         // Some safe-to-use tags to add
-        'sup', 'ins', 'del', 'img', 'button',
-        'video', 'audio', 'iframe', 'embed',
+        'sup',
+        'ins',
+        'del',
+        'img',
+        'button',
+        'video',
+        'audio',
+        'iframe',
+        'embed',
         // 'sup' still necessary until https://github.com/apostrophecms/sanitize-html/pull/422 merged
     ]),
     allowedAttributes: {
@@ -27,10 +34,7 @@ let sanitizeConfig = {
         audio: ['autoplay', 'controls', 'loop', 'muted', 'preload', 'src'],
         embed: ['height', 'src', 'type', 'width'],
     },
-    globalAttributes: ['accesskey', 'class', 'contenteditable', 'dir',
-        'draggable', 'dropzone', 'hidden', 'id', 'lang', 'spellcheck', 'style',
-        'tabindex', 'title', 'translate', 'aria-expanded', 'data-*',
-    ],
+    globalAttributes: ['accesskey', 'class', 'contenteditable', 'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang', 'spellcheck', 'style', 'tabindex', 'title', 'translate', 'aria-expanded', 'data-*'],
     allowedClasses: {
         ...sanitize.defaults.allowedClasses,
     },
@@ -94,9 +98,7 @@ module.exports = function (Posts) {
                             absolute = `//${current[1]}`;
                         }
 
-                        content = content.slice(0, current.index + regex.length) +
-                        absolute +
-                        content.slice(current.index + regex.length + current[1].length);
+                        content = content.slice(0, current.index + regex.length) + absolute + content.slice(current.index + regex.length + current[1].length);
                     }
                 } catch (err) {
                     winston.verbose(err.messsage);
@@ -118,11 +120,8 @@ module.exports = function (Posts) {
 
     Posts.configureSanitize = async () => {
         // Each allowed tags should have some common global attributes...
-        sanitizeConfig.allowedTags.forEach((tag) => {
-            sanitizeConfig.allowedAttributes[tag] = _.union(
-                sanitizeConfig.allowedAttributes[tag],
-                sanitizeConfig.globalAttributes
-            );
+        sanitizeConfig.allowedTags.forEach(tag => {
+            sanitizeConfig.allowedAttributes[tag] = _.union(sanitizeConfig.allowedAttributes[tag], sanitizeConfig.globalAttributes);
         });
 
         // Some plugins might need to adjust or whitelist their own tags...
@@ -132,7 +131,7 @@ module.exports = function (Posts) {
     Posts.registerHooks = () => {
         plugins.hooks.register('core', {
             hook: 'filter:parse.post',
-            method: async (data) => {
+            method: async data => {
                 data.postData.content = Posts.sanitize(data.postData.content);
                 return data;
             },
@@ -150,7 +149,7 @@ module.exports = function (Posts) {
 
         plugins.hooks.register('core', {
             hook: 'filter:parse.signature',
-            method: async (data) => {
+            method: async data => {
                 data.userData.signature = Posts.sanitize(data.userData.signature);
                 return data;
             },

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const async = require('async');
@@ -47,7 +46,7 @@ module.exports = function (Topics) {
     };
 
     Topics.unreadCutoff = async function (uid) {
-        const cutoff = Date.now() - (meta.config.unreadCutoff * 86400000);
+        const cutoff = Date.now() - meta.config.unreadCutoff * 86400000;
         const data = await plugins.hooks.fire('filter:topics.unreadCutoff', { uid: uid, cutoff: cutoff });
         return parseInt(data.cutoff, 10);
     };
@@ -93,21 +92,16 @@ module.exports = function (Topics) {
 
         params.cutoff = await Topics.unreadCutoff(params.uid);
 
-        const [followedTids, ignoredTids, categoryTids, userScores, tids_unread] = await Promise.all([
-            getFollowedTids(params),
-            user.getIgnoredTids(params.uid, 0, -1),
-            getCategoryTids(params),
-            db.getSortedSetRevRangeByScoreWithScores(`uid:${params.uid}:tids_read`, 0, -1, '+inf', params.cutoff),
-            db.getSortedSetRevRangeWithScores(`uid:${params.uid}:tids_unread`, 0, -1),
-        ]);
+        const [followedTids, ignoredTids, categoryTids, userScores, tids_unread] = await Promise.all([getFollowedTids(params), user.getIgnoredTids(params.uid, 0, -1), getCategoryTids(params), db.getSortedSetRevRangeByScoreWithScores(`uid:${params.uid}:tids_read`, 0, -1, '+inf', params.cutoff), db.getSortedSetRevRangeWithScores(`uid:${params.uid}:tids_unread`, 0, -1)]);
 
         const userReadTimes = _.mapValues(_.keyBy(userScores, 'value'), 'score');
         const isTopicsFollowed = {};
-        followedTids.forEach((t) => {
+        followedTids.forEach(t => {
             isTopicsFollowed[t.value] = true;
         });
         const unreadFollowed = await db.isSortedSetMembers(
-            `uid:${params.uid}:followed_tids`, tids_unread.map(t => t.value)
+            `uid:${params.uid}:followed_tids`,
+            tids_unread.map(t => t.value)
         );
 
         tids_unread.forEach((t, i) => {
@@ -115,8 +109,7 @@ module.exports = function (Topics) {
         });
 
         const unreadTopics = _.unionWith(categoryTids, followedTids, (a, b) => a.value === b.value)
-            .filter(t => !ignoredTids.includes(t.value) &&
-                    (!userReadTimes[t.value] || t.score > userReadTimes[t.value]))
+            .filter(t => !ignoredTids.includes(t.value) && (!userReadTimes[t.value] || t.score > userReadTimes[t.value]))
             .concat(tids_unread.filter(t => !ignoredTids.includes(t.value)))
             .sort((a, b) => b.score - a.score);
 
@@ -136,8 +129,7 @@ module.exports = function (Topics) {
         });
 
         tids = await privileges.topics.filterTids('topics:read', tids, params.uid);
-        const topicData = (await Topics.getTopicsFields(tids, ['tid', 'cid', 'uid', 'postcount', 'deleted', 'scheduled']))
-            .filter(t => t.scheduled || !t.deleted);
+        const topicData = (await Topics.getTopicsFields(tids, ['tid', 'cid', 'uid', 'postcount', 'deleted', 'scheduled'])).filter(t => t.scheduled || !t.deleted);
         const topicCids = _.uniq(topicData.map(topic => topic.cid)).filter(Boolean);
 
         const categoryWatchState = await categories.getWatchState(topicCids, params.uid);
@@ -145,9 +137,8 @@ module.exports = function (Topics) {
 
         const filterCids = params.cid && params.cid.map(cid => parseInt(cid, 10));
 
-        topicData.forEach((topic) => {
-            if (topic && topic.cid && (!filterCids || filterCids.includes(topic.cid)) &&
-                !blockedUids.includes(topic.uid)) {
+        topicData.forEach(topic => {
+            if (topic && topic.cid && (!filterCids || filterCids.includes(topic.cid)) && !blockedUids.includes(topic.uid)) {
                 if (isTopicsFollowed[topic.tid] || userCidState[topic.cid] === categories.watchStates.watching) {
                     tidsByFilter[''].push(topic.tid);
                 }
@@ -186,7 +177,7 @@ module.exports = function (Topics) {
         if (params.filter === 'watched') {
             return [];
         }
-        const cids = params.cid || await user.getWatchedCategories(params.uid);
+        const cids = params.cid || (await user.getWatchedCategories(params.uid));
         const keys = cids.map(cid => `cid:${cid}:tids:lastposttime`);
         return await db.getSortedSetRevRangeByScoreWithScores(keys, 0, -1, '+inf', params.cutoff);
     }
@@ -213,11 +204,15 @@ module.exports = function (Topics) {
 
         const userScores = _.zipObject(params.tids, results);
 
-        return await async.filter(params.tids, async tid => await doesTidHaveUnblockedUnreadPosts(tid, {
-            blockedUids: params.blockedUids,
-            topicTimestamp: topicScores[tid],
-            userLastReadTimestamp: userScores[tid],
-        }));
+        return await async.filter(
+            params.tids,
+            async tid =>
+                await doesTidHaveUnblockedUnreadPosts(tid, {
+                    blockedUids: params.blockedUids,
+                    topicTimestamp: topicScores[tid],
+                    userLastReadTimestamp: userScores[tid],
+                })
+        );
     }
 
     async function doesTidHaveUnblockedUnreadPosts(tid, params) {
@@ -275,13 +270,9 @@ module.exports = function (Topics) {
         if (!tids.length) {
             return false;
         }
-        const [topicScores, userScores] = await Promise.all([
-            Topics.getTopicsFields(tids, ['tid', 'lastposttime', 'scheduled']),
-            db.sortedSetScores(`uid:${uid}:tids_read`, tids),
-        ]);
+        const [topicScores, userScores] = await Promise.all([Topics.getTopicsFields(tids, ['tid', 'lastposttime', 'scheduled']), db.sortedSetScores(`uid:${uid}:tids_read`, tids)]);
 
-        const topics = topicScores.filter((t, i) => t.lastposttime &&
-            (!userScores[i] || userScores[i] < t.lastposttime));
+        const topics = topicScores.filter((t, i) => t.lastposttime && (!userScores[i] || userScores[i] < t.lastposttime));
         tids = topics.map(t => t.tid);
 
         if (!tids.length) {
@@ -290,11 +281,7 @@ module.exports = function (Topics) {
 
         const now = Date.now();
         const scores = topics.map(topic => (topic.scheduled ? topic.lastposttime : now));
-        const [topicData] = await Promise.all([
-            Topics.getTopicsFields(tids, ['cid']),
-            db.sortedSetAdd(`uid:${uid}:tids_read`, scores, tids),
-            db.sortedSetRemove(`uid:${uid}:tids_unread`, tids),
-        ]);
+        const [topicData] = await Promise.all([Topics.getTopicsFields(tids, ['cid']), db.sortedSetAdd(`uid:${uid}:tids_read`, scores, tids), db.sortedSetRemove(`uid:${uid}:tids_unread`, tids)]);
 
         const cids = _.uniq(topicData.map(t => t && t.cid).filter(Boolean));
         await categories.markAsRead(cids, uid);
@@ -329,22 +316,15 @@ module.exports = function (Topics) {
         if (!(parseInt(uid, 10) > 0)) {
             return tids.map(() => false);
         }
-        const [topicScores, userScores, tids_unread, blockedUids] = await Promise.all([
-            db.sortedSetScores('topics:recent', tids),
-            db.sortedSetScores(`uid:${uid}:tids_read`, tids),
-            db.sortedSetScores(`uid:${uid}:tids_unread`, tids),
-            user.blocks.list(uid),
-        ]);
+        const [topicScores, userScores, tids_unread, blockedUids] = await Promise.all([db.sortedSetScores('topics:recent', tids), db.sortedSetScores(`uid:${uid}:tids_read`, tids), db.sortedSetScores(`uid:${uid}:tids_unread`, tids), user.blocks.list(uid)]);
 
         const cutoff = await Topics.unreadCutoff(uid);
         const result = tids.map((tid, index) => {
-            const read = !tids_unread[index] &&
-                (topicScores[index] < cutoff ||
-                !!(userScores[index] && userScores[index] >= topicScores[index]));
+            const read = !tids_unread[index] && (topicScores[index] < cutoff || !!(userScores[index] && userScores[index] >= topicScores[index]));
             return { tid: tid, read: read, index: index };
         });
 
-        return await async.map(result, async (data) => {
+        return await async.map(result, async data => {
             if (data.read) {
                 return true;
             }

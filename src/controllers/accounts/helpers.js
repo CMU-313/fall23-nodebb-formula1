@@ -36,10 +36,7 @@ helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {})
     const { canViewInfo } = results;
     const isSelf = parseInt(callerUID, 10) === parseInt(userData.uid, 10);
 
-    userData.age = Math.max(
-        0,
-        userData.birthday ? Math.floor((new Date().getTime() - new Date(userData.birthday).getTime()) / 31536000000) : 0
-    );
+    userData.age = Math.max(0, userData.birthday ? Math.floor((new Date().getTime() - new Date(userData.birthday).getTime()) / 31536000000) : 0);
 
     userData = await user.hidePrivateData(userData, callerUID);
     userData.emailClass = userSettings.showemail ? 'hide' : '';
@@ -104,7 +101,7 @@ helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {})
     userData.moderationNote = validator.escape(String(userData.moderationNote || ''));
 
     if (userData['cover:url']) {
-        userData['cover:url'] = userData['cover:url'].startsWith('http') ? userData['cover:url'] : (nconf.get('relative_path') + userData['cover:url']);
+        userData['cover:url'] = userData['cover:url'].startsWith('http') ? userData['cover:url'] : nconf.get('relative_path') + userData['cover:url'];
     } else {
         userData['cover:url'] = require('../../coverPhoto').getDefaultProfileCover(userData.uid);
     }
@@ -180,33 +177,36 @@ async function getCounts(userData, callerUID) {
 }
 
 async function getProfileMenu(uid, callerUID) {
-    const links = [{
-        id: 'info',
-        route: 'info',
-        name: '[[user:account_info]]',
-        icon: 'fa-info',
-        visibility: {
-            self: false,
-            other: false,
-            moderator: false,
-            globalMod: false,
-            admin: true,
-            canViewInfo: true,
+    const links = [
+        {
+            id: 'info',
+            route: 'info',
+            name: '[[user:account_info]]',
+            icon: 'fa-info',
+            visibility: {
+                self: false,
+                other: false,
+                moderator: false,
+                globalMod: false,
+                admin: true,
+                canViewInfo: true,
+            },
         },
-    }, {
-        id: 'sessions',
-        route: 'sessions',
-        name: '[[pages:account/sessions]]',
-        icon: 'fa-group',
-        visibility: {
-            self: true,
-            other: false,
-            moderator: false,
-            globalMod: false,
-            admin: false,
-            canViewInfo: false,
+        {
+            id: 'sessions',
+            route: 'sessions',
+            name: '[[pages:account/sessions]]',
+            icon: 'fa-group',
+            visibility: {
+                self: true,
+                other: false,
+                moderator: false,
+                globalMod: false,
+                admin: false,
+                canViewInfo: false,
+            },
         },
-    }];
+    ];
 
     if (meta.config.gdpr_enabled) {
         links.push({

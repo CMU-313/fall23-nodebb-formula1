@@ -3,24 +3,24 @@ import db from '../database';
 import plugins from '../plugins';
 
 type Bug = {
-    bid: number,
-    name: string,
-    description: string,
-    resolved: boolean,
-}
+    bid: number;
+    name: string;
+    description: string;
+    resolved: boolean;
+};
 
 type PostData = {
-    bugData: Bug
-}
+    bugData: Bug;
+};
 
 interface BugsInterface {
-    create: (data: Bug) => Promise<number>,
-    post: (data: Bug) => Promise<PostData>,
-    get: (data: string[], fields: string[]) => Promise<Bug[]>,
+    create: (data: Bug) => Promise<number>;
+    post: (data: Bug) => Promise<PostData>;
+    get: (data: string[], fields: string[]) => Promise<Bug[]>;
 }
 
 export = function (Bugs: BugsInterface) {
-    Bugs.create = async function (data : Bug): Promise<number> {
+    Bugs.create = async function (data: Bug): Promise<number> {
         const timestamp = Date.now();
 
         /* eslint-disable max-len */
@@ -66,4 +66,4 @@ export = function (Bugs: BugsInterface) {
         /* eslint-enable max-len */
         return bugs;
     };
-}
+};

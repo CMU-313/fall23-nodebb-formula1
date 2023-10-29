@@ -59,10 +59,7 @@ async function registerAndLoginUser(req, res, userData) {
     // Distinguish registrations through invites from direct ones
     if (userData.token) {
         // Token has to be verified at this point
-        await Promise.all([
-            user.confirmIfInviteEmailIsUsed(userData.token, userData.email, uid),
-            user.joinGroupsFromInvitation(uid, userData.token),
-        ]);
+        await Promise.all([user.confirmIfInviteEmailIsUsed(userData.token, userData.email, uid), user.joinGroupsFromInvitation(uid, userData.token)]);
     }
     await user.deleteInvitationKey(userData.email, userData.token);
     const next = req.session.returnTo || `${nconf.get('relative_path')}/`;
@@ -84,11 +81,7 @@ authenticationController.register = async function (req, res) {
             await user.verifyInvitation(userData);
         }
 
-        if (
-            !userData.username ||
-            userData.username.length < meta.config.minimumUsernameLength ||
-            slugify(userData.username).length < meta.config.minimumUsernameLength
-        ) {
+        if (!userData.username || userData.username.length < meta.config.minimumUsernameLength || slugify(userData.username).length < meta.config.minimumUsernameLength) {
             throw new Error('[[error:username-too-short]]');
         }
 
@@ -104,8 +97,7 @@ authenticationController.register = async function (req, res) {
             throw new Error('[[error:password-too-long]]');
         }
 
-        if (!userData['account-type'] ||
-            (userData['account-type'] !== 'student' && userData['account-type'] !== 'instructor')) {
+        if (!userData['account-type'] || (userData['account-type'] !== 'student' && userData['account-type'] !== 'instructor')) {
             throw new Error('Invalid account type');
         }
 
@@ -181,9 +173,11 @@ authenticationController.registerComplete = async function (req, res) {
             }
         };
 
-        const results = await Promise.allSettled(callbacks.map(async (cb) => {
-            await cb(req.session.registration, req.body);
-        }));
+        const results = await Promise.allSettled(
+            callbacks.map(async cb => {
+                await cb(req.session.registration, req.body);
+            })
+        );
         const errors = results.map(result => result.status === 'rejected' && result.reason && result.reason.message).filter(Boolean);
         if (errors.length) {
             req.flash('errors', errors);
@@ -208,7 +202,7 @@ authenticationController.registerComplete = async function (req, res) {
             delete payload.uid;
             delete payload.returnTo;
 
-            Object.keys(payload).forEach((prop) => {
+            Object.keys(payload).forEach(prop => {
                 if (typeof payload[prop] === 'boolean') {
                     payload[prop] = payload[prop] ? 1 : 0;
                 }
@@ -316,9 +310,7 @@ function continueLogin(strategy, req, res, next) {
             await authenticationController.doLogin(req, userData.uid);
             let destination;
             if (req.session.returnTo) {
-                destination = req.session.returnTo.startsWith('http') ?
-                    req.session.returnTo :
-                    nconf.get('relative_path') + req.session.returnTo;
+                destination = req.session.returnTo.startsWith('http') ? req.session.returnTo : nconf.get('relative_path') + req.session.returnTo;
                 delete req.session.returnTo;
             } else {
                 destination = `${nconf.get('relative_path')}/`;
@@ -383,7 +375,7 @@ authenticationController.onSuccessfulLogin = async function (req, uid) {
             version: req.useragent.version,
         });
         await Promise.all([
-            new Promise((resolve) => {
+            new Promise(resolve => {
                 req.session.save(resolve);
             }),
             user.auth.addSession(uid, req.sessionID),
@@ -422,11 +414,7 @@ authenticationController.localLogin = async function (req, username, password, n
     const userslug = slugify(username);
     const uid = await user.getUidByUserslug(userslug);
     try {
-        const [userData, isAdminOrGlobalMod, canLoginIfBanned] = await Promise.all([
-            user.getUserFields(uid, ['uid', 'passwordExpiry']),
-            user.isAdminOrGlobalMod(uid),
-            user.bans.canLoginIfBanned(uid),
-        ]);
+        const [userData, isAdminOrGlobalMod, canLoginIfBanned] = await Promise.all([user.getUserFields(uid, ['uid', 'passwordExpiry']), user.isAdminOrGlobalMod(uid), user.bans.canLoginIfBanned(uid)]);
 
         userData.isAdminOrGlobalMod = isAdminOrGlobalMod;
 
@@ -469,8 +457,8 @@ authenticationController.logout = async function (req, res, next) {
         await destroyAsync(req);
         res.clearCookie(nconf.get('sessionKey'), meta.configs.cookie.get());
 
-        await user.setUserField(uid, 'lastonline', Date.now() - (meta.config.onlineCutoff * 60000));
-        await db.sortedSetAdd('users:online', Date.now() - (meta.config.onlineCutoff * 60000), uid);
+        await user.setUserField(uid, 'lastonline', Date.now() - meta.config.onlineCutoff * 60000);
+        await db.sortedSetAdd('users:online', Date.now() - meta.config.onlineCutoff * 60000, uid);
         await plugins.hooks.fire('static:user.loggedOut', { req: req, res: res, uid: uid, sessionID: sessionID });
 
         // Force session check for all connected socket.io clients with the same session id

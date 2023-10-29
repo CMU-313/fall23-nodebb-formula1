@@ -1,4 +1,3 @@
-
 'use strict';
 
 const topics = require('../topics');
@@ -16,7 +15,10 @@ module.exports = function (Posts) {
         const isArray = Array.isArray(pids);
         pids = isArray ? pids : [pids];
         const postData = await Posts.getPostsFields(pids, ['tid']);
-        const topicData = await topics.getTopicsFields(postData.map(t => t.tid), ['mainPid']);
+        const topicData = await topics.getTopicsFields(
+            postData.map(t => t.tid),
+            ['mainPid']
+        );
         const result = pids.map((pid, i) => parseInt(pid, 10) === parseInt(topicData[i].mainPid, 10));
         return isArray ? result : result[0];
     };
@@ -34,10 +36,7 @@ module.exports = function (Posts) {
     Posts.generatePostPaths = async function (pids, uid) {
         const postData = await Posts.getPostsFields(pids, ['pid', 'tid']);
         const tids = postData.map(post => post && post.tid);
-        const [indices, topicData] = await Promise.all([
-            Posts.getPostIndices(postData, uid),
-            topics.getTopicsFields(tids, ['slug']),
-        ]);
+        const [indices, topicData] = await Promise.all([Posts.getPostIndices(postData, uid), topics.getTopicsFields(tids, ['slug'])]);
 
         const paths = pids.map((pid, index) => {
             const slug = topicData[index] ? topicData[index].slug : null;

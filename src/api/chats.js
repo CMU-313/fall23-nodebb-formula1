@@ -74,12 +74,9 @@ chatsAPI.rename = async (caller, data) => {
 };
 
 chatsAPI.users = async (caller, data) => {
-    const [isOwner, users] = await Promise.all([
-        messaging.isRoomOwner(caller.uid, data.roomId),
-        messaging.getUsersInRoom(data.roomId, 0, -1),
-    ]);
-    users.forEach((user) => {
-        user.canKick = (parseInt(user.uid, 10) !== parseInt(caller.uid, 10)) && isOwner;
+    const [isOwner, users] = await Promise.all([messaging.isRoomOwner(caller.uid, data.roomId), messaging.getUsersInRoom(data.roomId, 0, -1)]);
+    users.forEach(user => {
+        user.canKick = parseInt(user.uid, 10) !== parseInt(caller.uid, 10) && isOwner;
     });
     return { users };
 };

@@ -68,13 +68,11 @@ function buildBreadcrumbs(currentFolder) {
     const crumbs = [];
     const parts = currentFolder.replace(nconf.get('upload_path'), '').split(path.sep);
     let currentPath = '';
-    parts.forEach((part) => {
+    parts.forEach(part => {
         const dir = path.join(currentPath, part);
         crumbs.push({
             text: part || 'Uploads',
-            url: part ?
-                (`${nconf.get('relative_path')}/admin/manage/uploads?dir=${dir}`) :
-                `${nconf.get('relative_path')}/admin/manage/uploads`,
+            url: part ? `${nconf.get('relative_path')}/admin/manage/uploads?dir=${dir}` : `${nconf.get('relative_path')}/admin/manage/uploads`,
         });
         currentPath = dir;
     });
@@ -166,7 +164,6 @@ uploadsController.uploadTouchIcon = async function (req, res, next) {
         }
     }
 };
-
 
 uploadsController.uploadMaskableIcon = async function (req, res, next) {
     const uploadedFile = req.files.files[0];

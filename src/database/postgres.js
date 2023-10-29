@@ -31,7 +31,10 @@ postgresModule.questions = [
         description: 'Password of your PostgreSQL database',
         hidden: true,
         default: nconf.get('postgres:password') || '',
-        before: function (value) { value = value || nconf.get('postgres:password') || ''; return value; },
+        before: function (value) {
+            value = value || nconf.get('postgres:password') || '';
+            return value;
+        },
     },
     {
         name: 'postgres:database',
@@ -61,7 +64,6 @@ postgresModule.init = async function () {
         client.release();
     }
 };
-
 
 async function checkUpgrade(client) {
     const res = await client.query(`
@@ -334,10 +336,7 @@ postgresModule.createIndices = function (callback) {
     const query = postgresModule.pool.query.bind(postgresModule.pool);
 
     winston.info('[database] Checking database indices.');
-    async.series([
-        async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_zset__key__score" ON "legacy_zset"("_key" ASC, "score" DESC)`),
-        async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_object__expireAt" ON "legacy_object"("expireAt" ASC)`),
-    ], (err) => {
+    async.series([async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_zset__key__score" ON "legacy_zset"("_key" ASC, "score" DESC)`), async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_object__expireAt" ON "legacy_object"("expireAt" ASC)`)], err => {
         if (err) {
             winston.error(`Error creating index ${err.message}`);
             return callback(err);

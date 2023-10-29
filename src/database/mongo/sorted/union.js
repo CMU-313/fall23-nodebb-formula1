@@ -6,11 +6,10 @@ module.exports = function (module) {
             return 0;
         }
 
-        const data = await module.client.collection('objects').aggregate([
-            { $match: { _key: { $in: keys } } },
-            { $group: { _id: { value: '$value' } } },
-            { $group: { _id: null, count: { $sum: 1 } } },
-        ]).toArray();
+        const data = await module.client
+            .collection('objects')
+            .aggregate([{ $match: { _key: { $in: keys } } }, { $group: { _id: { value: '$value' } } }, { $group: { _id: null, count: { $sum: 1 } } }])
+            .toArray();
         return Array.isArray(data) && data.length ? data[0].count : 0;
     };
 
@@ -40,11 +39,7 @@ module.exports = function (module) {
             aggregate.$sum = '$score';
         }
 
-        const pipeline = [
-            { $match: { _key: { $in: params.sets } } },
-            { $group: { _id: { value: '$value' }, totalScore: aggregate } },
-            { $sort: { totalScore: params.sort } },
-        ];
+        const pipeline = [{ $match: { _key: { $in: params.sets } } }, { $group: { _id: { value: '$value' }, totalScore: aggregate } }, { $sort: { totalScore: params.sort } }];
 
         if (params.start) {
             pipeline.push({ $skip: params.start });

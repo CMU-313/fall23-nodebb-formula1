@@ -29,13 +29,7 @@ module.exports = function (Posts) {
         const postData = await Posts.getPostFields(pid, ['pid', 'tid', 'uid', 'content', 'timestamp']);
         const topicData = await topics.getTopicFields(postData.tid, ['tid', 'cid', 'pinned']);
         postData.cid = topicData.cid;
-        await Promise.all([
-            topics.updateLastPostTimeFromLastPid(postData.tid),
-            topics.updateTeaser(postData.tid),
-            isDeleting ?
-                db.sortedSetRemove(`cid:${topicData.cid}:pids`, pid) :
-                db.sortedSetAdd(`cid:${topicData.cid}:pids`, postData.timestamp, pid),
-        ]);
+        await Promise.all([topics.updateLastPostTimeFromLastPid(postData.tid), topics.updateTeaser(postData.tid), isDeleting ? db.sortedSetRemove(`cid:${topicData.cid}:pids`, pid) : db.sortedSetAdd(`cid:${topicData.cid}:pids`, postData.timestamp, pid)]);
         await categories.updateRecentTidForCid(postData.cid);
         plugins.hooks.fire(`action:post.${type}`, { post: _.clone(postData), uid: uid });
         if (type === 'delete') {
@@ -56,7 +50,7 @@ module.exports = function (Posts) {
         const topicData = await topics.getTopicsFields(uniqTids, ['tid', 'cid', 'pinned', 'postcount']);
         const tidToTopic = _.zipObject(uniqTids, topicData);
 
-        postData.forEach((p) => {
+        postData.forEach(p => {
             p.topic = tidToTopic[p.tid];
             p.cid = tidToTopic[p.tid] && tidToTopic[p.tid].cid;
         });
@@ -71,17 +65,7 @@ module.exports = function (Posts) {
             uid: uid,
         });
 
-        await Promise.all([
-            deleteFromTopicUserNotification(postData),
-            deleteFromCategoryRecentPosts(postData),
-            deleteFromUsersBookmarks(pids),
-            deleteFromUsersVotes(pids),
-            deleteFromReplies(postData),
-            deleteFromGroups(pids),
-            deleteDiffs(pids),
-            deleteFromUploads(pids),
-            db.sortedSetsRemove(['posts:pid', 'posts:votes', 'posts:flagged'], pids),
-        ]);
+        await Promise.all([deleteFromTopicUserNotification(postData), deleteFromCategoryRecentPosts(postData), deleteFromUsersBookmarks(pids), deleteFromUsersVotes(pids), deleteFromReplies(postData), deleteFromGroups(pids), deleteDiffs(pids), deleteFromUploads(pids), db.sortedSetsRemove(['posts:pid', 'posts:votes', 'posts:flagged'], pids)]);
 
         await resolveFlags(postData, uid);
 
@@ -96,7 +80,7 @@ module.exports = function (Posts) {
 
     async function deleteFromTopicUserNotification(postData) {
         const bulkRemove = [];
-        postData.forEach((p) => {
+        postData.forEach(p => {
             bulkRemove.push([`tid:${p.tid}:posts`, p.pid]);
             bulkRemove.push([`tid:${p.tid}:posts:votes`, p.pid]);
             bulkRemove.push([`uid:${p.uid}:posts`, p.pid]);
@@ -135,19 +119,16 @@ module.exports = function (Posts) {
             topicTasks.push(db.sortedSetIncrByBulk(zsetIncrBulk));
         }
 
-        await Promise.all([
-            db.incrObjectFieldByBulk(incrObjectBulk),
-            db.sortedSetAddBulk(topicPostCountTasks),
-            ...topicTasks,
-            user.updatePostCount(_.uniq(postData.map(p => p.uid))),
-            notifications.rescind(...postData.map(p => `new_post:tid:${p.tid}:pid:${p.pid}:uid:${p.uid}`)),
-        ]);
+        await Promise.all([db.incrObjectFieldByBulk(incrObjectBulk), db.sortedSetAddBulk(topicPostCountTasks), ...topicTasks, user.updatePostCount(_.uniq(postData.map(p => p.uid))), notifications.rescind(...postData.map(p => `new_post:tid:${p.tid}:pid:${p.pid}:uid:${p.uid}`))]);
     }
 
     async function deleteFromCategoryRecentPosts(postData) {
         const uniqCids = _.uniq(postData.map(p => p.cid));
         const sets = uniqCids.map(cid => `cid:${cid}:pids`);
-        await db.sortedSetRemove(sets, postData.map(p => p.pid));
+        await db.sortedSetRemove(
+            sets,
+            postData.map(p => p.pid)
+        );
         await Promise.all(uniqCids.map(categories.updateRecentTidForCid));
     }
 
@@ -155,7 +136,7 @@ module.exports = function (Posts) {
         const arrayOfUids = await db.getSetsMembers(pids.map(pid => `pid:${pid}:users_bookmarked`));
         const bulkRemove = [];
         pids.forEach((pid, index) => {
-            arrayOfUids[index].forEach((uid) => {
+            arrayOfUids[index].forEach(uid => {
                 bulkRemove.push([`uid:${uid}:bookmarks`, pid]);
             });
         });
@@ -164,27 +145,18 @@ module.exports = function (Posts) {
     }
 
     async function deleteFromUsersVotes(pids) {
-        const [upvoters, downvoters] = await Promise.all([
-            db.getSetsMembers(pids.map(pid => `pid:${pid}:upvote`)),
-            db.getSetsMembers(pids.map(pid => `pid:${pid}:downvote`)),
-        ]);
+        const [upvoters, downvoters] = await Promise.all([db.getSetsMembers(pids.map(pid => `pid:${pid}:upvote`)), db.getSetsMembers(pids.map(pid => `pid:${pid}:downvote`))]);
         const bulkRemove = [];
         pids.forEach((pid, index) => {
-            upvoters[index].forEach((upvoterUid) => {
+            upvoters[index].forEach(upvoterUid => {
                 bulkRemove.push([`uid:${upvoterUid}:upvote`, pid]);
             });
-            downvoters[index].forEach((downvoterUid) => {
+            downvoters[index].forEach(downvoterUid => {
                 bulkRemove.push([`uid:${downvoterUid}:downvote`, pid]);
             });
         });
 
-        await Promise.all([
-            db.sortedSetRemoveBulk(bulkRemove),
-            db.deleteAll([
-                ...pids.map(pid => `pid:${pid}:upvote`),
-                ...pids.map(pid => `pid:${pid}:downvote`),
-            ]),
-        ]);
+        await Promise.all([db.sortedSetRemoveBulk(bulkRemove), db.deleteAll([...pids.map(pid => `pid:${pid}:upvote`), ...pids.map(pid => `pid:${pid}:downvote`)])]);
     }
 
     async function deleteFromReplies(postData) {
@@ -192,7 +164,8 @@ module.exports = function (Posts) {
         const allReplyPids = _.flatten(arrayOfReplyPids);
         const promises = [
             db.deleteObjectFields(
-                allReplyPids.map(pid => `post:${pid}`), ['toPid']
+                allReplyPids.map(pid => `post:${pid}`),
+                ['toPid']
             ),
             db.deleteAll(postData.map(p => `pid:${p.pid}:replies`)),
         ];
@@ -215,10 +188,7 @@ module.exports = function (Posts) {
 
     async function deleteDiffs(pids) {
         const timestamps = await Promise.all(pids.map(pid => Posts.diffs.list(pid)));
-        await db.deleteAll([
-            ...pids.map(pid => `post:${pid}:diffs`),
-            ..._.flattenDeep(pids.map((pid, index) => timestamps[index].map(t => `diff:${pid}.${t}`))),
-        ]);
+        await db.deleteAll([...pids.map(pid => `post:${pid}:diffs`), ..._.flattenDeep(pids.map((pid, index) => timestamps[index].map(t => `diff:${pid}.${t}`)))]);
     }
 
     async function deleteFromUploads(pids) {

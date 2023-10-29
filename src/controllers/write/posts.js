@@ -101,10 +101,7 @@ Posts.deleteDiff = async (req, res) => {
     }
 
     const cid = await posts.getCidByPid(req.params.pid);
-    const [isAdmin, isModerator] = await Promise.all([
-        privileges.users.isAdministrator(req.uid),
-        privileges.users.isModerator(req.uid, cid),
-    ]);
+    const [isAdmin, isModerator] = await Promise.all([privileges.users.isAdministrator(req.uid), privileges.users.isModerator(req.uid, cid)]);
 
     if (!(isAdmin || isModerator)) {
         return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));

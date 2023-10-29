@@ -1,4 +1,3 @@
-
 'use strict';
 
 const nconf = require('nconf');
@@ -55,17 +54,14 @@ UserEmail.isValidationPending = async (uid, email) => {
     return !!code;
 };
 
-UserEmail.getValidationExpiry = async (uid) => {
+UserEmail.getValidationExpiry = async uid => {
     const pending = await UserEmail.isValidationPending(uid);
     return pending ? db.pttl(`confirm:byUid:${uid}`) : null;
 };
 
-UserEmail.expireValidation = async (uid) => {
+UserEmail.expireValidation = async uid => {
     const code = await db.get(`confirm:byUid:${uid}`);
-    await db.deleteAll([
-        `confirm:byUid:${uid}`,
-        `confirm:${code}`,
-    ]);
+    await db.deleteAll([`confirm:byUid:${uid}`, `confirm:${code}`]);
 };
 
 UserEmail.canSendValidation = async (uid, email) => {
@@ -116,7 +112,7 @@ UserEmail.sendValidationEmail = async function (uid, options) {
         return;
     }
 
-    if (!options.force && !await UserEmail.canSendValidation(uid, options.email)) {
+    if (!options.force && !(await UserEmail.canSendValidation(uid, options.email))) {
         throw new Error(`[[error:confirm-email-already-sent, ${emailConfirmInterval}]]`);
     }
 
@@ -179,11 +175,7 @@ UserEmail.confirmByCode = async function (code, sessionId) {
     }
 
     await user.setUserField(confirmObj.uid, 'email', confirmObj.email);
-    await Promise.all([
-        UserEmail.confirmByUid(confirmObj.uid),
-        db.delete(`confirm:${code}`),
-        events.log({ type: 'email-change', oldEmail, newEmail: confirmObj.email }),
-    ]);
+    await Promise.all([UserEmail.confirmByUid(confirmObj.uid), db.delete(`confirm:${code}`), events.log({ type: 'email-change', oldEmail, newEmail: confirmObj.email })]);
 };
 
 // confirm uid's email via ACP

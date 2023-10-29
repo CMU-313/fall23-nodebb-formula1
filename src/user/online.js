@@ -21,7 +21,7 @@ module.exports = function (User) {
                 return;
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            const userData = yield db.getObjectFields(`user:${uid}`, ['status', 'lastonline']);
+            const userData = (yield db.getObjectFields(`user:${uid}`, ['status', 'lastonline']));
             const now = Date.now();
             if (userData.status === 'offline' || now - parseInt(userData.lastonline, 10) < 300000) {
                 return;
@@ -36,7 +36,7 @@ module.exports = function (User) {
             }
             const now = Date.now();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            const userOnlineTime = yield db.sortedSetScore('users:online', uid);
+            const userOnlineTime = (yield db.sortedSetScore('users:online', uid));
             if (now - parseInt(userOnlineTime, 10) < 300000) {
                 return;
             }
@@ -53,10 +53,10 @@ module.exports = function (User) {
             const isArray = Array.isArray(uid);
             uid = (isArray ? uid : [uid]);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            const lastonline = yield db.sortedSetScores('users:online', uid);
+            const lastonline = (yield db.sortedSetScores('users:online', uid));
             const isOnline = uid.map(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            (_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000));
+            (_uid, index) => now - lastonline[index] < meta.config.onlineCutoff * 60000);
             return isArray ? isOnline : isOnline[0];
         });
     };
@@ -72,7 +72,7 @@ module.exports = function (User) {
             const onlineUids = yield User.getUidsFromSet('users:online', 0, -1);
             // Get boolean array repesenting user membership in group
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            const groupMemberMask = yield groups.isMembers(onlineUids, groupName);
+            const groupMemberMask = (yield groups.isMembers(onlineUids, groupName));
             // Filter online user that are members in group
             const numOnlineInGroup = groupMemberMask.reduce((count, isMember) => count + Number(isMember), 0);
             return numOnlineInGroup;

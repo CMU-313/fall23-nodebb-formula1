@@ -54,19 +54,21 @@ Languages.list = async function () {
 
     const codes = await Languages.listCodes();
 
-    let languages = await Promise.all(codes.map(async (folder) => {
-        try {
-            const configPath = path.join(languagesPath, folder, 'language.json');
-            const file = await fs.promises.readFile(configPath, 'utf8');
-            const lang = JSON.parse(file);
-            return lang;
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return;
+    let languages = await Promise.all(
+        codes.map(async folder => {
+            try {
+                const configPath = path.join(languagesPath, folder, 'language.json');
+                const file = await fs.promises.readFile(configPath, 'utf8');
+                const lang = JSON.parse(file);
+                return lang;
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    return;
+                }
+                throw err;
             }
-            throw err;
-        }
-    }));
+        })
+    );
 
     // filter out invalid ones
     languages = languages.filter(lang => lang && lang.code && lang.name && lang.dir);

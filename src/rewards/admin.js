@@ -28,11 +28,7 @@ rewards.save = async function (data) {
 };
 
 rewards.delete = async function (data) {
-    await Promise.all([
-        db.setRemove('rewards:list', data.id),
-        db.delete(`rewards:id:${data.id}`),
-        db.delete(`rewards:id:${data.id}:rewards`),
-    ]);
+    await Promise.all([db.setRemove('rewards:list', data.id), db.delete(`rewards:id:${data.id}`), db.delete(`rewards:id:${data.id}:rewards`)]);
 };
 
 rewards.get = async function () {
@@ -49,7 +45,7 @@ async function saveConditions(data) {
     await db.delete('conditions:active');
     const conditions = [];
 
-    data.forEach((reward) => {
+    data.forEach(reward => {
         conditions.push(reward.condition);
         rewardsPerCondition[reward.condition] = rewardsPerCondition[reward.condition] || [];
         rewardsPerCondition[reward.condition].push(reward.id);
@@ -62,10 +58,7 @@ async function saveConditions(data) {
 
 async function getActiveRewards() {
     async function load(id) {
-        const [main, rewards] = await Promise.all([
-            db.getObject(`rewards:id:${id}`),
-            db.getObject(`rewards:id:${id}:rewards`),
-        ]);
+        const [main, rewards] = await Promise.all([db.getObject(`rewards:id:${id}`), db.getObject(`rewards:id:${id}:rewards`)]);
         if (main) {
             main.disabled = main.disabled === 'true';
             main.rewards = rewards;

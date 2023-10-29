@@ -42,16 +42,21 @@ Analytics.init = async function () {
         ttl: 0,
     });
 
-    new cronJob('*/10 * * * * *', (async () => {
-        publishLocalAnalytics();
-        if (runJobs) {
-            await sleep(2000);
-            await Analytics.writeData();
-        }
-    }), null, true);
+    new cronJob(
+        '*/10 * * * * *',
+        async () => {
+            publishLocalAnalytics();
+            if (runJobs) {
+                await sleep(2000);
+                await Analytics.writeData();
+            }
+        },
+        null,
+        true
+    );
 
     if (runJobs) {
-        pubsub.on('analytics:publish', (data) => {
+        pubsub.on('analytics:publish', data => {
             incrementProperties(total, data.local);
         });
     }
@@ -80,7 +85,7 @@ Analytics.increment = function (keys, callback) {
 
     plugins.hooks.fire('action:analytics.increment', { keys: keys });
 
-    keys.forEach((key) => {
+    keys.forEach(key => {
         local.counters[key] = local.counters[key] || 0;
         local.counters[key] += 1;
     });
@@ -107,7 +112,10 @@ Analytics.pageView = async function (payload) {
         // Retrieve hash or calculate if not present
         let hash = ipCache.get(payload.ip + secret);
         if (!hash) {
-            hash = crypto.createHash('sha1').update(payload.ip + secret).digest('hex');
+            hash = crypto
+                .createHash('sha1')
+                .update(payload.ip + secret)
+                .digest('hex');
             ipCache.set(payload.ip + secret, hash);
         }
 
@@ -131,11 +139,8 @@ Analytics.writeData = async function () {
     const incrByBulk = [];
 
     // Build list of metrics that were updated
-    let metrics = [
-        'pageviews',
-        'pageviews:month',
-    ];
-    metrics.forEach((metric) => {
+    let metrics = ['pageviews', 'pageviews:month'];
+    metrics.forEach(metric => {
         const toAdd = ['registered', 'guest', 'bot'].map(type => `${metric}:${type}`);
         metrics = [...metrics, ...toAdd];
     });
@@ -190,7 +195,13 @@ Analytics.writeData = async function () {
     }
 
     // Update list of tracked metrics
-    dbQueue.push(db.sortedSetAdd('analyticsKeys', metrics.map(() => +Date.now()), metrics));
+    dbQueue.push(
+        db.sortedSetAdd(
+            'analyticsKeys',
+            metrics.map(() => +Date.now()),
+            metrics
+        )
+    );
 
     try {
         await Promise.all(dbQueue);
@@ -212,7 +223,7 @@ Analytics.getHourlyStatsForSet = async function (set, hour, numHours) {
     hour.setHours(hour.getHours(), 0, 0, 0);
 
     for (let i = 0, ii = numHours; i < ii; i += 1) {
-        hoursArr.push(hour.getTime() - (i * 3600 * 1000));
+        hoursArr.push(hour.getTime() - i * 3600 * 1000);
     }
 
     const counts = await db.sortedSetScores(set, hoursArr);
@@ -224,7 +235,7 @@ Analytics.getHourlyStatsForSet = async function (set, hour, numHours) {
     const termsArr = [];
 
     hoursArr.reverse();
-    hoursArr.forEach((hour) => {
+    hoursArr.forEach(hour => {
         termsArr.push(terms[hour]);
     });
 
@@ -245,11 +256,7 @@ Analytics.getDailyStatsForSet = async function (set, day, numDays) {
 
     while (numDays > 0) {
         /* eslint-disable no-await-in-loop */
-        const dayData = await Analytics.getHourlyStatsForSet(
-            set,
-            day.getTime() - (1000 * 60 * 60 * 24 * (numDays - 1)),
-            24
-        );
+        const dayData = await Analytics.getHourlyStatsForSet(set, day.getTime() - 1000 * 60 * 60 * 24 * (numDays - 1), 24);
         daysArr.push(dayData.reduce((cur, next) => cur + next));
         numDays -= 1;
     }
@@ -264,10 +271,7 @@ Analytics.getSummary = async function () {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [seven, thirty] = await Promise.all([
-        Analytics.getDailyStatsForSet('analytics:pageviews', today, 7),
-        Analytics.getDailyStatsForSet('analytics:pageviews', today, 30),
-    ]);
+    const [seven, thirty] = await Promise.all([Analytics.getDailyStatsForSet('analytics:pageviews', today, 7), Analytics.getDailyStatsForSet('analytics:pageviews', today, 30)]);
 
     return {
         seven: seven.reduce((sum, cur) => sum + cur, 0),

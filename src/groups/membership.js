@@ -137,7 +137,7 @@ module.exports = function (Groups) {
         }
         const isGroupMembers = await Promise.all(groupNames.map(name => Groups.isMembers(uids, name)));
 
-        isGroupMembers.forEach((isMembers) => {
+        isGroupMembers.forEach(isMembers => {
             results.forEach((isMember, index) => {
                 if (!isMember && isMembers[index]) {
                     results[index] = true;
@@ -152,7 +152,7 @@ module.exports = function (Groups) {
         keys = isArray ? keys : [keys];
 
         const cachedData = {};
-        const nonCachedKeys = keys.filter((groupName) => {
+        const nonCachedKeys = keys.filter(groupName => {
             const groupMembers = cache.get(`group:${groupName}:members`);
             const isInCache = groupMembers !== undefined;
             if (isInCache) {

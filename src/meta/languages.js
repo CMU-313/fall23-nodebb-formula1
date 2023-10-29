@@ -24,7 +24,7 @@ async function getTranslationMetadata() {
     let languages = [];
     let namespaces = [];
 
-    paths.forEach((p) => {
+    paths.forEach(p => {
         if (!p.endsWith('.json')) {
             return;
         }
@@ -40,7 +40,6 @@ async function getTranslationMetadata() {
         languages.push(language);
         namespaces.push(namespace);
     });
-
 
     languages = _.union(languages, Plugins.languageData.languages).sort().filter(Boolean);
     namespaces = _.union(namespaces, Plugins.languageData.namespaces).sort().filter(Boolean);
@@ -77,8 +76,8 @@ async function buildTranslations(ref) {
 
     const promises = [];
 
-    namespaces.forEach((namespace) => {
-        languages.forEach((language) => {
+    namespaces.forEach(namespace => {
+        languages.forEach(language => {
             promises.push(buildNamespaceLanguage(language, namespace, plugins));
         });
     });
@@ -112,12 +111,7 @@ async function addPlugin(translations, pluginData, lang, namespace) {
     //  2. old language string (en_GB)
     //  3. corrected plugin defaultLang (en-US)
     //  4. old plugin defaultLang (en_US)
-    const langs = _.uniq([
-        defaultLang.replace('-', '_').replace('-x-', '@'),
-        defaultLang.replace('_', '-').replace('@', '-x-'),
-        lang.replace('-', '_').replace('-x-', '@'),
-        lang,
-    ]);
+    const langs = _.uniq([defaultLang.replace('-', '_').replace('-x-', '@'), defaultLang.replace('_', '-').replace('@', '-x-'), lang.replace('-', '_').replace('-x-', '@'), lang]);
 
     for (const language of langs) {
         /* eslint-disable no-await-in-loop */

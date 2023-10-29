@@ -14,9 +14,7 @@ module.exports = function (SocketCategories) {
         let cids = [];
         let matchedCids = [];
         const privilege = data.privilege || 'topics:read';
-        data.states = (data.states || ['watching', 'notwatching', 'ignoring']).map(
-            state => categories.watchStates[state]
-        );
+        data.states = (data.states || ['watching', 'notwatching', 'ignoring']).map(state => categories.watchStates[state]);
 
         if (data.search) {
             ({ cids, matchedCids } = await findMatchedCids(socket.uid, data));
@@ -25,7 +23,12 @@ module.exports = function (SocketCategories) {
         }
 
         const visibleCategories = await controllersHelpers.getVisibleCategories({
-            cids, uid: socket.uid, states: data.states, privilege, showLinks: data.showLinks, parentCid: data.parentCid,
+            cids,
+            uid: socket.uid,
+            states: data.states,
+            privilege,
+            showLinks: data.showLinks,
+            parentCid: data.parentCid,
         });
 
         if (Array.isArray(data.selectedCids)) {
@@ -35,7 +38,7 @@ module.exports = function (SocketCategories) {
         let categoriesData = categories.buildForSelectCategories(visibleCategories, ['disabledClass'], data.parentCid);
         categoriesData = categoriesData.slice(0, 200);
 
-        categoriesData.forEach((category) => {
+        categoriesData.forEach(category => {
             category.selected = data.selectedCids ? data.selectedCids.includes(category.cid) : false;
             if (matchedCids.includes(category.cid)) {
                 category.match = true;
@@ -59,8 +62,7 @@ module.exports = function (SocketCategories) {
 
         let matchedCids = result.categories.map(c => c.cid);
         // no need to filter if all 3 states are used
-        const filterByWatchState = !Object.values(categories.watchStates)
-            .every(state => data.states.includes(state));
+        const filterByWatchState = !Object.values(categories.watchStates).every(state => data.states.includes(state));
 
         if (filterByWatchState) {
             const states = await categories.getWatchState(matchedCids, uid);
@@ -81,14 +83,16 @@ module.exports = function (SocketCategories) {
         async function getCidsRecursive(cids) {
             const categoryData = await categories.getCategoriesFields(cids, ['subCategoriesPerPage']);
             const cidToData = _.zipObject(cids, categoryData);
-            await Promise.all(cids.map(async (cid) => {
-                const allChildCids = await categories.getAllCidsFromSet(`cid:${cid}:children`);
-                if (allChildCids.length) {
-                    const childCids = await privileges.categories.filterCids('find', allChildCids, uid);
-                    resultCids.push(...childCids.slice(0, cidToData[cid].subCategoriesPerPage));
-                    await getCidsRecursive(childCids);
-                }
-            }));
+            await Promise.all(
+                cids.map(async cid => {
+                    const allChildCids = await categories.getAllCidsFromSet(`cid:${cid}:children`);
+                    if (allChildCids.length) {
+                        const childCids = await privileges.categories.filterCids('find', allChildCids, uid);
+                        resultCids.push(...childCids.slice(0, cidToData[cid].subCategoriesPerPage));
+                        await getCidsRecursive(childCids);
+                    }
+                })
+            );
         }
 
         const allRootCids = await categories.getAllCidsFromSet(`cid:${parentCid}:children`);

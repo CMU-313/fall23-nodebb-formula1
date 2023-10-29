@@ -106,7 +106,7 @@ module.exports = function (opts) {
         localReset();
     });
 
-    pubsub.on(`${cache.name}:lruCache:del`, (keys) => {
+    pubsub.on(`${cache.name}:lruCache:del`, keys => {
         if (Array.isArray(keys)) {
             keys.forEach(key => lruCache.delete(key));
         }
@@ -118,7 +118,7 @@ module.exports = function (opts) {
         }
         let data;
         let isCached;
-        const unCachedKeys = keys.filter((key) => {
+        const unCachedKeys = keys.filter(key => {
             data = cache.get(key);
             isCached = data !== undefined;
             if (isCached) {

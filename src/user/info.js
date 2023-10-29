@@ -22,19 +22,15 @@ module.exports = function (User) {
             uid: uid,
             timestamp: banInfo.timestamp,
             banned_until: expire,
-            expiry: expire, /* backward compatible alias */
+            expiry: expire /* backward compatible alias */,
             banned_until_readable: expire_readable,
-            expiry_readable: expire_readable, /* backward compatible alias */
+            expiry_readable: expire_readable /* backward compatible alias */,
             reason: validator.escape(String(banInfo.reason || '')),
         };
     };
 
     User.getModerationHistory = async function (uid) {
-        let [flags, bans, mutes] = await Promise.all([
-            db.getSortedSetRevRangeWithScores(`flags:byTargetUid:${uid}`, 0, 19),
-            db.getSortedSetRevRange(`uid:${uid}:bans:timestamp`, 0, 19),
-            db.getSortedSetRevRange(`uid:${uid}:mutes:timestamp`, 0, 19),
-        ]);
+        let [flags, bans, mutes] = await Promise.all([db.getSortedSetRevRangeWithScores(`flags:byTargetUid:${uid}`, 0, 19), db.getSortedSetRevRange(`uid:${uid}:bans:timestamp`, 0, 19), db.getSortedSetRevRange(`uid:${uid}:mutes:timestamp`, 0, 19)]);
 
         // Get pids from flag objects
         const keys = flags.map(flagObj => `flag:${flagObj.value}`);
@@ -52,11 +48,7 @@ module.exports = function (User) {
             return memo;
         }, []);
 
-        [flags, bans, mutes] = await Promise.all([
-            getFlagMetadata(flags),
-            formatBanMuteData(bans, '[[user:info.banned-no-reason]]'),
-            formatBanMuteData(mutes, '[[user:info.muted-no-reason]]'),
-        ]);
+        [flags, bans, mutes] = await Promise.all([getFlagMetadata(flags), formatBanMuteData(bans, '[[user:info.banned-no-reason]]'), formatBanMuteData(mutes, '[[user:info.muted-no-reason]]')]);
 
         return {
             flags: flags,
@@ -67,7 +59,7 @@ module.exports = function (User) {
 
     User.getHistory = async function (set) {
         const data = await db.getSortedSetRevRangeWithScores(set, 0, -1);
-        return data.map((set) => {
+        return data.map(set => {
             set.timestamp = set.score;
             set.timestampISO = utils.toISOString(set.score);
             set.value = validator.escape(String(set.value.split(':')[0]));
@@ -119,7 +111,7 @@ module.exports = function (User) {
         const notes = await db.getObjects(keys);
         const uids = [];
 
-        const noteData = notes.map((note) => {
+        const noteData = notes.map(note => {
             if (note) {
                 uids.push(note.uid);
                 note.timestampISO = utils.toISOString(note.timestamp);

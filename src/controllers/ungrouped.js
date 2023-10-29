@@ -22,14 +22,14 @@ const get = function (req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         const { uid } = req;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const ungroupedTopicsData = yield topics_1.default.getUngroupedTopics(uid); // Ungrouped topics
+        const ungroupedTopicsData = (yield topics_1.default.getUngroupedTopics(uid)); // Ungrouped topics
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const userGroups = (yield groups_1.default.getUserGroups([uid]))[0];
         if (!ungroupedTopicsData || !userGroups) {
             return next();
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const [canPost] = yield user_1.default.exists([uid]);
+        const [canPost] = (yield user_1.default.exists([uid]));
         const breadcrumbs = [{ text: 'Ungrouped' }];
         const data = Object.assign(Object.assign({}, ungroupedTopicsData), { groups: userGroups, uid: uid, canPost, title: 'Ungrouped Topics', breadcrumbs: helpers_1.default.buildBreadcrumbs(breadcrumbs) });
         res.render('ungrouped', data);

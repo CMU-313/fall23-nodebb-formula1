@@ -17,10 +17,7 @@ module.exports = function (User) {
         if (parseInt(uid, 10) === 0) {
             return;
         }
-        const [userData, isAdminOrMod] = await Promise.all([
-            User.getUserFields(uid, ['uid', 'mutedUntil', 'joindate', 'email', 'reputation'].concat([field])),
-            privileges.categories.isAdminOrMod(cid, uid),
-        ]);
+        const [userData, isAdminOrMod] = await Promise.all([User.getUserFields(uid, ['uid', 'mutedUntil', 'joindate', 'email', 'reputation'].concat([field])), privileges.categories.isAdminOrMod(cid, uid)]);
 
         if (!userData.uid) {
             throw new Error('[[error:no-user]]');
@@ -32,7 +29,7 @@ module.exports = function (User) {
 
         const now = Date.now();
         if (userData.mutedUntil > now) {
-            let muteLeft = ((userData.mutedUntil - now) / (1000 * 60));
+            let muteLeft = (userData.mutedUntil - now) / (1000 * 60);
             if (muteLeft > 60) {
                 muteLeft = (muteLeft / 60).toFixed(0);
                 throw new Error(`[[error:user-muted-for-hours, ${muteLeft}]]`);
@@ -47,11 +44,7 @@ module.exports = function (User) {
 
         const lasttime = userData[field] || 0;
 
-        if (
-            meta.config.newbiePostDelay > 0 &&
-            meta.config.newbiePostDelayThreshold > userData.reputation &&
-            now - lasttime < meta.config.newbiePostDelay * 1000
-        ) {
+        if (meta.config.newbiePostDelay > 0 && meta.config.newbiePostDelayThreshold > userData.reputation && now - lasttime < meta.config.newbiePostDelay * 1000) {
             throw new Error(`[[error:too-many-posts-newbie, ${meta.config.newbiePostDelay}, ${meta.config.newbiePostDelayThreshold}]]`);
         } else if (now - lasttime < meta.config.postDelay * 1000) {
             throw new Error(`[[error:too-many-posts, ${meta.config.postDelay}]]`);
@@ -62,31 +55,21 @@ module.exports = function (User) {
         // For scheduled posts, use "action" time. It'll be updated in related cron job when post is published
         const lastposttime = postData.timestamp > Date.now() ? Date.now() : postData.timestamp;
 
-        await Promise.all([
-            User.addPostIdToUser(postData),
-            User.setUserField(postData.uid, 'lastposttime', lastposttime),
-            User.updateLastOnlineTime(postData.uid),
-        ]);
+        await Promise.all([User.addPostIdToUser(postData), User.setUserField(postData.uid, 'lastposttime', lastposttime), User.updateLastOnlineTime(postData.uid)]);
     };
 
     User.addPostIdToUser = async function (postData) {
-        await db.sortedSetsAdd([
-            `uid:${postData.uid}:posts`,
-            `cid:${postData.cid}:uid:${postData.uid}:pids`,
-        ], postData.timestamp, postData.pid);
+        await db.sortedSetsAdd([`uid:${postData.uid}:posts`, `cid:${postData.cid}:uid:${postData.uid}:pids`], postData.timestamp, postData.pid);
         await User.updatePostCount(postData.uid);
     };
 
-    User.updatePostCount = async (uids) => {
+    User.updatePostCount = async uids => {
         uids = Array.isArray(uids) ? uids : [uids];
         const exists = await User.exists(uids);
         uids = uids.filter((uid, index) => exists[index]);
         if (uids.length) {
             const counts = await db.sortedSetsCard(uids.map(uid => `uid:${uid}:posts`));
-            await Promise.all([
-                db.setObjectBulk(uids.map((uid, index) => ([`user:${uid}`, { postcount: counts[index] }]))),
-                db.sortedSetAdd('users:postcount', counts, uids),
-            ]);
+            await Promise.all([db.setObjectBulk(uids.map((uid, index) => [`user:${uid}`, { postcount: counts[index] }])), db.sortedSetAdd('users:postcount', counts, uids)]);
         }
     };
 

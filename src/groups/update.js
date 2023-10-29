@@ -11,7 +11,6 @@ const batch = require('../batch');
 const meta = require('../meta');
 const cache = require('../cache');
 
-
 module.exports = function (Groups) {
     Groups.update = async function (groupName, values) {
         const exists = await db.exists(`group:${groupName}`);
@@ -26,7 +25,7 @@ module.exports = function (Groups) {
 
         // Cast some values as bool (if not boolean already)
         // 'true' and '1' = true, everything else false
-        ['userTitleEnabled', 'private', 'hidden', 'disableJoinRequests', 'disableLeave'].forEach((prop) => {
+        ['userTitleEnabled', 'private', 'hidden', 'disableJoinRequests', 'disableLeave'].forEach(prop => {
             if (values.hasOwnProperty(prop) && typeof values[prop] !== 'boolean') {
                 values[prop] = values[prop] === 'true' || parseInt(values[prop], 10) === 1;
             }
@@ -77,7 +76,10 @@ module.exports = function (Groups) {
 
         if (values.hasOwnProperty('memberPostCids')) {
             const validCids = await categories.getCidsByPrivilege('categories:cid', groupName, 'topics:read');
-            const cidsArray = values.memberPostCids.split(',').map(cid => parseInt(cid.trim(), 10)).filter(Boolean);
+            const cidsArray = values.memberPostCids
+                .split(',')
+                .map(cid => parseInt(cid.trim(), 10))
+                .filter(Boolean);
             payload.memberPostCids = cidsArray.filter(cid => validCids.includes(cid)).join(',') || '';
         }
 
@@ -117,10 +119,7 @@ module.exports = function (Groups) {
 
     async function showHide(groupName, hidden) {
         hidden = hidden === 'hidden';
-        await Promise.all([
-            db.setObjectField(`group:${groupName}`, 'hidden', hidden ? 1 : 0),
-            updateVisibility(groupName, hidden),
-        ]);
+        await Promise.all([db.setObjectField(`group:${groupName}`, 'hidden', hidden ? 1 : 0), updateVisibility(groupName, hidden)]);
     }
 
     async function updatePrivacy(groupName, isPrivate) {
@@ -153,10 +152,7 @@ module.exports = function (Groups) {
             return;
         }
         Groups.validateGroupName(newName);
-        const [group, exists] = await Promise.all([
-            Groups.getGroupData(currentName),
-            Groups.existsBySlug(newSlug),
-        ]);
+        const [group, exists] = await Promise.all([Groups.getGroupData(currentName), Groups.existsBySlug(newSlug)]);
 
         if (exists) {
             throw new Error('[[error:group-already-exists]]');
@@ -216,17 +212,20 @@ module.exports = function (Groups) {
     };
 
     async function updateMemberGroupTitles(oldName, newName) {
-        await batch.processSortedSet(`group:${oldName}:members`, async (uids) => {
-            let usersData = await user.getUsersData(uids);
-            usersData = usersData.filter(userData => userData && userData.groupTitleArray.includes(oldName));
+        await batch.processSortedSet(
+            `group:${oldName}:members`,
+            async uids => {
+                let usersData = await user.getUsersData(uids);
+                usersData = usersData.filter(userData => userData && userData.groupTitleArray.includes(oldName));
 
-            usersData.forEach((userData) => {
-                userData.newTitleArray = userData.groupTitleArray
-                    .map(oldTitle => (oldTitle === oldName ? newName : oldTitle));
-            });
+                usersData.forEach(userData => {
+                    userData.newTitleArray = userData.groupTitleArray.map(oldTitle => (oldTitle === oldName ? newName : oldTitle));
+                });
 
-            await Promise.all(usersData.map(u => user.setUserField(u.uid, 'groupTitle', JSON.stringify(u.newTitleArray))));
-        }, {});
+                await Promise.all(usersData.map(u => user.setUserField(u.uid, 'groupTitle', JSON.stringify(u.newTitleArray))));
+            },
+            {}
+        );
     }
 
     async function renameGroupsMember(keys, oldName, newName) {
@@ -243,7 +242,7 @@ module.exports = function (Groups) {
     async function updateNavigationItems(oldName, newName) {
         const navigation = require('../navigation/admin');
         const navItems = await navigation.get();
-        navItems.forEach((navItem) => {
+        navItems.forEach(navItem => {
             if (navItem && Array.isArray(navItem.groups) && navItem.groups.includes(oldName)) {
                 navItem.groups.splice(navItem.groups.indexOf(oldName), 1, newName);
             }
@@ -258,11 +257,10 @@ module.exports = function (Groups) {
 
         const data = await admin.get();
 
-        data.areas.forEach((area) => {
+        data.areas.forEach(area => {
             area.widgets = area.data;
-            area.widgets.forEach((widget) => {
-                if (widget && widget.data && Array.isArray(widget.data.groups) &&
-                    widget.data.groups.includes(oldName)) {
+            area.widgets.forEach(widget => {
+                if (widget && widget.data && Array.isArray(widget.data.groups) && widget.data.groups.includes(oldName)) {
                     widget.data.groups.splice(widget.data.groups.indexOf(oldName), 1, newName);
                 }
             });
@@ -276,15 +274,11 @@ module.exports = function (Groups) {
 
     async function updateConfig(oldName, newName) {
         if (meta.config.groupsExemptFromPostQueue.includes(oldName)) {
-            meta.config.groupsExemptFromPostQueue.splice(
-                meta.config.groupsExemptFromPostQueue.indexOf(oldName), 1, newName
-            );
+            meta.config.groupsExemptFromPostQueue.splice(meta.config.groupsExemptFromPostQueue.indexOf(oldName), 1, newName);
             await meta.configs.set('groupsExemptFromPostQueue', meta.config.groupsExemptFromPostQueue);
         }
         if (meta.config.groupsExemptFromMaintenanceMode.includes(oldName)) {
-            meta.config.groupsExemptFromMaintenanceMode.splice(
-                meta.config.groupsExemptFromMaintenanceMode.indexOf(oldName), 1, newName
-            );
+            meta.config.groupsExemptFromMaintenanceMode.splice(meta.config.groupsExemptFromMaintenanceMode.indexOf(oldName), 1, newName);
             await meta.configs.set('groupsExemptFromMaintenanceMode', meta.config.groupsExemptFromMaintenanceMode);
         }
     }

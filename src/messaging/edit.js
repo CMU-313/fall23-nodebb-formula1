@@ -7,7 +7,6 @@ const privileges = require('../privileges');
 
 const sockets = require('../socket.io');
 
-
 module.exports = function (Messaging) {
     Messaging.editMessage = async (uid, mid, roomId, content) => {
         await Messaging.checkContent(content);
@@ -27,12 +26,9 @@ module.exports = function (Messaging) {
         await Messaging.setMessageFields(mid, payload);
 
         // Propagate this change to users in the room
-        const [uids, messages] = await Promise.all([
-            Messaging.getUidsInRoom(roomId, 0, -1),
-            Messaging.getMessagesData([mid], uid, roomId, true),
-        ]);
+        const [uids, messages] = await Promise.all([Messaging.getUidsInRoom(roomId, 0, -1), Messaging.getMessagesData([mid], uid, roomId, true)]);
 
-        uids.forEach((uid) => {
+        uids.forEach(uid => {
             sockets.in(`uid_${uid}`).emit('event:chats.edit', {
                 messages: messages,
             });

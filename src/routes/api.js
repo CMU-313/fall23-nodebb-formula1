@@ -36,21 +36,8 @@ module.exports = function (app, middleware, controllers) {
 
     const multipart = require('connect-multiparty');
     const multipartMiddleware = multipart();
-    const postMiddlewares = [
-        middleware.maintenanceMode,
-        multipartMiddleware,
-        middleware.validateFiles,
-        middleware.uploads.ratelimit,
-        middleware.applyCSRF,
-    ];
+    const postMiddlewares = [middleware.maintenanceMode, multipartMiddleware, middleware.validateFiles, middleware.uploads.ratelimit, middleware.applyCSRF];
 
     router.post('/post/upload', postMiddlewares, helpers.tryRoute(uploadsController.uploadPost));
-    router.post('/user/:userslug/uploadpicture', [
-        ...middlewares,
-        ...postMiddlewares,
-        middleware.exposeUid,
-        middleware.ensureLoggedIn,
-        middleware.canViewUsers,
-        middleware.checkAccountPermissions,
-    ], helpers.tryRoute(controllers.accounts.edit.uploadPicture));
+    router.post('/user/:userslug/uploadpicture', [...middlewares, ...postMiddlewares, middleware.exposeUid, middleware.ensureLoggedIn, middleware.canViewUsers, middleware.checkAccountPermissions], helpers.tryRoute(controllers.accounts.edit.uploadPicture));
 };

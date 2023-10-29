@@ -5,7 +5,7 @@
 const db = require('../../database');
 
 module.exports = {
-    name: 'Change the schema of simple keys so they don\'t use value field (mongodb only)',
+    name: "Change the schema of simple keys so they don't use value field (mongodb only)",
     timestamp: Date.UTC(2017, 11, 18),
     method: async function () {
         let configJSON;

@@ -73,22 +73,15 @@ module.exports = function (Categories) {
         if (oldParent === newParent) {
             return;
         }
-        await Promise.all([
-            db.sortedSetRemove(`cid:${oldParent}:children`, cid),
-            db.sortedSetAdd(`cid:${newParent}:children`, categoryData.order, cid),
-            db.setObjectField(`category:${cid}`, 'parentCid', newParent),
-        ]);
+        await Promise.all([db.sortedSetRemove(`cid:${oldParent}:children`, cid), db.sortedSetAdd(`cid:${newParent}:children`, categoryData.order, cid), db.setObjectField(`category:${cid}`, 'parentCid', newParent)]);
 
-        cache.del([
-            `cid:${oldParent}:children`,
-            `cid:${newParent}:children`,
-            `cid:${oldParent}:children:all`,
-            `cid:${newParent}:children:all`,
-        ]);
+        cache.del([`cid:${oldParent}:children`, `cid:${newParent}:children`, `cid:${oldParent}:children:all`, `cid:${newParent}:children:all`]);
     }
 
     async function updateTagWhitelist(cid, tags) {
-        tags = tags.split(',').map(tag => utils.cleanUpTag(tag, meta.config.maximumTagLength))
+        tags = tags
+            .split(',')
+            .map(tag => utils.cleanUpTag(tag, meta.config.maximumTagLength))
             .filter(Boolean);
         await db.delete(`cid:${cid}:tag:whitelist`);
         const scores = tags.map((tag, index) => index);
@@ -100,9 +93,7 @@ module.exports = function (Categories) {
         const parentCid = await Categories.getCategoryField(cid, 'parentCid');
         await db.sortedSetsAdd('categories:cid', order, cid);
 
-        const childrenCids = await db.getSortedSetRange(
-            `cid:${parentCid}:children`, 0, -1
-        );
+        const childrenCids = await db.getSortedSetRange(`cid:${parentCid}:children`, 0, -1);
 
         const currentIndex = childrenCids.indexOf(String(cid));
         if (currentIndex === -1) {
@@ -120,15 +111,9 @@ module.exports = function (Categories) {
             childrenCids
         );
 
-        await db.setObjectBulk(
-            childrenCids.map((cid, index) => [`category:${cid}`, { order: index + 1 }])
-        );
+        await db.setObjectBulk(childrenCids.map((cid, index) => [`category:${cid}`, { order: index + 1 }]));
 
-        cache.del([
-            'categories:cid',
-            `cid:${parentCid}:children`,
-            `cid:${parentCid}:children:all`,
-        ]);
+        cache.del(['categories:cid', `cid:${parentCid}:children`, `cid:${parentCid}:children:all`]);
     }
 
     Categories.parseDescription = async function (cid, description) {

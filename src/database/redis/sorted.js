@@ -95,7 +95,7 @@ module.exports = function (module) {
         if (parseInt(count, 10) === 0) {
             return [];
         }
-        const stop = (parseInt(count, 10) === -1) ? -1 : (start + count - 1);
+        const stop = parseInt(count, 10) === -1 ? -1 : start + count - 1;
         return await sortedSetRange(method, key, start, stop, min, max, withScores);
     }
 
@@ -242,7 +242,7 @@ module.exports = function (module) {
 
     module.sortedSetIncrByBulk = async function (data) {
         const multi = module.client.multi();
-        data.forEach((item) => {
+        data.forEach(item => {
             multi.zincrby(item[0], item[1], item[2]);
         });
         const result = await multi.exec();

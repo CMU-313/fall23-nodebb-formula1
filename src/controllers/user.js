@@ -49,7 +49,7 @@ userController.getUserDataByField = async function (callerUid, field, fieldValue
         if (uid) {
             const isPrivileged = await user.isAdminOrGlobalMod(callerUid);
             const settings = await user.getSettings(uid);
-            if (!isPrivileged && (settings && !settings.showemail)) {
+            if (!isPrivileged && settings && !settings.showemail) {
                 uid = 0;
             }
         }
@@ -95,24 +95,25 @@ userController.exportProfile = async function (req, res, next) {
 function sendExport(filename, type, res, next) {
     winston.warn(`[users/export] Access via page API is deprecated, use GET /api/v3/users/:uid/exports/:type instead.`);
 
-    res.sendFile(filename, {
-        root: path.join(__dirname, '../../build/export'),
-        headers: {
-            'Content-Type': type,
-            'Content-Disposition': `attachment; filename=${filename}`,
+    res.sendFile(
+        filename,
+        {
+            root: path.join(__dirname, '../../build/export'),
+            headers: {
+                'Content-Type': type,
+                'Content-Disposition': `attachment; filename=${filename}`,
+            },
         },
-    }, (err) => {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                res.locals.isAPI = false;
-                return next();
+        err => {
+            if (err) {
+                if (err.code === 'ENOENT') {
+                    res.locals.isAPI = false;
+                    return next();
+                }
+                return next(err);
             }
-            return next(err);
         }
-    });
+    );
 }
 
-require('../promisify')(userController, [
-    'getCurrentUser', 'getUserByUID', 'getUserByUsername', 'getUserByEmail',
-    'exportPosts', 'exportUploads', 'exportProfile',
-]);
+require('../promisify')(userController, ['getCurrentUser', 'getUserByUID', 'getUserByUsername', 'getUserByEmail', 'exportPosts', 'exportUploads', 'exportProfile']);

@@ -61,7 +61,6 @@ module.exports = function (app, name, middleware, controllers) {
     apiRoutes(app, name, middleware, controllers);
 };
 
-
 function apiRoutes(router, name, middleware, controllers) {
     router.get(`/api/${name}/users/csv`, middleware.ensureLoggedIn, helpers.tryRoute(controllers.admin.users.getCSV));
     router.get(`/api/${name}/groups/:groupname/csv`, middleware.ensureLoggedIn, helpers.tryRoute(controllers.admin.groups.getCSV));
@@ -71,8 +70,7 @@ function apiRoutes(router, name, middleware, controllers) {
     const multipart = require('connect-multiparty');
     const multipartMiddleware = multipart();
 
-    const middlewares = [multipartMiddleware, middleware.validateFiles,
-        middleware.applyCSRF, middleware.ensureLoggedIn];
+    const middlewares = [multipartMiddleware, middleware.validateFiles, middleware.applyCSRF, middleware.ensureLoggedIn];
 
     router.post(`/api/${name}/category/uploadpicture`, middlewares, helpers.tryRoute(controllers.admin.uploads.uploadCategoryPicture));
     router.post(`/api/${name}/uploadfavicon`, middlewares, helpers.tryRoute(controllers.admin.uploads.uploadFavicon));

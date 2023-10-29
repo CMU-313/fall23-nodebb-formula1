@@ -22,10 +22,7 @@ settingsController.get = async function (req, res, next) {
     if (!userData) {
         return next();
     }
-    const [settings, languagesData] = await Promise.all([
-        user.getSettings(userData.uid),
-        languages.list(),
-    ]);
+    const [settings, languagesData] = await Promise.all([user.getSettings(userData.uid), languages.list()]);
 
     userData.settings = settings;
     userData.languages = languagesData;
@@ -39,10 +36,7 @@ settingsController.get = async function (req, res, next) {
         uid: req.uid,
     });
 
-    const [notificationSettings, routes] = await Promise.all([
-        getNotificationSettings(userData),
-        getHomePageRoutes(userData),
-    ]);
+    const [notificationSettings, routes] = await Promise.all([getNotificationSettings(userData), getHomePageRoutes(userData)]);
 
     userData.customSettings = data.customSettings;
     userData.homePageRoutes = routes;
@@ -77,32 +71,23 @@ settingsController.get = async function (req, res, next) {
         { name: 'Yeti', value: 'yeti' },
     ];
 
-    userData.bootswatchSkinOptions.forEach((skin) => {
+    userData.bootswatchSkinOptions.forEach(skin => {
         skin.selected = skin.value === userData.settings.bootswatchSkin;
     });
 
-    userData.languages.forEach((language) => {
+    userData.languages.forEach(language => {
         language.selected = language.code === userData.settings.userLang;
     });
 
     if (userData.isAdmin && userData.isSelf) {
-        userData.acpLanguages.forEach((language) => {
+        userData.acpLanguages.forEach(language => {
             language.selected = language.code === userData.settings.acpLang;
         });
     }
 
-    const notifFreqOptions = [
-        'all',
-        'first',
-        'everyTen',
-        'threshold',
-        'logarithmic',
-        'disabled',
-    ];
+    const notifFreqOptions = ['all', 'first', 'everyTen', 'threshold', 'logarithmic', 'disabled'];
 
-    userData.upvoteNotifFreq = notifFreqOptions.map(
-        name => ({ name: name, selected: name === userData.settings.upvoteNotifFreq })
-    );
+    userData.upvoteNotifFreq = notifFreqOptions.map(name => ({ name: name, selected: name === userData.settings.upvoteNotifFreq }));
 
     userData.categoryWatchState = { [userData.settings.categoryWatchState]: true };
 
@@ -128,15 +113,12 @@ const unsubscribable = ['digest', 'notification'];
 const jwtVerifyAsync = util.promisify((token, callback) => {
     jwt.verify(token, nconf.get('secret'), (err, payload) => callback(err, payload));
 });
-const doUnsubscribe = async (payload) => {
+const doUnsubscribe = async payload => {
     if (payload.template === 'digest') {
-        await Promise.all([
-            user.setSetting(payload.uid, 'dailyDigestFreq', 'off'),
-            user.updateDigestSetting(payload.uid, 'off'),
-        ]);
+        await Promise.all([user.setSetting(payload.uid, 'dailyDigestFreq', 'off'), user.updateDigestSetting(payload.uid, 'off')]);
     } else if (payload.template === 'notification') {
         const current = await db.getObjectField(`user:${payload.uid}:settings`, `notificationType_${payload.type}`);
-        await user.setSetting(payload.uid, `notificationType_${payload.type}`, (current === 'notificationemail' ? 'notification' : 'none'));
+        await user.setSetting(payload.uid, `notificationType_${payload.type}`, current === 'notificationemail' ? 'notification' : 'none');
     }
     return true;
 };

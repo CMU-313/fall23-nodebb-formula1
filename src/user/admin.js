@@ -1,4 +1,3 @@
-
 'use strict';
 
 const fs = require('fs');
@@ -17,9 +16,7 @@ module.exports = function (User) {
             return;
         }
         const now = Date.now();
-        const bulk = [
-            [`uid:${uid}:ip`, now, ip || 'Unknown'],
-        ];
+        const bulk = [[`uid:${uid}:ip`, now, ip || 'Unknown']];
         if (ip) {
             bulk.push([`ip:${ip}:uid`, now, uid]);
         }
@@ -36,13 +33,17 @@ module.exports = function (User) {
 
         const data = await plugins.hooks.fire('filter:user.csvFields', { fields: ['uid', 'email', 'username'] });
         let csvContent = `${data.fields.join(',')}\n`;
-        await batch.processSortedSet('users:joindate', async (uids) => {
-            const usersData = await User.getUsersFields(uids, data.fields);
-            csvContent += usersData.reduce((memo, user) => {
-                memo += `${data.fields.map(field => user[field]).join(',')}\n`;
-                return memo;
-            }, '');
-        }, {});
+        await batch.processSortedSet(
+            'users:joindate',
+            async uids => {
+                const usersData = await User.getUsersFields(uids, data.fields);
+                csvContent += usersData.reduce((memo, user) => {
+                    memo += `${data.fields.map(field => user[field]).join(',')}\n`;
+                    return memo;
+                }, '');
+            },
+            {}
+        );
 
         return csvContent;
     };
@@ -54,36 +55,37 @@ module.exports = function (User) {
             fields: ['email', 'username', 'uid'],
             showIps: true,
         });
-        const fd = await fs.promises.open(
-            path.join(baseDir, 'build/export', 'users.csv'),
-            'w'
-        );
+        const fd = await fs.promises.open(path.join(baseDir, 'build/export', 'users.csv'), 'w');
         fs.promises.appendFile(fd, `${fields.join(',')}${showIps ? ',ip' : ''}\n`);
-        await batch.processSortedSet('users:joindate', async (uids) => {
-            const usersData = await User.getUsersFields(uids, fields.slice());
-            let userIPs = '';
-            let ips = [];
+        await batch.processSortedSet(
+            'users:joindate',
+            async uids => {
+                const usersData = await User.getUsersFields(uids, fields.slice());
+                let userIPs = '';
+                let ips = [];
 
-            if (showIps) {
-                ips = await db.getSortedSetsMembers(uids.map(uid => `uid:${uid}:ip`));
-            }
-
-            let line = '';
-            usersData.forEach((user, index) => {
-                line += `${fields.map(field => user[field]).join(',')}`;
                 if (showIps) {
-                    userIPs = ips[index] ? ips[index].join(',') : '';
-                    line += `,"${userIPs}"\n`;
-                } else {
-                    line += '\n';
+                    ips = await db.getSortedSetsMembers(uids.map(uid => `uid:${uid}:ip`));
                 }
-            });
 
-            await fs.promises.appendFile(fd, line);
-        }, {
-            batch: 5000,
-            interval: 250,
-        });
+                let line = '';
+                usersData.forEach((user, index) => {
+                    line += `${fields.map(field => user[field]).join(',')}`;
+                    if (showIps) {
+                        userIPs = ips[index] ? ips[index].join(',') : '';
+                        line += `,"${userIPs}"\n`;
+                    } else {
+                        line += '\n';
+                    }
+                });
+
+                await fs.promises.appendFile(fd, line);
+            },
+            {
+                batch: 5000,
+                interval: 250,
+            }
+        );
         await fd.close();
     };
 };

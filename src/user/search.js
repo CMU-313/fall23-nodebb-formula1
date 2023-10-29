@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -11,7 +10,7 @@ const utils = require('../utils');
 
 module.exports = function (User) {
     const filterFnMap = {
-        online: user => user.status !== 'offline' && (Date.now() - user.lastonline < 300000),
+        online: user => user.status !== 'offline' && Date.now() - user.lastonline < 300000,
         flagged: user => parseInt(user.flags, 10) > 0,
         verified: user => !!user['email:confirmed'],
         unverified: user => !user['email:confirmed'],
@@ -23,7 +22,6 @@ module.exports = function (User) {
         verified: ['email:confirmed'],
         unverified: ['email:confirmed'],
     };
-
 
     User.search = async function (data) {
         const query = data.query || '';
@@ -92,7 +90,7 @@ module.exports = function (User) {
             fields.push(data.sortBy);
         }
 
-        filters.forEach((filter) => {
+        filters.forEach(filter => {
             if (filterFieldMap[filter]) {
                 fields.push(...filterFieldMap[filter]);
             }
@@ -116,7 +114,7 @@ module.exports = function (User) {
         fields.push('uid');
         let userData = await User.getUsersFields(uids, fields);
 
-        filters.forEach((filter) => {
+        filters.forEach(filter => {
             if (filterFnMap[filter]) {
                 userData = userData.filter(filterFnMap[filter]);
             }

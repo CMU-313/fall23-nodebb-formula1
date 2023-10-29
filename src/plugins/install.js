@@ -42,13 +42,13 @@ if (process.platform === 'win32') {
 
 module.exports = function (Plugins) {
     if (nconf.get('isPrimary')) {
-        pubsub.on('plugins:toggleInstall', (data) => {
+        pubsub.on('plugins:toggleInstall', data => {
             if (data.hostname !== os.hostname()) {
                 toggleInstall(data.id, data.version);
             }
         });
 
-        pubsub.on('plugins:upgrade', (data) => {
+        pubsub.on('plugins:upgrade', data => {
             if (data.hostname !== os.hostname()) {
                 upgrade(data.id, data.version);
             }
@@ -104,10 +104,7 @@ module.exports = function (Plugins) {
     const runPackageManagerCommandAsync = util.promisify(runPackageManagerCommand);
 
     async function toggleInstall(id, version) {
-        const [installed, active] = await Promise.all([
-            Plugins.isInstalled(id),
-            Plugins.isActive(id),
-        ]);
+        const [installed, active] = await Promise.all([Plugins.isInstalled(id), Plugins.isActive(id)]);
         const type = installed ? 'uninstall' : 'install';
         if (active) {
             await Plugins.toggleActive(id);
@@ -119,11 +116,7 @@ module.exports = function (Plugins) {
     }
 
     function runPackageManagerCommand(command, pkgName, version, callback) {
-        cproc.execFile(packageManagerExecutable, [
-            packageManagerCommands[packageManager][command],
-            pkgName + (command === 'install' ? `@${version}` : ''),
-            '--save',
-        ], (err, stdout) => {
+        cproc.execFile(packageManagerExecutable, [packageManagerCommands[packageManager][command], pkgName + (command === 'install' ? `@${version}` : ''), '--save'], (err, stdout) => {
             if (err) {
                 return callback(err);
             }
@@ -132,7 +125,6 @@ module.exports = function (Plugins) {
             callback();
         });
     }
-
 
     Plugins.upgrade = async function (id, version) {
         pubsub.publish('plugins:upgrade', { hostname: os.hostname(), id: id, version: version });
@@ -170,7 +162,7 @@ module.exports = function (Plugins) {
         return await db.getSortedSetRange('plugins:active', 0, -1);
     };
 
-    Plugins.autocomplete = async (fragment) => {
+    Plugins.autocomplete = async fragment => {
         const pluginDir = paths.nodeModules;
         const plugins = (await fs.readdir(pluginDir)).filter(filename => filename.startsWith(fragment));
 

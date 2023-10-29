@@ -58,10 +58,10 @@ SocketUser.reset.send = async function (socket, email) {
     try {
         await user.reset.send(email);
         await logEvent('[[success:success]]');
-        await sleep(2500 + ((Math.random() * 500) - 250));
+        await sleep(2500 + (Math.random() * 500 - 250));
     } catch (err) {
         await logEvent(err.message);
-        await sleep(2500 + ((Math.random() * 500) - 250));
+        await sleep(2500 + (Math.random() * 500 - 250));
         const internalErrors = ['[[error:invalid-email]]', '[[error:reset-rate-limited]]'];
         if (!internalErrors.includes(err.message)) {
             throw err;
@@ -73,11 +73,7 @@ SocketUser.reset.commit = async function (socket, data) {
     if (!data || !data.code || !data.password) {
         throw new Error('[[error:invalid-data]]');
     }
-    const [uid] = await Promise.all([
-        db.getObjectField('reset:uid', data.code),
-        user.reset.commit(data.code, data.password),
-        plugins.hooks.fire('action:password.reset', { uid: socket.uid }),
-    ]);
+    const [uid] = await Promise.all([db.getObjectField('reset:uid', data.code), user.reset.commit(data.code, data.password), plugins.hooks.fire('action:password.reset', { uid: socket.uid })]);
 
     await events.log({
         type: 'password-reset',
@@ -88,11 +84,13 @@ SocketUser.reset.commit = async function (socket, data) {
     const username = await user.getUserField(uid, 'username');
     const now = new Date();
     const parsedDate = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
-    emailer.send('reset_notify', uid, {
-        username: username,
-        date: parsedDate,
-        subject: '[[email:reset.notify.subject]]',
-    }).catch(err => winston.error(`[emailer.send] ${err.stack}`));
+    emailer
+        .send('reset_notify', uid, {
+            username: username,
+            date: parsedDate,
+            subject: '[[email:reset.notify.subject]]',
+        })
+        .catch(err => winston.error(`[emailer.send] ${err.stack}`));
 };
 
 SocketUser.isFollowing = async function (socket, data) {

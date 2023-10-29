@@ -14,11 +14,7 @@ const privileges = require('../privileges');
 
 module.exports = function (Posts) {
     Posts.getUserInfoForPosts = async function (uids, uid) {
-        const [userData, userSettings, signatureUids] = await Promise.all([
-            getUserData(uids, uid),
-            user.getMultipleUserSettings(uids),
-            privileges.global.filterUids('signature', uids),
-        ]);
+        const [userData, userSettings, signatureUids] = await Promise.all([getUserData(uids, uid), user.getMultipleUserSettings(uids), privileges.global.filterUids('signature', uids)]);
         const uidsSignatureSet = new Set(signatureUids.map(uid => parseInt(uid, 10)));
         const groupsMap = await getGroupsMap(userData);
 
@@ -32,25 +28,23 @@ module.exports = function (Posts) {
             }
         });
 
-        const result = await Promise.all(userData.map(async (userData) => {
-            const [isMemberOfGroups, signature, customProfileInfo] = await Promise.all([
-                checkGroupMembership(userData.uid, userData.groupTitleArray),
-                parseSignature(userData, uid, uidsSignatureSet),
-                plugins.hooks.fire('filter:posts.custom_profile_info', { profile: [], uid: userData.uid }),
-            ]);
+        const result = await Promise.all(
+            userData.map(async userData => {
+                const [isMemberOfGroups, signature, customProfileInfo] = await Promise.all([checkGroupMembership(userData.uid, userData.groupTitleArray), parseSignature(userData, uid, uidsSignatureSet), plugins.hooks.fire('filter:posts.custom_profile_info', { profile: [], uid: userData.uid })]);
 
-            if (isMemberOfGroups && userData.groupTitleArray) {
-                userData.groupTitleArray.forEach((userGroup, index) => {
-                    if (isMemberOfGroups[index] && groupsMap[userGroup]) {
-                        userData.selectedGroups.push(groupsMap[userGroup]);
-                    }
-                });
-            }
-            userData.signature = signature;
-            userData.custom_profile_info = customProfileInfo.profile;
+                if (isMemberOfGroups && userData.groupTitleArray) {
+                    userData.groupTitleArray.forEach((userGroup, index) => {
+                        if (isMemberOfGroups[index] && groupsMap[userGroup]) {
+                            userData.selectedGroups.push(groupsMap[userGroup]);
+                        }
+                    });
+                }
+                userData.signature = signature;
+                userData.custom_profile_info = customProfileInfo.profile;
 
-            return await plugins.hooks.fire('filter:posts.modifyUserInfo', userData);
-        }));
+                return await plugins.hooks.fire('filter:posts.modifyUserInfo', userData);
+            })
+        );
         const hookResult = await plugins.hooks.fire('filter:posts.getUserInfoForPosts', { users: result });
         return hookResult.users;
     };
@@ -84,7 +78,7 @@ module.exports = function (Posts) {
         const groupTitles = _.uniq(_.flatten(userData.map(u => u && u.groupTitleArray)));
         const groupsMap = {};
         const groupsData = await groups.getGroupsData(groupTitles);
-        groupsData.forEach((group) => {
+        groupsData.forEach(group => {
             if (group && group.userTitleEnabled && !group.hidden) {
                 groupsMap[group.name] = {
                     name: group.name,
@@ -100,12 +94,7 @@ module.exports = function (Posts) {
     }
 
     async function getUserData(uids, uid) {
-        const fields = [
-            'uid', 'username', 'fullname', 'userslug',
-            'reputation', 'postcount', 'topiccount', 'picture',
-            'signature', 'banned', 'banned:expire', 'status',
-            'lastonline', 'groupTitle', 'mutedUntil',
-        ];
+        const fields = ['uid', 'username', 'fullname', 'userslug', 'reputation', 'postcount', 'topiccount', 'picture', 'signature', 'banned', 'banned:expire', 'status', 'lastonline', 'groupTitle', 'mutedUntil'];
         const result = await plugins.hooks.fire('filter:posts.addUserFields', {
             fields: fields,
             uid: uid,
@@ -139,9 +128,7 @@ module.exports = function (Posts) {
         if (!exists) {
             throw new Error('[[error:no-user]]');
         }
-        let postData = await Posts.getPostsFields(pids, [
-            'pid', 'tid', 'uid', 'content', 'deleted', 'timestamp', 'upvotes', 'downvotes',
-        ]);
+        let postData = await Posts.getPostsFields(pids, ['pid', 'tid', 'uid', 'content', 'deleted', 'timestamp', 'upvotes', 'downvotes']);
         postData = postData.filter(p => p.pid && p.uid !== parseInt(toUid, 10));
         pids = postData.map(p => p.pid);
 
@@ -168,7 +155,11 @@ module.exports = function (Posts) {
         });
 
         await Promise.all([
-            db.setObjectField(pids.map(pid => `post:${pid}`), 'uid', toUid),
+            db.setObjectField(
+                pids.map(pid => `post:${pid}`),
+                'uid',
+                toUid
+            ),
             db.sortedSetRemoveBulk(bulkRemove),
             db.sortedSetAddBulk(bulkAdd),
             user.incrementUserReputationBy(toUid, repChange),
@@ -176,10 +167,7 @@ module.exports = function (Posts) {
             updateTopicPosters(postData, toUid),
         ]);
 
-        await Promise.all([
-            user.updatePostCount(toUid),
-            reduceCounters(postsByUser),
-        ]);
+        await Promise.all([user.updatePostCount(toUid), reduceCounters(postsByUser)]);
 
         plugins.hooks.fire('action:post.changeOwner', {
             posts: _.cloneDeep(postData),
@@ -191,10 +179,7 @@ module.exports = function (Posts) {
     async function reduceCounters(postsByUser) {
         await async.eachOfSeries(postsByUser, async (posts, uid) => {
             const repChange = posts.reduce((acc, val) => acc + val.votes, 0);
-            await Promise.all([
-                user.updatePostCount(uid),
-                user.incrementUserReputationBy(uid, -repChange),
-            ]);
+            await Promise.all([user.updatePostCount(uid), user.incrementUserReputationBy(uid, -repChange)]);
         });
     }
 
@@ -211,9 +196,7 @@ module.exports = function (Posts) {
 
     async function handleMainPidOwnerChange(postData, toUid) {
         const tids = _.uniq(postData.map(p => p.tid));
-        const topicData = await topics.getTopicsFields(tids, [
-            'tid', 'cid', 'deleted', 'title', 'uid', 'mainPid', 'timestamp',
-        ]);
+        const topicData = await topics.getTopicsFields(tids, ['tid', 'cid', 'deleted', 'title', 'uid', 'mainPid', 'timestamp']);
         const tidToTopic = _.zipObject(tids, topicData);
 
         const mainPosts = postData.filter(p => p.pid === tidToTopic[p.tid].mainPid);
@@ -224,7 +207,7 @@ module.exports = function (Posts) {
         const bulkAdd = [];
         const bulkRemove = [];
         const postsByUser = {};
-        mainPosts.forEach((post) => {
+        mainPosts.forEach(post => {
             bulkRemove.push([`cid:${post.cid}:uid:${post.uid}:tids`, post.tid]);
             bulkRemove.push([`uid:${post.uid}:topics`, post.tid]);
 
@@ -235,7 +218,11 @@ module.exports = function (Posts) {
         });
 
         await Promise.all([
-            db.setObjectField(mainPosts.map(p => `topic:${p.tid}`), 'uid', toUid),
+            db.setObjectField(
+                mainPosts.map(p => `topic:${p.tid}`),
+                'uid',
+                toUid
+            ),
             db.sortedSetRemoveBulk(bulkRemove),
             db.sortedSetAddBulk(bulkAdd),
             user.incrementUserFieldBy(toUid, 'topiccount', mainPosts.length),
@@ -250,7 +237,7 @@ module.exports = function (Posts) {
     }
 
     async function reduceTopicCounts(postsByUser) {
-        await async.eachSeries(Object.keys(postsByUser), async (uid) => {
+        await async.eachSeries(Object.keys(postsByUser), async uid => {
             const posts = postsByUser[uid];
             const exists = await user.exists(uid);
             if (exists) {

@@ -102,10 +102,7 @@ SocketTopics.getMyNextPostIndex = async function (socket, data) {
     if (postCountInTopic <= 0) {
         return 0;
     }
-    const [topicPids, userPidsInCategory] = await Promise.all([
-        getTopicPids(data.index),
-        getUserPids(),
-    ]);
+    const [topicPids, userPidsInCategory] = await Promise.all([getTopicPids(data.index), getUserPids()]);
     const userPidsInTopic = _.intersection(topicPids, userPidsInCategory);
     if (!userPidsInTopic.length) {
         if (postCountInTopic > 0) {

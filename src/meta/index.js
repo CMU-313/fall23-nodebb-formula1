@@ -24,7 +24,6 @@ Meta.templates = require('./templates');
 Meta.blacklist = require('./blacklist');
 Meta.languages = require('./languages');
 
-
 /* Assorted */
 Meta.userOrGroupExists = async function (slug) {
     if (!slug) {
@@ -33,15 +32,12 @@ Meta.userOrGroupExists = async function (slug) {
     const user = require('../user');
     const groups = require('../groups');
     slug = slugify(slug);
-    const [userExists, groupExists] = await Promise.all([
-        user.existsBySlug(slug),
-        groups.existsBySlug(slug),
-    ]);
+    const [userExists, groupExists] = await Promise.all([user.existsBySlug(slug), groups.existsBySlug(slug)]);
     return userExists || groupExists;
 };
 
 if (nconf.get('isPrimary')) {
-    pubsub.on('meta:restart', (data) => {
+    pubsub.on('meta:restart', data => {
         if (data.hostname !== os.hostname()) {
             restart();
         }

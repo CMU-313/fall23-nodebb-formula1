@@ -54,16 +54,7 @@ module.exports = function (Posts) {
         const topicData = await topics.getTopicFields(tid, ['cid', 'pinned']);
         postData.cid = topicData.cid;
 
-        await Promise.all([
-            db.sortedSetAdd('posts:pid', timestamp, postData.pid),
-            db.incrObjectField('global', 'postCount'),
-            user.onNewPostMade(postData),
-            topics.onNewPostMade(postData),
-            categories.onNewPostMade(topicData.cid, topicData.pinned, postData),
-            groups.onNewPostMade(postData),
-            addReplyTo(postData, timestamp),
-            Posts.uploads.sync(postData.pid),
-        ]);
+        await Promise.all([db.sortedSetAdd('posts:pid', timestamp, postData.pid), db.incrObjectField('global', 'postCount'), user.onNewPostMade(postData), topics.onNewPostMade(postData), categories.onNewPostMade(topicData.cid, topicData.pinned, postData), groups.onNewPostMade(postData), addReplyTo(postData, timestamp), Posts.uploads.sync(postData.pid)]);
 
         result = await plugins.hooks.fire('filter:post.get', { post: postData, uid: data.uid });
         result.post.isMain = isMain;
@@ -75,9 +66,6 @@ module.exports = function (Posts) {
         if (!postData.toPid) {
             return;
         }
-        await Promise.all([
-            db.sortedSetAdd(`pid:${postData.toPid}:replies`, timestamp, postData.pid),
-            db.incrObjectField(`post:${postData.toPid}`, 'replies'),
-        ]);
+        await Promise.all([db.sortedSetAdd(`pid:${postData.toPid}:replies`, timestamp, postData.pid), db.incrObjectField(`post:${postData.toPid}`, 'replies')]);
     }
 };

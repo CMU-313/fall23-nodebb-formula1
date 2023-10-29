@@ -18,11 +18,7 @@ const socketHelpers = require('../socket.io/helpers');
 const postsAPI = module.exports;
 
 postsAPI.get = async function (caller, data) {
-    const [userPrivileges, post, voted] = await Promise.all([
-        privileges.posts.get([data.pid], caller.uid),
-        posts.getPostData(data.pid),
-        posts.hasVoted(data.pid, caller.uid),
-    ]);
+    const [userPrivileges, post, voted] = await Promise.all([privileges.posts.get([data.pid], caller.uid), posts.getPostData(data.pid), posts.hasVoted(data.pid, caller.uid)]);
     if (!post) {
         return null;
     }
@@ -101,12 +97,7 @@ postsAPI.edit = async function (caller, data) {
         return returnData;
     }
 
-    const memberData = await groups.getMembersOfGroups([
-        'administrators',
-        'Global Moderators',
-        `cid:${editResult.topic.cid}:privileges:moderate`,
-        `cid:${editResult.topic.cid}:privileges:groups:moderate`,
-    ]);
+    const memberData = await groups.getMembersOfGroups(['administrators', 'Global Moderators', `cid:${editResult.topic.cid}:privileges:moderate`, `cid:${editResult.topic.cid}:privileges:groups:moderate`]);
 
     const uids = _.uniq(_.flatten(memberData).concat(String(caller.uid)));
     uids.forEach(uid => websockets.in(`uid_${uid}`).emit('event:post_edited', editResult));
@@ -157,12 +148,7 @@ async function deleteOrRestoreTopicOf(command, pid, caller) {
         return;
     }
     // command: delete/restore
-    await apiHelpers.doTopicAction(
-        command,
-        topic.deleted ? 'event:topic_restored' : 'event:topic_deleted',
-        caller,
-        { tids: [topic.tid], cid: topic.cid }
-    );
+    await apiHelpers.doTopicAction(command, topic.deleted ? 'event:topic_restored' : 'event:topic_deleted', caller, { tids: [topic.tid], cid: topic.cid });
 }
 
 postsAPI.purge = async function (caller, data) {
@@ -199,20 +185,12 @@ postsAPI.purge = async function (caller, data) {
     });
 
     if (isMainAndLast) {
-        await apiHelpers.doTopicAction(
-            'purge',
-            'event:topic_purged',
-            caller,
-            { tids: [postData.tid], cid: topicData.cid }
-        );
+        await apiHelpers.doTopicAction('purge', 'event:topic_purged', caller, { tids: [postData.tid], cid: topicData.cid });
     }
 };
 
 async function isMainAndLastPost(pid) {
-    const [isMain, topicData] = await Promise.all([
-        posts.isMain(pid),
-        posts.getTopicFields(pid, ['postcount']),
-    ]);
+    const [isMain, topicData] = await Promise.all([posts.isMain(pid), posts.getTopicFields(pid, ['postcount'])]);
     return {
         isMain: isMain,
         isLast: topicData && topicData.postcount === 1,
@@ -226,10 +204,7 @@ postsAPI.move = async function (caller, data) {
     if (!data || !data.pid || !data.tid) {
         throw new Error('[[error:invalid-data]]');
     }
-    const canMove = await Promise.all([
-        privileges.topics.isAdminOrMod(data.tid, caller.uid),
-        privileges.posts.canMove(data.pid, caller.uid),
-    ]);
+    const canMove = await Promise.all([privileges.topics.isAdminOrMod(data.tid, caller.uid), privileges.posts.canMove(data.pid, caller.uid)]);
     if (!canMove.every(Boolean)) {
         throw new Error('[[error:no-privileges]]');
     }
@@ -274,10 +249,7 @@ postsAPI.unbookmark = async function (caller, data) {
 };
 
 async function diffsPrivilegeCheck(pid, uid) {
-    const [deleted, privilegesData] = await Promise.all([
-        posts.getPostField(pid, 'deleted'),
-        privileges.posts.get([pid], uid),
-    ]);
+    const [deleted, privilegesData] = await Promise.all([posts.getPostField(pid, 'deleted'), privileges.posts.get([pid], uid)]);
 
     const allowed = privilegesData[0]['posts:history'] && (deleted ? privilegesData[0]['posts:view_deleted'] : true);
     if (!allowed) {
@@ -297,10 +269,7 @@ postsAPI.getDiffs = async (caller, data) => {
     usernames = usernames.map(userObj => (userObj.uid ? userObj.username : null));
 
     const cid = await posts.getCidByPid(data.pid);
-    const [isAdmin, isModerator] = await Promise.all([
-        user.isAdministrator(caller.uid),
-        privileges.users.isModerator(caller.uid, cid),
-    ]);
+    const [isAdmin, isModerator] = await Promise.all([user.isAdministrator(caller.uid), privileges.users.isModerator(caller.uid, cid)]);
 
     // timestamps returned by posts.diffs.list are strings
     timestamps.push(String(post.timestamp));

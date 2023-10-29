@@ -44,7 +44,7 @@ module.exports = function (Plugins) {
 
         let methods = {};
         if (Array.isArray(fields)) {
-            fields.forEach((field) => {
+            fields.forEach(field => {
                 methods[field] = handlers[field];
             });
         } else {
@@ -82,20 +82,20 @@ module.exports = function (Plugins) {
         const fields = _.uniq(_.flatMap(targets, target => map[target] || []));
 
         // clear old data before build
-        fields.forEach((field) => {
+        fields.forEach(field => {
             switch (field) {
-            case 'clientScripts':
-            case 'acpScripts':
-            case 'cssFiles':
-            case 'lessFiles':
-            case 'acpLessFiles':
-                Plugins[field].length = 0;
-                break;
-            case 'languageData':
-                Plugins.languageData.languages = [];
-                Plugins.languageData.namespaces = [];
-                break;
-            // do nothing for modules and staticDirs
+                case 'clientScripts':
+                case 'acpScripts':
+                case 'cssFiles':
+                case 'lessFiles':
+                case 'acpLessFiles':
+                    Plugins[field].length = 0;
+                    break;
+                case 'languageData':
+                    Plugins.languageData.languages = [];
+                    Plugins.languageData.namespaces = [];
+                    break;
+                // do nothing for modules and staticDirs
             }
         });
 

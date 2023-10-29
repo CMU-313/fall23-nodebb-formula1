@@ -1,6 +1,5 @@
 'use strict';
 
-
 const validator = require('validator');
 
 const db = require('../database');
@@ -22,7 +21,7 @@ require('./notifications')(Messaging);
 
 Messaging.messageExists = async mid => db.exists(`message:${mid}`);
 
-Messaging.getMessages = async (params) => {
+Messaging.getMessages = async params => {
     const isNew = params.isNew || false;
     const start = params.hasOwnProperty('start') ? params.start : 0;
     const stop = parseInt(start, 10) + ((params.count || 50) - 1);
@@ -43,7 +42,7 @@ Messaging.getMessages = async (params) => {
     mids.reverse();
 
     const messageData = await Messaging.getMessagesData(mids, params.uid, params.roomId, isNew);
-    messageData.forEach((messageData) => {
+    messageData.forEach(messageData => {
         messageData.index = indices[messageData.messageId.toString()];
         messageData.isOwner = messageData.fromuid === parseInt(params.uid, 10);
         if (messageData.deleted && !messageData.isOwner) {
@@ -100,11 +99,13 @@ Messaging.getRecentChats = async (callerUid, uid, start, stop) => {
     const results = await utils.promiseParallel({
         roomData: Messaging.getRoomsData(roomIds),
         unread: db.isSortedSetMembers(`uid:${uid}:chat:rooms:unread`, roomIds),
-        users: Promise.all(roomIds.map(async (roomId) => {
-            let uids = await db.getSortedSetRevRange(`chat:room:${roomId}:uids`, 0, 9);
-            uids = uids.filter(_uid => _uid && parseInt(_uid, 10) !== parseInt(uid, 10));
-            return await user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture', 'status', 'lastonline']);
-        })),
+        users: Promise.all(
+            roomIds.map(async roomId => {
+                let uids = await db.getSortedSetRevRange(`chat:room:${roomId}:uids`, 0, 9);
+                uids = uids.filter(_uid => _uid && parseInt(_uid, 10) !== parseInt(uid, 10));
+                return await user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture', 'status', 'lastonline']);
+            })
+        ),
         teasers: Promise.all(roomIds.map(async roomId => Messaging.getTeaser(uid, roomId))),
     });
 
@@ -115,7 +116,7 @@ Messaging.getRecentChats = async (callerUid, uid, start, stop) => {
             room.unread = results.unread[index];
             room.teaser = results.teasers[index];
 
-            room.users.forEach((userData) => {
+            room.users.forEach(userData => {
                 if (userData && parseInt(userData.uid, 10)) {
                     userData.status = user.getStatus(userData);
                 }
@@ -137,8 +138,11 @@ Messaging.getRecentChats = async (callerUid, uid, start, stop) => {
     });
 };
 
-Messaging.generateUsernames = (users, excludeUid) => users.filter(user => user && parseInt(user.uid, 10) !== excludeUid)
-    .map(user => user.username).join(', ');
+Messaging.generateUsernames = (users, excludeUid) =>
+    users
+        .filter(user => user && parseInt(user.uid, 10) !== excludeUid)
+        .map(user => user.username)
+        .join(', ');
 
 Messaging.getTeaser = async (uid, roomId) => {
     const mid = await Messaging.getLatestUndeletedMessage(uid, roomId);
@@ -196,11 +200,7 @@ Messaging.canMessageUser = async (uid, toUid) => {
     if (parseInt(uid, 10) === parseInt(toUid, 10)) {
         throw new Error('[[error:cant-chat-with-yourself]]');
     }
-    const [exists, canChat] = await Promise.all([
-        user.exists(toUid),
-        privileges.global.can('chat', uid),
-        checkReputation(uid),
-    ]);
+    const [exists, canChat] = await Promise.all([user.exists(toUid), privileges.global.can('chat', uid), checkReputation(uid)]);
 
     if (!exists) {
         throw new Error('[[error:no-user]]');
@@ -210,13 +210,7 @@ Messaging.canMessageUser = async (uid, toUid) => {
         throw new Error('[[error:no-privileges]]');
     }
 
-    const [settings, isAdmin, isModerator, isFollowing, isBlocked] = await Promise.all([
-        user.getSettings(toUid),
-        user.isAdministrator(uid),
-        user.isModeratorOfAnyCategory(uid),
-        user.isFollowing(toUid, uid),
-        user.blocks.is(uid, toUid),
-    ]);
+    const [settings, isAdmin, isModerator, isFollowing, isBlocked] = await Promise.all([user.getSettings(toUid), user.isAdministrator(uid), user.isModeratorOfAnyCategory(uid), user.isFollowing(toUid, uid), user.blocks.is(uid, toUid)]);
 
     if (isBlocked || (settings.restrictChat && !isAdmin && !isModerator && !isFollowing)) {
         throw new Error('[[error:chat-restricted]]');
@@ -233,11 +227,7 @@ Messaging.canMessageRoom = async (uid, roomId) => {
         throw new Error('[[error:chat-disabled]]');
     }
 
-    const [inRoom, canChat] = await Promise.all([
-        Messaging.isUserInRoom(uid, roomId),
-        privileges.global.can('chat', uid),
-        checkReputation(uid),
-    ]);
+    const [inRoom, canChat] = await Promise.all([Messaging.isUserInRoom(uid, roomId), privileges.global.can('chat', uid), checkReputation(uid)]);
 
     if (!inRoom) {
         throw new Error('[[error:not-in-room]]');

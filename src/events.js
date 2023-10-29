@@ -1,4 +1,3 @@
-
 'use strict';
 
 const validator = require('validator');
@@ -87,13 +86,7 @@ events.log = async function (data) {
     data.timestamp = Date.now();
     data.eid = eid;
 
-    await Promise.all([
-        db.sortedSetsAdd([
-            'events:time',
-            `events:time:${data.type}`,
-        ], data.timestamp, eid),
-        db.setObject(`event:${eid}`, data),
-    ]);
+    await Promise.all([db.sortedSetsAdd(['events:time', `events:time:${data.type}`], data.timestamp, eid), db.setObject(`event:${eid}`, data)]);
     plugins.hooks.fire('action:events.log', { data: data });
 };
 
@@ -111,8 +104,8 @@ events.getEvents = async function (filter, start, stop, from, to) {
     eventsData = eventsData.filter(Boolean);
     await addUserData(eventsData, 'uid', 'user');
     await addUserData(eventsData, 'targetUid', 'targetUser');
-    eventsData.forEach((event) => {
-        Object.keys(event).forEach((key) => {
+    eventsData.forEach(event => {
+        Object.keys(event).forEach(key => {
             if (typeof event[key] === 'string') {
                 event[key] = validator.escape(String(event[key] || ''));
             }
@@ -136,10 +129,7 @@ async function addUserData(eventsData, field, objectName) {
         return eventsData;
     }
 
-    const [isAdmin, userData] = await Promise.all([
-        user.isAdministrator(uids),
-        user.getUsersFields(uids, ['username', 'userslug', 'picture']),
-    ]);
+    const [isAdmin, userData] = await Promise.all([user.isAdministrator(uids), user.getUsersFields(uids, ['username', 'userslug', 'picture'])]);
 
     const map = {};
     userData.forEach((user, index) => {
@@ -147,7 +137,7 @@ async function addUserData(eventsData, field, objectName) {
         map[user.uid] = user;
     });
 
-    eventsData.forEach((event) => {
+    eventsData.forEach(event => {
         if (map[event[field]]) {
             event[objectName] = map[event[field]];
         }
@@ -159,16 +149,17 @@ events.deleteEvents = async function (eids) {
     const keys = eids.map(eid => `event:${eid}`);
     const eventData = await db.getObjectsFields(keys, ['type']);
     const sets = _.uniq(['events:time'].concat(eventData.map(e => `events:time:${e.type}`)));
-    await Promise.all([
-        db.deleteAll(keys),
-        db.sortedSetRemove(sets, eids),
-    ]);
+    await Promise.all([db.deleteAll(keys), db.sortedSetRemove(sets, eids)]);
 };
 
 events.deleteAll = async function () {
-    await batch.processSortedSet('events:time', async (eids) => {
-        await events.deleteEvents(eids);
-    }, { alwaysStartAt: 0, batch: 500 });
+    await batch.processSortedSet(
+        'events:time',
+        async eids => {
+            await events.deleteEvents(eids);
+        },
+        { alwaysStartAt: 0, batch: 500 }
+    );
 };
 
 require('./promisify')(events);

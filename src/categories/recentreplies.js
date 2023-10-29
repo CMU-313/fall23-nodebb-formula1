@@ -1,4 +1,3 @@
-
 'use strict';
 
 const winston = require('winston');
@@ -25,10 +24,7 @@ module.exports = function (Categories) {
     };
 
     Categories.updateRecentTid = async function (cid, tid) {
-        const [count, numRecentReplies] = await Promise.all([
-            db.sortedSetCard(`cid:${cid}:recent_tids`),
-            db.getObjectField(`category:${cid}`, 'numRecentReplies'),
-        ]);
+        const [count, numRecentReplies] = await Promise.all([db.sortedSetCard(`cid:${cid}:recent_tids`), db.getObjectField(`category:${cid}`, 'numRecentReplies')]);
 
         if (count >= numRecentReplies) {
             const data = await db.getSortedSetRangeWithScores(`cid:${cid}:recent_tids`, 0, count - numRecentReplies);
@@ -70,8 +66,7 @@ module.exports = function (Categories) {
         if (!Array.isArray(categoryData) || !categoryData.length) {
             return;
         }
-        const categoriesToLoad =
-            categoryData.filter(c => c && c.numRecentReplies && parseInt(c.numRecentReplies, 10) > 0);
+        const categoriesToLoad = categoryData.filter(c => c && c.numRecentReplies && parseInt(c.numRecentReplies, 10) > 0);
         let keys = [];
         if (plugins.hooks.hasListeners('filter:categories.getRecentTopicReplies')) {
             const result = await plugins.hooks.fire('filter:categories.getRecentTopicReplies', {
@@ -96,21 +91,15 @@ module.exports = function (Categories) {
     };
 
     async function getTopics(tids, uid) {
-        const topicData = await topics.getTopicsFields(
-            tids,
-            ['tid', 'mainPid', 'slug', 'title', 'teaserPid', 'cid', 'postcount']
-        );
-        topicData.forEach((topic) => {
+        const topicData = await topics.getTopicsFields(tids, ['tid', 'mainPid', 'slug', 'title', 'teaserPid', 'cid', 'postcount']);
+        topicData.forEach(topic => {
             if (topic) {
                 topic.teaserPid = topic.teaserPid || topic.mainPid;
             }
         });
         const cids = _.uniq(topicData.map(t => t && t.cid).filter(cid => parseInt(cid, 10)));
         const getToRoot = async () => await Promise.all(cids.map(Categories.getParentCids));
-        const [toRoot, teasers] = await Promise.all([
-            getToRoot(),
-            topics.getTeasers(topicData, uid),
-        ]);
+        const [toRoot, teasers] = await Promise.all([getToRoot(), topics.getTeasers(topicData, uid)]);
         const cidToRoot = _.zipObject(cids, toRoot);
 
         teasers.forEach((teaser, index) => {
@@ -129,7 +118,7 @@ module.exports = function (Categories) {
     }
 
     function assignTopicsToCategories(categories, topics) {
-        categories.forEach((category) => {
+        categories.forEach(category => {
             if (category) {
                 category.posts = topics
                     .filter(t => t.cid && (t.cid === category.cid || t.parentCids.includes(category.cid)))
@@ -137,11 +126,13 @@ module.exports = function (Categories) {
                     .slice(0, parseInt(category.numRecentReplies, 10));
             }
         });
-        topics.forEach((t) => { t.parentCids = undefined; });
+        topics.forEach(t => {
+            t.parentCids = undefined;
+        });
     }
 
     function bubbleUpChildrenPosts(categoryData) {
-        categoryData.forEach((category) => {
+        categoryData.forEach(category => {
             if (category) {
                 if (category.posts.length) {
                     return;
@@ -168,34 +159,39 @@ module.exports = function (Categories) {
     // terrible name, should be topics.moveTopicPosts
     Categories.moveRecentReplies = async function (tid, oldCid, cid) {
         await updatePostCount(tid, oldCid, cid);
-        const [pids, topicDeleted] = await Promise.all([
-            topics.getPids(tid),
-            topics.getTopicField(tid, 'deleted'),
-        ]);
+        const [pids, topicDeleted] = await Promise.all([topics.getPids(tid), topics.getTopicField(tid, 'deleted')]);
 
-        await batch.processArray(pids, async (pids) => {
-            const postData = await posts.getPostsFields(pids, ['pid', 'deleted', 'uid', 'timestamp', 'upvotes', 'downvotes']);
+        await batch.processArray(
+            pids,
+            async pids => {
+                const postData = await posts.getPostsFields(pids, ['pid', 'deleted', 'uid', 'timestamp', 'upvotes', 'downvotes']);
 
-            const bulkRemove = [];
-            const bulkAdd = [];
-            postData.forEach((post) => {
-                bulkRemove.push([`cid:${oldCid}:uid:${post.uid}:pids`, post.pid]);
-                bulkRemove.push([`cid:${oldCid}:uid:${post.uid}:pids:votes`, post.pid]);
-                bulkAdd.push([`cid:${cid}:uid:${post.uid}:pids`, post.timestamp, post.pid]);
-                if (post.votes > 0 || post.votes < 0) {
-                    bulkAdd.push([`cid:${cid}:uid:${post.uid}:pids:votes`, post.votes, post.pid]);
-                }
-            });
+                const bulkRemove = [];
+                const bulkAdd = [];
+                postData.forEach(post => {
+                    bulkRemove.push([`cid:${oldCid}:uid:${post.uid}:pids`, post.pid]);
+                    bulkRemove.push([`cid:${oldCid}:uid:${post.uid}:pids:votes`, post.pid]);
+                    bulkAdd.push([`cid:${cid}:uid:${post.uid}:pids`, post.timestamp, post.pid]);
+                    if (post.votes > 0 || post.votes < 0) {
+                        bulkAdd.push([`cid:${cid}:uid:${post.uid}:pids:votes`, post.votes, post.pid]);
+                    }
+                });
 
-            const postsToReAdd = postData.filter(p => !p.deleted && !topicDeleted);
-            const timestamps = postsToReAdd.map(p => p && p.timestamp);
-            await Promise.all([
-                db.sortedSetRemove(`cid:${oldCid}:pids`, pids),
-                db.sortedSetAdd(`cid:${cid}:pids`, timestamps, postsToReAdd.map(p => p.pid)),
-                db.sortedSetRemoveBulk(bulkRemove),
-                db.sortedSetAddBulk(bulkAdd),
-            ]);
-        }, { batch: 500 });
+                const postsToReAdd = postData.filter(p => !p.deleted && !topicDeleted);
+                const timestamps = postsToReAdd.map(p => p && p.timestamp);
+                await Promise.all([
+                    db.sortedSetRemove(`cid:${oldCid}:pids`, pids),
+                    db.sortedSetAdd(
+                        `cid:${cid}:pids`,
+                        timestamps,
+                        postsToReAdd.map(p => p.pid)
+                    ),
+                    db.sortedSetRemoveBulk(bulkRemove),
+                    db.sortedSetAddBulk(bulkAdd),
+                ]);
+            },
+            { batch: 500 }
+        );
     };
 
     async function updatePostCount(tid, oldCid, newCid) {
@@ -204,9 +200,6 @@ module.exports = function (Categories) {
             return;
         }
 
-        await Promise.all([
-            db.incrObjectFieldBy(`category:${oldCid}`, 'post_count', -postCount),
-            db.incrObjectFieldBy(`category:${newCid}`, 'post_count', postCount),
-        ]);
+        await Promise.all([db.incrObjectFieldBy(`category:${oldCid}`, 'post_count', -postCount), db.incrObjectFieldBy(`category:${newCid}`, 'post_count', postCount)]);
     }
 };

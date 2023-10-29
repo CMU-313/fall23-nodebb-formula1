@@ -8,7 +8,7 @@ const helpers = require('../helpers');
 
 const Categories = module.exports;
 
-const hasAdminPrivilege = async (uid) => {
+const hasAdminPrivilege = async uid => {
     const ok = await privileges.admin.can(`admin:categories`, uid);
     if (!ok) {
         throw new Error('[[error:no-privileges]]');
@@ -44,7 +44,7 @@ Categories.delete = async (req, res) => {
 };
 
 Categories.getPrivileges = async (req, res) => {
-    if (!await privileges.admin.can('admin:privileges', req.uid)) {
+    if (!(await privileges.admin.can('admin:privileges', req.uid))) {
         throw new Error('[[error:no-privileges]]');
     }
 
@@ -53,7 +53,7 @@ Categories.getPrivileges = async (req, res) => {
 };
 
 Categories.setPrivilege = async (req, res) => {
-    if (!await privileges.admin.can('admin:privileges', req.uid)) {
+    if (!(await privileges.admin.can('admin:privileges', req.uid))) {
         throw new Error('[[error:no-privileges]]');
     }
 
@@ -68,7 +68,7 @@ Categories.setPrivilege = async (req, res) => {
 };
 
 Categories.setModerator = async (req, res) => {
-    if (!await privileges.admin.can('admin:admins-mods', req.uid)) {
+    if (!(await privileges.admin.can('admin:admins-mods', req.uid))) {
         throw new Error('[[error:no-privileges]]');
     }
     const privilegeList = await privileges.categories.getUserPrivilegeList();

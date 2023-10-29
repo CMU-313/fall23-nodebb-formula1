@@ -3,9 +3,7 @@
 const { Command, Option } = require('commander');
 
 module.exports = () => {
-    const userCmd = new Command('user')
-        .description('Manage users')
-        .arguments('[command]');
+    const userCmd = new Command('user').description('Manage users').arguments('[command]');
 
     userCmd.configureHelp(require('./colors'));
     const userCommands = UserCommands();
@@ -26,7 +24,7 @@ module.exports = () => {
         .action((...args) => execute(userCommands.create, args));
     userCmd
         .command('reset')
-        .description('Reset a user\'s password or send a password reset email.')
+        .description("Reset a user's password or send a password reset email.")
         .arguments('<uid>')
         .option('-p, --password <password>', 'Set a new password. (Auto-generates if passed empty)', false)
         .option('-s, --send-reset-email', 'Send a password reset email.', false)
@@ -35,15 +33,10 @@ module.exports = () => {
         .command('delete')
         .description('Delete user(s) and/or their content')
         .arguments('<uids...>')
-        .addOption(
-            new Option('-t, --type [operation]', 'Delete user content ([purge]), leave content ([account]), or delete content only ([content])')
-                .choices(['purge', 'account', 'content']).default('purge')
-        )
+        .addOption(new Option('-t, --type [operation]', 'Delete user content ([purge]), leave content ([account]), or delete content only ([content])').choices(['purge', 'account', 'content']).default('purge'))
         .action((...args) => execute(userCommands.deleteUser, args));
 
-    const make = userCmd.command('make')
-        .description('Make user(s) admin, global mod, moderator or a regular user.')
-        .arguments('[command]');
+    const make = userCmd.command('make').description('Make user(s) admin, global mod, moderator or a regular user.').arguments('[command]');
 
     make.command('admin')
         .description('Make user(s) an admin')
@@ -227,7 +220,7 @@ ${pwGenerated ? ` Generated password: ${password}` : ''}`);
         if (sendResetEmail) {
             const userEmail = await user.getUserField(uid, 'email');
             if (!userEmail) {
-                return winston.error('User doesn\'t have an email address to send reset email.');
+                return winston.error("User doesn't have an email address to send reset email.");
             }
             await setupApp();
             await user.reset.send(userEmail);
@@ -247,18 +240,18 @@ ${pwGenerated ? ` Generated password: ${password}` : ''}`);
         const adminUid = await getAdminUidOrFail();
 
         switch (type) {
-        case 'purge':
-            await Promise.all(uids.map(uid => user.delete(adminUid, uid)));
-            winston.info(`[userCmd/delete] User(s) with their content has been deleted.`);
-            break;
-        case 'account':
-            await Promise.all(uids.map(uid => user.deleteAccount(uid)));
-            winston.info(`[userCmd/delete] User(s) has been deleted, their content left intact.`);
-            break;
-        case 'content':
-            await Promise.all(uids.map(uid => user.deleteContent(adminUid, uid)));
-            winston.info(`[userCmd/delete] User(s)' content has been deleted.`);
-            break;
+            case 'purge':
+                await Promise.all(uids.map(uid => user.delete(adminUid, uid)));
+                winston.info(`[userCmd/delete] User(s) with their content has been deleted.`);
+                break;
+            case 'account':
+                await Promise.all(uids.map(uid => user.deleteAccount(uid)));
+                winston.info(`[userCmd/delete] User(s) has been deleted, their content left intact.`);
+                break;
+            case 'content':
+                await Promise.all(uids.map(uid => user.deleteContent(adminUid, uid)));
+                winston.info(`[userCmd/delete] User(s)' content has been deleted.`);
+                break;
         }
     }
 

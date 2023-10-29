@@ -14,15 +14,8 @@ module.exports = function (SocketTopics) {
         }
 
         const systemTags = (meta.config.systemTags || '').split(',');
-        const [tagWhitelist, isPrivileged] = await Promise.all([
-            categories.getTagWhitelist([data.cid]),
-            user.isPrivileged(socket.uid),
-        ]);
-        return isPrivileged ||
-            (
-                !systemTags.includes(data.tag) &&
-                (!tagWhitelist[0].length || tagWhitelist[0].includes(data.tag))
-            );
+        const [tagWhitelist, isPrivileged] = await Promise.all([categories.getTagWhitelist([data.cid]), user.isPrivileged(socket.uid)]);
+        return isPrivileged || (!systemTags.includes(data.tag) && (!tagWhitelist[0].length || tagWhitelist[0].includes(data.tag)));
     };
 
     SocketTopics.canRemoveTag = async function (socket, data) {

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const fs = require('fs');
@@ -39,10 +38,13 @@ const auth = require('./routes/authentication');
 const helpers = require('./helpers');
 
 if (nconf.get('ssl')) {
-    server = require('https').createServer({
-        key: fs.readFileSync(nconf.get('ssl').key),
-        cert: fs.readFileSync(nconf.get('ssl').cert),
-    }, app);
+    server = require('https').createServer(
+        {
+            key: fs.readFileSync(nconf.get('ssl').key),
+            cert: fs.readFileSync(nconf.get('ssl').cert),
+        },
+        app
+    );
 } else {
     server = require('http').createServer(app);
 }
@@ -50,7 +52,7 @@ if (nconf.get('ssl')) {
 module.exports.server = server;
 module.exports.app = app;
 
-server.on('error', (err) => {
+server.on('error', err => {
     if (err.code === 'EADDRINUSE') {
         winston.error(`NodeBB address in use, exiting...\n${err.stack}`);
     } else {
@@ -62,7 +64,7 @@ server.on('error', (err) => {
 
 // see https://github.com/isaacs/server-destroy/blob/master/index.js
 const connections = {};
-server.on('connection', (conn) => {
+server.on('connection', conn => {
     const key = `${conn.remoteAddress}:${conn.remotePort}`;
     connections[key] = conn;
     conn.on('close', () => {
@@ -161,14 +163,16 @@ function setupExpressApp(app) {
     app.use(cookieParser(nconf.get('secret')));
     app.use(useragent.express());
     app.use(detector.middleware());
-    app.use(session({
-        store: db.sessionStore,
-        secret: nconf.get('secret'),
-        key: nconf.get('sessionKey'),
-        cookie: setupCookie(),
-        resave: nconf.get('sessionResave') || false,
-        saveUninitialized: nconf.get('sessionSaveUninitialized') || false,
-    }));
+    app.use(
+        session({
+            store: db.sessionStore,
+            secret: nconf.get('secret'),
+            key: nconf.get('sessionKey'),
+            cookie: setupCookie(),
+            resave: nconf.get('sessionResave') || false,
+            saveUninitialized: nconf.get('sessionSaveUninitialized') || false,
+        })
+    );
 
     setupHelmet(app);
 
@@ -207,7 +211,6 @@ function setupHelmet(app) {
 
     app.use(helmet(options));
 }
-
 
 function setupFavicon(app) {
     let faviconPath = meta.config['brand:favicon'] || 'favicon.ico';
@@ -257,7 +260,7 @@ async function listen() {
     }
     port = parseInt(port, 10);
     if ((port !== 80 && port !== 443) || nconf.get('trust_proxy') === true) {
-        winston.info('🤝 Enabling \'trust proxy\'');
+        winston.info("🤝 Enabling 'trust proxy'");
         app.enable('trust proxy');
     }
 
@@ -265,7 +268,7 @@ async function listen() {
         winston.info('Using ports 80 and 443 is not recommend; use a proxy instead. See README.md');
     }
 
-    const bind_address = ((nconf.get('bind_address') === '0.0.0.0' || !nconf.get('bind_address')) ? '0.0.0.0' : nconf.get('bind_address'));
+    const bind_address = nconf.get('bind_address') === '0.0.0.0' || !nconf.get('bind_address') ? '0.0.0.0' : nconf.get('bind_address');
     const args = isSocket ? [socketPath] : [port, bind_address];
     let oldUmask;
 
@@ -280,20 +283,24 @@ async function listen() {
     }
 
     return new Promise((resolve, reject) => {
-        server.listen(...args.concat([function (err) {
-            const onText = `${isSocket ? socketPath : `${bind_address}:${port}`}`;
-            if (err) {
-                winston.error(`[startup] NodeBB was unable to listen on: ${chalk.yellow(onText)}`);
-                reject(err);
-            }
+        server.listen(
+            ...args.concat([
+                function (err) {
+                    const onText = `${isSocket ? socketPath : `${bind_address}:${port}`}`;
+                    if (err) {
+                        winston.error(`[startup] NodeBB was unable to listen on: ${chalk.yellow(onText)}`);
+                        reject(err);
+                    }
 
-            winston.info(`📡 NodeBB is now listening on: ${chalk.yellow(onText)}`);
-            winston.info(`🔗 Canonical URL: ${chalk.yellow(nconf.get('url'))}`);
-            if (oldUmask) {
-                process.umask(oldUmask);
-            }
-            resolve();
-        }]));
+                    winston.info(`📡 NodeBB is now listening on: ${chalk.yellow(onText)}`);
+                    winston.info(`🔗 Canonical URL: ${chalk.yellow(nconf.get('url'))}`);
+                    if (oldUmask) {
+                        process.umask(oldUmask);
+                    }
+                    resolve();
+                },
+            ])
+        );
     });
 }
 
@@ -309,13 +316,14 @@ exports.testSocket = async function (socketPath) {
     }
     return new Promise((resolve, reject) => {
         const testSocket = new net.Socket();
-        testSocket.on('error', (err) => {
+        testSocket.on('error', err => {
             if (err.code !== 'ECONNREFUSED') {
                 return reject(err);
             }
             // The socket was stale, kick it out of the way
-            fs.unlink(socketPath, (err) => {
-                if (err) reject(err); else resolve();
+            fs.unlink(socketPath, err => {
+                if (err) reject(err);
+                else resolve();
             });
         });
         testSocket.connect({ path: socketPath }, () => {
