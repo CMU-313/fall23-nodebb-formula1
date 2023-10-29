@@ -24,8 +24,12 @@ dump.rdb
 
 logs/
 
+.prettierrc
+
 pidfile
-src
+<!-- src -->
+src/controllers/errors.js
+src/promisify.js
 
 public
 
@@ -49,6 +53,7 @@ coverage
 .nyc_output
 
 *.log
+test
 test/files/normalise.jpg.png
 test/files/normalise-resized.jpg
 package-lock.json
@@ -58,4 +63,4 @@ link-plugins.sh
 test.sh
 
 # Theme ignore
-theme
+themes
