@@ -47,7 +47,8 @@ function find_compiled_js() {
         ignorePatterns: find_compiled_js(),
         rules: {
             // "indent": ["error", 4]
-            "no-tabs": ["error", {"allowIndentationTabs": true}]
+            "no-tabs": ["error", {"allowIndentationTabs": true}],
+            "no-useless-concat": "off"
         },
         overrides: [
             {
