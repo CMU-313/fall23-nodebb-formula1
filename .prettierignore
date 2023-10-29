@@ -30,6 +30,7 @@ pidfile
 <!-- src -->
 src/controllers/errors.js
 src/promisify.js
+src/posts/uploads.js
 
 public
 
@@ -54,8 +55,7 @@ coverage
 
 *.log
 test
-test/files/normalise.jpg.png
-test/files/normalise-resized.jpg
+
 package-lock.json
 /package.json
 *.mongodb
