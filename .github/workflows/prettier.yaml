@@ -16,7 +16,7 @@ permissions:
     contents: read
 
 jobs:
-    prettier lint:
+    prettier_lint:
         permissions:
             checks: write # for coverallsapp/github-action to create new checks
             contents: read # for actions/checkout to fetch code
