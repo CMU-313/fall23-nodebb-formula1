@@ -27,14 +27,14 @@ logs/
 .prettierrc
 
 pidfile
-<!-- src -->
+
 src/controllers/errors.js
 src/promisify.js
 src/posts/uploads.js
 
 public
+themes
 
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
 *.iml
 
 ## Directory-based project format:
@@ -61,6 +61,3 @@ package-lock.json
 *.mongodb
 link-plugins.sh
 test.sh
-
-# Theme ignore
-themes
