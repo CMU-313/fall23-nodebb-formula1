@@ -80,4 +80,4 @@ jobs:
                   node app --setup="${SETUP}" --ci="${CI}"
 
             - name: Run Prettier
-              run: prettier . --check 
+              run: npx prettier . --check
