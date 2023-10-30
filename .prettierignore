@@ -29,11 +29,25 @@ logs/
 pidfile
 
 src/controllers/errors.js
+src/controllers/composer.js
+src/controllers/groups.js
+src/controllers/ungrouped.js
+
 src/promisify.js
 src/posts/uploads.js
+src/bugs/create.js
+src/groups/data.js
+src/groups/posts.js
+src/social.js
+src/topics/ungrouped.js
+src/user/online.js
+
+src/types
+
 
 public
 themes
+build
 
 *.iml
 
