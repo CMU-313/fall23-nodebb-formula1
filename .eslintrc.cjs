@@ -48,7 +48,7 @@ module.exports = {
             files: ['**/*.ts', '**/*.tsx'],
             extends: ['plugin:@typescript-eslint/recommended', 'plugin:@typescript-eslint/recommended-requiring-type-checking'],
             parser: '@typescript-eslint/parser',
-            plugins: ['@typescript-eslint', 'prettier'],
+            plugins: ['@typescript-eslint'],
             parserOptions: {
                 ecmaFeatures: { jsx: true },
                 project: './tsconfig.json',
