@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -26,7 +25,7 @@ module.exports = function (Topics) {
         const teaserPids = [];
         const tidToPost = {};
 
-        topics.forEach((topic) => {
+        topics.forEach(topic => {
             counts.push(topic && topic.postcount);
             if (topic) {
                 if (topic.teaserPid === 'null') {
@@ -36,16 +35,14 @@ module.exports = function (Topics) {
                     teaserPids.push(topic.mainPid);
                 } else if (teaserPost === 'last-post') {
                     teaserPids.push(topic.teaserPid || topic.mainPid);
-                } else { // last-reply and everything else uses teaserPid like `last` that was used before
+                } else {
+                    // last-reply and everything else uses teaserPid like `last` that was used before
                     teaserPids.push(topic.teaserPid);
                 }
             }
         });
 
-        const [allPostData, callerSettings] = await Promise.all([
-            posts.getPostsFields(teaserPids, ['pid', 'uid', 'timestamp', 'tid', 'content']),
-            user.getSettings(uid),
-        ]);
+        const [allPostData, callerSettings] = await Promise.all([posts.getPostsFields(teaserPids, ['pid', 'uid', 'timestamp', 'tid', 'content']), user.getSettings(uid)]);
         let postData = allPostData.filter(post => post && post.pid);
         postData = await handleBlocks(uid, postData);
         postData = postData.filter(Boolean);
@@ -54,10 +51,10 @@ module.exports = function (Topics) {
         const usersData = await user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture']);
 
         const users = {};
-        usersData.forEach((user) => {
+        usersData.forEach(user => {
             users[user.uid] = user;
         });
-        postData.forEach((post) => {
+        postData.forEach(post => {
             // If the post author isn't represented in the retrieved users' data,
             // then it means they were deleted, assume guest.
             if (!users.hasOwnProperty(post.uid)) {
@@ -112,12 +109,14 @@ module.exports = function (Topics) {
             return teasers;
         }
 
-        return await Promise.all(teasers.map(async (postData) => {
-            if (blockedUids.includes(parseInt(postData.uid, 10))) {
-                return await getPreviousNonBlockedPost(postData, blockedUids);
-            }
-            return postData;
-        }));
+        return await Promise.all(
+            teasers.map(async postData => {
+                if (blockedUids.includes(parseInt(postData.uid, 10))) {
+                    return await getPreviousNonBlockedPost(postData, blockedUids);
+                }
+                return postData;
+            })
+        );
     }
 
     async function getPreviousNonBlockedPost(postData, blockedUids) {

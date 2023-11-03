@@ -7,10 +7,7 @@ import translator from '../translator';
 import { GroupDataField, GroupDataObject } from '../types';
 import coverPhoto = require('../coverPhoto');
 
-const intFields: string[] = [
-    'createtime', 'memberCount', 'hidden', 'system', 'private',
-    'userTitleEnabled', 'disableJoinRequests', 'disableLeave',
-];
+const intFields: string[] = ['createtime', 'memberCount', 'hidden', 'system', 'private', 'userTitleEnabled', 'disableJoinRequests', 'disableLeave'];
 
 interface GroupsInterface {
     getGroupsFields: (groupNames: string[], fields: string[]) => Promise<GroupDataObject[]>;
@@ -39,30 +36,28 @@ function modifyGroup(group: GroupDataObject, fields: string[]): void {
         db.parseIntFields(group, intFields, fields);
 
         escapeGroupData(group);
-        group.userTitleEnabled = ([null, undefined].includes(group.userTitleEnabled)) ? 1 : group.userTitleEnabled;
+        group.userTitleEnabled = [null, undefined].includes(group.userTitleEnabled) ? 1 : group.userTitleEnabled;
         group.labelColor = validator.escape(String(group.labelColor || '#000000'));
         group.textColor = validator.escape(String(group.textColor || '#ffffff'));
         group.icon = validator.escape(String(group.icon || ''));
         group.createtimeISO = utils.toISOString(group.createtime) as string;
-        group.private = ([null, undefined].includes(group.private)) ? 1 : group.private;
+        group.private = [null, undefined].includes(group.private) ? 1 : group.private;
         group.memberPostCids = group.memberPostCids || '';
-        group.memberPostCidsArray = group.memberPostCids.split(',').map(cid => parseInt(cid, 10)).filter(Boolean);
+        group.memberPostCidsArray = group.memberPostCids
+            .split(',')
+            .map(cid => parseInt(cid, 10))
+            .filter(Boolean);
 
         group['cover:thumb:url'] = group['cover:thumb:url'] || group['cover:url'];
 
         if (group['cover:url']) {
-            group['cover:url'] = group['cover:url'].startsWith('http') ?
-                group['cover:url'] :
-                (nconf.get('relative_path') as string + group['cover:url']);
+            group['cover:url'] = group['cover:url'].startsWith('http') ? group['cover:url'] : (nconf.get('relative_path') as string) + group['cover:url'];
         } else {
             group['cover:url'] = coverPhoto.getDefaultGroupCover(group.name);
         }
 
         if (group['cover:thumb:url']) {
-            group['cover:thumb:url'] =
-                group['cover:thumb:url'].startsWith('http') ?
-                    group['cover:thumb:url'] :
-                    (nconf.get('relative_path') as string + group['cover:thumb:url']);
+            group['cover:thumb:url'] = group['cover:thumb:url'].startsWith('http') ? group['cover:thumb:url'] : (nconf.get('relative_path') as string) + group['cover:thumb:url'];
         } else {
             group['cover:thumb:url'] = coverPhoto.getDefaultGroupCover(group.name);
         }
@@ -87,7 +82,7 @@ export = function (Groups: GroupsInterface) {
         const keys: string[] = groupNames.map(groupName => `group:${groupName}`);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const groupData: GroupDataObject[] = await db.getObjects(keys, fields) as GroupDataObject[];
+        const groupData: GroupDataObject[] = (await db.getObjects(keys, fields)) as GroupDataObject[];
         if (ephemeralIdx.length) {
             ephemeralIdx.forEach((idx: number) => {
                 groupData[idx] = Groups.getEphemeralGroup(groupNames[idx]);
@@ -96,7 +91,7 @@ export = function (Groups: GroupsInterface) {
 
         groupData.forEach(group => modifyGroup(group, fields));
 
-        const results = await plugins.hooks.fire('filter:groups.get', { groups: groupData }) as { groups: GroupDataObject[] };
+        const results = (await plugins.hooks.fire('filter:groups.get', { groups: groupData })) as { groups: GroupDataObject[] };
         return results.groups;
     };
 
@@ -111,7 +106,7 @@ export = function (Groups: GroupsInterface) {
 
     Groups.getGroupField = async function (groupName: string, field: string): Promise<GroupDataField | null> {
         const groupData: GroupDataObject | null = await Groups.getGroupFields(groupName, [field]);
-        return groupData ? groupData[field] as GroupDataField : null;
+        return groupData ? (groupData[field] as GroupDataField) : null;
     };
 
     Groups.getGroupFields = async function (groupName: string, fields: string[]): Promise<GroupDataObject | null> {
@@ -124,4 +119,4 @@ export = function (Groups: GroupsInterface) {
         await db.setObjectField(`group:${groupName}`, field, value);
         await plugins.hooks.fire('action:group.set', { field: field, value: value, type: 'set' });
     };
-}
+};

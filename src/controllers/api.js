@@ -58,7 +58,7 @@ apiController.loadConfig = async function (req) {
         'theme:id': meta.config['theme:id'],
         'theme:src': meta.config['theme:src'],
         defaultLang: meta.config.defaultLang || 'en-GB',
-        userLang: req.query.lang ? validator.escape(String(req.query.lang)) : (meta.config.defaultLang || 'en-GB'),
+        userLang: req.query.lang ? validator.escape(String(req.query.lang)) : meta.config.defaultLang || 'en-GB',
         loggedIn: !!req.user,
         uid: req.uid,
         'cache-buster': meta.config['cache-buster'] || '',
@@ -89,10 +89,7 @@ apiController.loadConfig = async function (req) {
     let settings = config;
     let isAdminOrGlobalMod;
     if (req.loggedIn) {
-        ([settings, isAdminOrGlobalMod] = await Promise.all([
-            user.getSettings(req.uid),
-            user.isAdminOrGlobalMod(req.uid),
-        ]));
+        [settings, isAdminOrGlobalMod] = await Promise.all([user.getSettings(req.uid), user.isAdminOrGlobalMod(req.uid)]);
     }
 
     // Handle old skin configs
@@ -102,15 +99,13 @@ apiController.loadConfig = async function (req) {
     config.usePagination = settings.usePagination;
     config.topicsPerPage = settings.topicsPerPage;
     config.postsPerPage = settings.postsPerPage;
-    config.userLang = validator.escape(
-        String((req.query.lang ? req.query.lang : null) || settings.userLang || config.defaultLang)
-    );
+    config.userLang = validator.escape(String((req.query.lang ? req.query.lang : null) || settings.userLang || config.defaultLang));
     config.acpLang = validator.escape(String((req.query.lang ? req.query.lang : null) || settings.acpLang));
     config.openOutgoingLinksInNewTab = settings.openOutgoingLinksInNewTab;
     config.topicPostSort = settings.topicPostSort || config.topicPostSort;
     config.categoryTopicSort = settings.categoryTopicSort || config.categoryTopicSort;
     config.topicSearchEnabled = settings.topicSearchEnabled || false;
-    config.bootswatchSkin = (meta.config.disableCustomUserSkins !== 1 && settings.bootswatchSkin && settings.bootswatchSkin !== '') ? settings.bootswatchSkin : '';
+    config.bootswatchSkin = meta.config.disableCustomUserSkins !== 1 && settings.bootswatchSkin && settings.bootswatchSkin !== '' ? settings.bootswatchSkin : '';
 
     // Overrides based on privilege
     config.disableChatMessageEditing = isAdminOrGlobalMod ? false : config.disableChatMessageEditing;

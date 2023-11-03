@@ -30,7 +30,7 @@ module.exports = function (middleware) {
                 options.loggedIn = req.uid > 0;
                 options.relative_path = relative_path;
                 options.template = { name: template, [template]: true };
-                options.url = (req.baseUrl + req.path.replace(/^\/api/, ''));
+                options.url = req.baseUrl + req.path.replace(/^\/api/, '');
                 options.bodyClass = helpers.buildBodyClass(req, res, options);
 
                 if (req.loggedIn) {
@@ -75,14 +75,7 @@ module.exports = function (middleware) {
                     footer: renderHeaderFooter('renderFooter', req, res, options),
                 });
 
-                const str = `${results.header +
-                    (res.locals.postHeader || '') +
-                    results.content
-                }<script id="ajaxify-data" type="application/json">${
-                    optionsString
-                }</script>${
-                    res.locals.preFooter || ''
-                }${results.footer}`;
+                const str = `${results.header + (res.locals.postHeader || '') + results.content}<script id="ajaxify-data" type="application/json">${optionsString}</script>${res.locals.preFooter || ''}${results.footer}`;
 
                 if (typeof fn !== 'function') {
                     self.send(str);

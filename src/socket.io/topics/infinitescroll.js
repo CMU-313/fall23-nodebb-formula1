@@ -12,10 +12,7 @@ module.exports = function (SocketTopics) {
             throw new Error('[[error:invalid-data]]');
         }
 
-        const [userPrivileges, topicData] = await Promise.all([
-            privileges.topics.get(data.tid, socket.uid),
-            topics.getTopicData(data.tid),
-        ]);
+        const [userPrivileges, topicData] = await Promise.all([privileges.topics.get(data.tid, socket.uid), topics.getTopicData(data.tid)]);
 
         if (!userPrivileges['topics:read'] || !privileges.topics.canViewDeletedScheduled(topicData, userPrivileges)) {
             throw new Error('[[error:no-privileges]]');
@@ -25,10 +22,7 @@ module.exports = function (SocketTopics) {
         const reverse = data.topicPostSort === 'newest_to_oldest' || data.topicPostSort === 'most_votes';
         let start = Math.max(0, parseInt(data.after, 10));
 
-        const infScrollPostsPerPage = Math.max(0, Math.min(
-            meta.config.postsPerPage || 20,
-            parseInt(data.count, 10) || meta.config.postsPerPage || 20
-        ));
+        const infScrollPostsPerPage = Math.max(0, Math.min(meta.config.postsPerPage || 20, parseInt(data.count, 10) || meta.config.postsPerPage || 20));
 
         if (data.direction === -1) {
             start -= infScrollPostsPerPage;
@@ -38,10 +32,7 @@ module.exports = function (SocketTopics) {
 
         start = Math.max(0, start);
         stop = Math.max(0, stop);
-        const [posts, postSharing] = await Promise.all([
-            topics.getTopicPosts(topicData, set, start, stop, socket.uid, reverse),
-            social.getActivePostSharing(),
-        ]);
+        const [posts, postSharing] = await Promise.all([topics.getTopicPosts(topicData, set, start, stop, socket.uid, reverse), social.getActivePostSharing()]);
 
         topicData.posts = posts;
         topicData.privileges = userPrivileges;

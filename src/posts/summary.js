@@ -1,4 +1,3 @@
-
 'use strict';
 
 const validator = require('validator');
@@ -29,16 +28,13 @@ module.exports = function (Posts) {
         const uids = _.uniq(posts.map(p => p && p.uid));
         const tids = _.uniq(posts.map(p => p && p.tid));
 
-        const [users, topicsAndCategories] = await Promise.all([
-            user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture', 'status']),
-            getTopicAndCategories(tids),
-        ]);
+        const [users, topicsAndCategories] = await Promise.all([user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture', 'status']), getTopicAndCategories(tids)]);
 
         const uidToUser = toObject('uid', users);
         const tidToTopic = toObject('tid', topicsAndCategories.topics);
         const cidToCategory = toObject('cid', topicsAndCategories.categories);
 
-        posts.forEach((post) => {
+        posts.forEach(post => {
             // If the post author isn't represented in the retrieved users' data,
             // then it means they were deleted, assume guest.
             if (!uidToUser.hasOwnProperty(post.uid)) {
@@ -62,29 +58,25 @@ module.exports = function (Posts) {
     };
 
     async function parsePosts(posts, options) {
-        return await Promise.all(posts.map(async (post) => {
-            if (!post.content || !options.parse) {
-                post.content = post.content ? validator.escape(String(post.content)) : post.content;
+        return await Promise.all(
+            posts.map(async post => {
+                if (!post.content || !options.parse) {
+                    post.content = post.content ? validator.escape(String(post.content)) : post.content;
+                    return post;
+                }
+                post = await Posts.parsePost(post);
+                if (options.stripTags) {
+                    post.content = stripTags(post.content);
+                }
                 return post;
-            }
-            post = await Posts.parsePost(post);
-            if (options.stripTags) {
-                post.content = stripTags(post.content);
-            }
-            return post;
-        }));
+            })
+        );
     }
 
     async function getTopicAndCategories(tids) {
-        const topicsData = await topics.getTopicsFields(tids, [
-            'uid', 'tid', 'title', 'cid', 'tags', 'slug',
-            'deleted', 'scheduled', 'postcount', 'mainPid', 'teaserPid',
-        ]);
+        const topicsData = await topics.getTopicsFields(tids, ['uid', 'tid', 'title', 'cid', 'tags', 'slug', 'deleted', 'scheduled', 'postcount', 'mainPid', 'teaserPid']);
         const cids = _.uniq(topicsData.map(topic => topic && topic.cid));
-        const categoriesData = await categories.getCategoriesFields(cids, [
-            'cid', 'name', 'icon', 'slug', 'parentCid',
-            'bgColor', 'color', 'backgroundImage', 'imageClass',
-        ]);
+        const categoriesData = await categories.getCategoriesFields(cids, ['cid', 'name', 'icon', 'slug', 'parentCid', 'bgColor', 'color', 'backgroundImage', 'imageClass']);
         return { topics: topicsData, categories: categoriesData };
     }
 

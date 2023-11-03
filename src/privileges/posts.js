@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -78,32 +77,42 @@ privsPosts.filter = async function (privilege, pids, uid) {
 
     const tidToTopic = _.zipObject(tids, topicData);
 
-    let cids = postData.map((post, index) => {
-        if (post) {
-            post.pid = pids[index];
-            post.topic = tidToTopic[post.tid];
-        }
-        return tidToTopic[post.tid] && tidToTopic[post.tid].cid;
-    }).filter(cid => parseInt(cid, 10));
+    let cids = postData
+        .map((post, index) => {
+            if (post) {
+                post.pid = pids[index];
+                post.topic = tidToTopic[post.tid];
+            }
+            return tidToTopic[post.tid] && tidToTopic[post.tid].cid;
+        })
+        .filter(cid => parseInt(cid, 10));
 
     cids = _.uniq(cids);
 
     const results = await privsCategories.getBase(privilege, cids, uid);
-    const allowedCids = cids.filter((cid, index) => !results.categories[index].disabled &&
-            (results.allowedTo[index] || results.isAdmin));
+    const allowedCids = cids.filter((cid, index) => !results.categories[index].disabled && (results.allowedTo[index] || results.isAdmin));
 
     const cidsSet = new Set(allowedCids);
     const canViewDeleted = _.zipObject(cids, results.view_deleted);
     const canViewScheduled = _.zipObject(cids, results.view_scheduled);
 
-    pids = postData.filter(post => (
-        post.topic &&
-        cidsSet.has(post.topic.cid) &&
-        (privsTopics.canViewDeletedScheduled({
-            deleted: post.topic.deleted || post.deleted,
-            scheduled: post.topic.scheduled,
-        }, {}, canViewDeleted[post.topic.cid], canViewScheduled[post.topic.cid]) || results.isAdmin)
-    )).map(post => post.pid);
+    pids = postData
+        .filter(
+            post =>
+                post.topic &&
+                cidsSet.has(post.topic.cid) &&
+                (privsTopics.canViewDeletedScheduled(
+                    {
+                        deleted: post.topic.deleted || post.deleted,
+                        scheduled: post.topic.scheduled,
+                    },
+                    {},
+                    canViewDeleted[post.topic.cid],
+                    canViewScheduled[post.topic.cid]
+                ) ||
+                    results.isAdmin)
+        )
+        .map(post => post.pid);
 
     const data = await plugins.hooks.fire('filter:privileges.posts.filter', {
         privilege: privilege,
@@ -129,19 +138,10 @@ privsPosts.canEdit = async function (pid, uid) {
         return { flag: true };
     }
 
-    if (
-        !results.isMod &&
-        meta.config.postEditDuration &&
-        (Date.now() - results.postData.timestamp > meta.config.postEditDuration * 1000)
-    ) {
+    if (!results.isMod && meta.config.postEditDuration && Date.now() - results.postData.timestamp > meta.config.postEditDuration * 1000) {
         return { flag: false, message: `[[error:post-edit-duration-expired, ${meta.config.postEditDuration}]]` };
     }
-    if (
-        !results.isMod &&
-        meta.config.newbiePostEditDuration > 0 &&
-        meta.config.newbiePostDelayThreshold > results.userData.reputation &&
-        Date.now() - results.postData.timestamp > meta.config.newbiePostEditDuration * 1000
-    ) {
+    if (!results.isMod && meta.config.newbiePostEditDuration > 0 && meta.config.newbiePostDelayThreshold > results.userData.reputation && Date.now() - results.postData.timestamp > meta.config.newbiePostEditDuration * 1000) {
         return { flag: false, message: `[[error:post-edit-duration-expired, ${meta.config.newbiePostEditDuration}]]` };
     }
 
@@ -180,7 +180,7 @@ privsPosts.canDelete = async function (pid, uid) {
     }
 
     const { postDeleteDuration } = meta.config;
-    if (!results.isMod && postDeleteDuration && (Date.now() - postData.timestamp > postDeleteDuration * 1000)) {
+    if (!results.isMod && postDeleteDuration && Date.now() - postData.timestamp > postDeleteDuration * 1000) {
         return { flag: false, message: `[[error:post-delete-duration-expired, ${meta.config.postDeleteDuration}]]` };
     }
     const { deleterUid } = postData;
@@ -190,14 +190,9 @@ privsPosts.canDelete = async function (pid, uid) {
 
 privsPosts.canFlag = async function (pid, uid) {
     const targetUid = await posts.getPostField(pid, 'uid');
-    const [userReputation, isAdminOrModerator, targetPrivileged, reporterPrivileged] = await Promise.all([
-        user.getUserField(uid, 'reputation'),
-        isAdminOrMod(pid, uid),
-        user.isPrivileged(targetUid),
-        user.isPrivileged(uid),
-    ]);
+    const [userReputation, isAdminOrModerator, targetPrivileged, reporterPrivileged] = await Promise.all([user.getUserField(uid, 'reputation'), isAdminOrMod(pid, uid), user.isPrivileged(targetUid), user.isPrivileged(uid)]);
     const minimumReputation = meta.config['min:rep:flag'];
-    let canFlag = isAdminOrModerator || (userReputation >= minimumReputation);
+    let canFlag = isAdminOrModerator || userReputation >= minimumReputation;
 
     if (targetPrivileged && !reporterPrivileged) {
         canFlag = false;

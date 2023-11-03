@@ -55,7 +55,7 @@ module.exports = function (User) {
             lastonline: timestamp,
             status: 'online',
         };
-        ['picture', 'fullname', 'location', 'birthday'].forEach((field) => {
+        ['picture', 'fullname', 'location', 'birthday'].forEach(field => {
             if (data[field]) {
                 userData[field] = data[field];
             }
@@ -98,26 +98,20 @@ module.exports = function (User) {
             bulkAdd.push(['fullname:sorted', 0, `${userData.fullname.toLowerCase()}:${userData.uid}`]);
         }
 
-        await Promise.all([
-            db.incrObjectField('global', 'userCount'),
-            analytics.increment('registrations'),
-            db.sortedSetAddBulk(bulkAdd),
-            groups.join(['registered-users', 'unverified-users'], userData.uid),
-            User.notifications.sendWelcomeNotification(userData.uid),
-            storePassword(userData.uid, data.password),
-            User.updateDigestSetting(userData.uid, meta.config.dailyDigestFreq),
-        ]);
+        await Promise.all([db.incrObjectField('global', 'userCount'), analytics.increment('registrations'), db.sortedSetAddBulk(bulkAdd), groups.join(['registered-users', 'unverified-users'], userData.uid), User.notifications.sendWelcomeNotification(userData.uid), storePassword(userData.uid, data.password), User.updateDigestSetting(userData.uid, meta.config.dailyDigestFreq)]);
 
         if (userData.email && isFirstUser) {
             await User.email.confirmByUid(userData.uid);
         }
 
         if (userData.email && userData.uid > 1) {
-            await User.email.sendValidationEmail(userData.uid, {
-                email: userData.email,
-                template: 'welcome',
-                subject: `[[email:welcome-to, ${meta.config.title || meta.config.browserTitle || 'NodeBB'}]]`,
-            }).catch(err => winston.error(`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`));
+            await User.email
+                .sendValidationEmail(userData.uid, {
+                    email: userData.email,
+                    template: 'welcome',
+                    subject: `[[email:welcome-to, ${meta.config.title || meta.config.browserTitle || 'NodeBB'}]]`,
+                })
+                .catch(err => winston.error(`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`));
         }
         if (userNameChanged) {
             await User.notifications.sendNameChangeNotification(userData.uid, userData.username);
@@ -162,7 +156,7 @@ module.exports = function (User) {
     };
 
     User.isPasswordValid = function (password, minStrength) {
-        minStrength = (minStrength || minStrength === 0) ? minStrength : meta.config.minimumPasswordStrength;
+        minStrength = minStrength || minStrength === 0 ? minStrength : meta.config.minimumPasswordStrength;
 
         // Sanity checks: Checks if defined and is string
         if (!password || !utils.isPasswordValid(password)) {

@@ -48,7 +48,7 @@ helpers.buildBodyClass = function (req, res, templateData = {}) {
     }
 
     if (Array.isArray(templateData.breadcrumbs)) {
-        templateData.breadcrumbs.forEach((crumb) => {
+        templateData.breadcrumbs.forEach(crumb => {
             if (crumb && crumb.hasOwnProperty('cid')) {
                 parts.push(`parent-category-${crumb.cid}`);
             }

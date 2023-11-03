@@ -26,14 +26,7 @@ Groups.BANNED_USERS = 'banned-users';
 
 Groups.ephemeralGroups = ['guests', 'spiders'];
 
-Groups.systemGroups = [
-    'registered-users',
-    'verified-users',
-    'unverified-users',
-    Groups.BANNED_USERS,
-    'administrators',
-    'Global Moderators',
-];
+Groups.systemGroups = ['registered-users', 'verified-users', 'unverified-users', Groups.BANNED_USERS, 'administrators', 'Global Moderators'];
 
 Groups.getEphemeralGroup = function (groupName) {
     return {
@@ -96,10 +89,7 @@ Groups.getGroups = async function (set, start, stop) {
 };
 
 Groups.getGroupsAndMembers = async function (groupNames) {
-    const [groups, members] = await Promise.all([
-        Groups.getGroupsData(groupNames),
-        Groups.getMemberUsers(groupNames, 0, 9),
-    ]);
+    const [groups, members] = await Promise.all([Groups.getGroupsData(groupNames), Groups.getMemberUsers(groupNames, 0, 9)]);
     groups.forEach((group, index) => {
         if (group) {
             group.members = members[index] || [];
@@ -120,16 +110,7 @@ Groups.get = async function (groupName, options) {
         stop = (parseInt(options.userListCount, 10) || 4) - 1;
     }
 
-    const [groupData, members, pending, invited, isMember, isPending, isInvited, isOwner] = await Promise.all([
-        Groups.getGroupData(groupName),
-        Groups.getOwnersAndMembers(groupName, options.uid, 0, stop),
-        Groups.getUsersFromSet(`group:${groupName}:pending`, ['username', 'userslug', 'picture']),
-        Groups.getUsersFromSet(`group:${groupName}:invited`, ['username', 'userslug', 'picture']),
-        Groups.isMember(options.uid, groupName),
-        Groups.isPending(options.uid, groupName),
-        Groups.isInvited(options.uid, groupName),
-        Groups.ownership.isOwner(options.uid, groupName),
-    ]);
+    const [groupData, members, pending, invited, isMember, isPending, isInvited, isOwner] = await Promise.all([Groups.getGroupData(groupName), Groups.getOwnersAndMembers(groupName, options.uid, 0, stop), Groups.getUsersFromSet(`group:${groupName}:pending`, ['username', 'userslug', 'picture']), Groups.getUsersFromSet(`group:${groupName}:invited`, ['username', 'userslug', 'picture']), Groups.isMember(options.uid, groupName), Groups.isPending(options.uid, groupName), Groups.isInvited(options.uid, groupName), Groups.ownership.isOwner(options.uid, groupName)]);
 
     if (!groupData) {
         return null;
@@ -157,7 +138,7 @@ Groups.getOwnersAndMembers = async function (groupName, uid, start, stop) {
     const countToReturn = stop - start + 1;
     const ownerUidsOnPage = ownerUids.slice(start, stop !== -1 ? stop + 1 : undefined);
     const owners = await user.getUsers(ownerUidsOnPage, uid);
-    owners.forEach((user) => {
+    owners.forEach(user => {
         if (user) {
             user.isOwner = true;
         }

@@ -12,7 +12,8 @@ const { paths } = require('../constants');
 
 try {
     fs.accessSync(paths.currentPackage, fs.constants.R_OK); // throw on missing package.json
-    try { // handle missing node_modules/ directory
+    try {
+        // handle missing node_modules/ directory
         fs.accessSync(paths.nodeModules, fs.constants.R_OK);
     } catch (e) {
         if (e.code === 'ENOENT') {
@@ -69,15 +70,7 @@ const prestart = require('../prestart');
 
 program.configureHelp(require('./colors'));
 
-program
-    .name('./nodebb')
-    .description('Welcome to NodeBB')
-    .version(pkg.version)
-    .option('--json-logging', 'Output to logs in JSON format', false)
-    .option('--log-level <level>', 'Default logging level to use', 'info')
-    .option('--config <value>', 'Specify a config file', 'config.json')
-    .option('-d, --dev', 'Development mode, including verbose logging', false)
-    .option('-l, --log', 'Log subprocess output to console', false);
+program.name('./nodebb').description('Welcome to NodeBB').version(pkg.version).option('--json-logging', 'Output to logs in JSON format', false).option('--log-level <level>', 'Default logging level to use', 'info').option('--config <value>', 'Specify a config file', 'config.json').option('-d, --dev', 'Development mode, including verbose logging', false).option('-l, --log', 'Log subprocess output to console', false);
 
 // provide a yargs object ourselves
 // otherwise yargs will consume `--help` or `help`
@@ -158,7 +151,7 @@ program
     .command('setup [config]')
     .description('Run the NodeBB setup script, or setup with an initial config')
     .option('--skip-build', 'Run setup without building assets')
-    .action((initConfig) => {
+    .action(initConfig => {
         if (initConfig) {
             try {
                 initConfig = JSON.parse(initConfig);
@@ -202,7 +195,7 @@ program
 program
     .command('activate [plugin]')
     .description('Activate a plugin for the next startup of NodeBB (nodebb-plugin- prefix is optional)')
-    .action((plugin) => {
+    .action(plugin => {
         require('./manage').activate(plugin);
     });
 program
@@ -214,7 +207,7 @@ program
 program
     .command('events [count]')
     .description('Outputs the most recent administrative events recorded by NodeBB')
-    .action((count) => {
+    .action(count => {
         require('./manage').listEvents(count);
     });
 program
@@ -234,14 +227,14 @@ resetCommand
     .option('-w, --widgets', 'Disable all widgets')
     .option('-s, --settings', 'Reset settings to their default values')
     .option('-a, --all', 'All of the above')
-    .action((options) => {
+    .action(options => {
         const valid = ['theme', 'plugin', 'widgets', 'settings', 'all'].some(x => options[x]);
         if (!valid) {
             console.warn(`\n${chalk.red('No valid options passed in, so nothing was reset.')}`);
             resetCommand.help();
         }
 
-        require('./reset').reset(options, (err) => {
+        require('./reset').reset(options, err => {
             if (err) {
                 return process.exit(1);
             }
@@ -251,8 +244,7 @@ resetCommand
     });
 
 // user
-program
-    .addCommand(require('./user')());
+program.addCommand(require('./user')());
 
 // upgrades
 program
@@ -264,13 +256,7 @@ program
     .option('-s, --schema', 'Update NodeBB data store schema', false)
     .option('-b, --build', 'Rebuild assets', false)
     .on('--help', () => {
-        console.log(`\n${[
-            'When running particular upgrade scripts, options are ignored.',
-            'By default all options are enabled. Passing any options disables that default.',
-            '\nExamples:',
-            `  Only package and dependency updates: ${chalk.yellow('./nodebb upgrade -mi')}`,
-            `  Only database update: ${chalk.yellow('./nodebb upgrade -s')}`,
-        ].join('\n')}`);
+        console.log(`\n${['When running particular upgrade scripts, options are ignored.', 'By default all options are enabled. Passing any options disables that default.', '\nExamples:', `  Only package and dependency updates: ${chalk.yellow('./nodebb upgrade -mi')}`, `  Only database update: ${chalk.yellow('./nodebb upgrade -s')}`].join('\n')}`);
     })
     .action((scripts, options) => {
         if (program.opts().dev) {
@@ -287,7 +273,7 @@ program
     .alias('upgradePlugins')
     .description('Upgrade plugins')
     .action(() => {
-        require('./upgrade-plugins').upgradePlugins((err) => {
+        require('./upgrade-plugins').upgradePlugins(err => {
             if (err) {
                 throw err;
             }
@@ -299,7 +285,7 @@ program
 program
     .command('help [command]')
     .description('Display help for [command]')
-    .action((name) => {
+    .action(name => {
         if (!name) {
             return program.help();
         }

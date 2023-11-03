@@ -13,11 +13,7 @@ const pagination = require('../../pagination');
 const categoriesController = module.exports;
 
 categoriesController.get = async function (req, res, next) {
-    const [categoryData, parent, selectedData] = await Promise.all([
-        categories.getCategories([req.params.category_id], req.uid),
-        categories.getParents([req.params.category_id]),
-        helpers.getSelectedCategory(req.params.category_id),
-    ]);
+    const [categoryData, parent, selectedData] = await Promise.all([categories.getCategories([req.params.category_id], req.uid), categories.getParents([req.params.category_id]), helpers.getSelectedCategory(req.params.category_id)]);
 
     const category = categoryData[0];
     if (!category) {
@@ -56,13 +52,10 @@ categoriesController.getAll = async function (req, res) {
 
     let rootParent = 0;
     if (rootCid) {
-        rootParent = await categories.getCategoryField(rootCid, 'parentCid') || 0;
+        rootParent = (await categories.getCategoryField(rootCid, 'parentCid')) || 0;
     }
 
-    const fields = [
-        'cid', 'name', 'icon', 'parentCid', 'disabled', 'link', 'order',
-        'color', 'bgColor', 'backgroundImage', 'imageClass', 'subCategoriesPerPage',
-    ];
+    const fields = ['cid', 'name', 'icon', 'parentCid', 'disabled', 'link', 'order', 'color', 'bgColor', 'backgroundImage', 'imageClass', 'subCategoriesPerPage'];
     const categoriesData = await categories.getCategoriesFields(cids, fields);
     const result = await plugins.hooks.fire('filter:admin.categories.get', { categories: categoriesData, fields: fields });
     let tree = categories.getTree(result.categories, rootParent);
@@ -118,7 +111,7 @@ async function buildBreadcrumbs(categoryData, url) {
     const allCrumbs = await helpers.buildCategoryBreadcrumbs(categoryData.parentCid);
     const crumbs = allCrumbs.filter(c => c.cid);
 
-    crumbs.forEach((c) => {
+    crumbs.forEach(c => {
         c.url = `${url}?cid=${c.cid}`;
     });
     crumbs.unshift({
@@ -132,10 +125,7 @@ async function buildBreadcrumbs(categoryData, url) {
 categoriesController.buildBreadCrumbs = buildBreadcrumbs;
 
 categoriesController.getAnalytics = async function (req, res) {
-    const [name, analyticsData] = await Promise.all([
-        categories.getCategoryField(req.params.category_id, 'name'),
-        analytics.getCategoryAnalytics(req.params.category_id),
-    ]);
+    const [name, analyticsData] = await Promise.all([categories.getCategoryField(req.params.category_id, 'name'), analytics.getCategoryAnalytics(req.params.category_id)]);
     res.render('admin/manage/category-analytics', {
         name: name,
         analytics: analyticsData,

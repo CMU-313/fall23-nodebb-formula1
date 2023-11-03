@@ -1,4 +1,3 @@
-
 'use strict';
 
 const nconf = require('nconf');
@@ -20,7 +19,7 @@ Meta.config = {};
 // called after data is loaded from db
 function deserialize(config) {
     const deserialized = {};
-    Object.keys(config).forEach((key) => {
+    Object.keys(config).forEach(key => {
         const defaultType = typeof defaults[key];
         const type = typeof config[key];
         const number = parseFloat(config[key]);
@@ -58,7 +57,7 @@ function deserialize(config) {
 // called before data is saved to db
 function serialize(config) {
     const serialized = {};
-    Object.keys(config).forEach((key) => {
+    Object.keys(config).forEach(key => {
         const defaultType = typeof defaults[key];
         const type = typeof config[key];
         const number = parseFloat(config[key]);
@@ -100,7 +99,7 @@ Configs.list = async function () {
 
 Configs.get = async function (field) {
     const values = await Configs.getFields([field]);
-    return (values.hasOwnProperty(field) && values[field] !== undefined) ? values[field] : null;
+    return values.hasOwnProperty(field) && values[field] !== undefined ? values[field] : null;
 };
 
 Configs.getFields = async function (fields) {
@@ -154,7 +153,7 @@ Configs.registerHooks = () => {
         method: async ({ plugin, settings, quiet }) => {
             if (plugin === 'core.api' && Array.isArray(settings.tokens)) {
                 // Generate tokens if not present already
-                settings.tokens.forEach((set) => {
+                settings.tokens.forEach(set => {
                     if (set.token === '') {
                         set.token = utils.generateUUID();
                     }
@@ -173,7 +172,7 @@ Configs.registerHooks = () => {
         hook: 'filter:settings.get',
         method: async ({ plugin, values }) => {
             if (plugin === 'core.api' && Array.isArray(values.tokens)) {
-                values.tokens = values.tokens.map((tokenObj) => {
+                values.tokens = values.tokens.map(tokenObj => {
                     tokenObj.uid = parseInt(tokenObj.uid, 10);
                     if (tokenObj.timestamp) {
                         tokenObj.timestampISO = new Date(parseInt(tokenObj.timestamp, 10)).toISOString();
@@ -221,10 +220,7 @@ async function processConfig(data) {
         throw new Error('[[error:invalid-data]]');
     }
 
-    await Promise.all([
-        saveRenderedCss(data),
-        getLogoSize(data),
-    ]);
+    await Promise.all([saveRenderedCss(data), getLogoSize(data)]);
 }
 
 function ensureInteger(data, field, min) {
@@ -259,7 +255,7 @@ async function getLogoSize(data) {
     } catch (err) {
         if (err.code === 'ENOENT') {
             // For whatever reason the x50 logo wasn't generated, gracefully error out
-            winston.warn('[logo] The email-safe logo doesn\'t seem to have been created, please re-upload your site logo.');
+            winston.warn("[logo] The email-safe logo doesn't seem to have been created, please re-upload your site logo.");
             size = {
                 height: 0,
                 width: 0,
@@ -282,7 +278,7 @@ function updateLocalConfig(config) {
     Object.assign(Meta.config, config);
 }
 
-pubsub.on('config:update', (config) => {
+pubsub.on('config:update', config => {
     if (typeof config === 'object' && Meta.config) {
         updateLocalConfig(config);
     }

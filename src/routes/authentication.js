@@ -99,7 +99,7 @@ Auth.reloadRoutes = async function (params) {
         winston.error(`[authentication] ${err.stack}`);
     }
     loginStrategies = loginStrategies || [];
-    loginStrategies.forEach((strategy) => {
+    loginStrategies.forEach(strategy => {
         if (strategy.url) {
             router[strategy.urlMethod || 'get'](strategy.url, Auth.middleware.applyCSRF, async (req, res, next) => {
                 let opts = {
@@ -118,51 +118,54 @@ Auth.reloadRoutes = async function (params) {
             });
         }
 
-        router[strategy.callbackMethod || 'get'](strategy.callbackURL, (req, res, next) => {
-            // Ensure the passed-back state value is identical to the saved ssoState (unless explicitly skipped)
-            if (strategy.checkState === false) {
-                return next();
+        router[strategy.callbackMethod || 'get'](
+            strategy.callbackURL,
+            (req, res, next) => {
+                // Ensure the passed-back state value is identical to the saved ssoState (unless explicitly skipped)
+                if (strategy.checkState === false) {
+                    return next();
+                }
+
+                next(req.query.state !== req.session.ssoState ? new Error('[[error:csrf-invalid]]') : null);
+            },
+            (req, res, next) => {
+                // Trigger registration interstitial checks
+                req.session.registration = req.session.registration || {};
+                // save returnTo for later usage in /register/complete
+                // passport seems to remove `req.session.returnTo` after it redirects
+                req.session.registration.returnTo = req.session.returnTo;
+
+                passport.authenticate(strategy.name, (err, user) => {
+                    if (err) {
+                        if (req.session && req.session.registration) {
+                            delete req.session.registration;
+                        }
+                        return next(err);
+                    }
+
+                    if (!user) {
+                        if (req.session && req.session.registration) {
+                            delete req.session.registration;
+                        }
+                        return helpers.redirect(res, strategy.failureUrl !== undefined ? strategy.failureUrl : '/login');
+                    }
+
+                    res.locals.user = user;
+                    res.locals.strategy = strategy;
+                    next();
+                })(req, res, next);
+            },
+            Auth.middleware.validateAuth,
+            (req, res, next) => {
+                async.waterfall([async.apply(req.login.bind(req), res.locals.user, { keepSessionInfo: true }), async.apply(controllers.authentication.onSuccessfulLogin, req, req.uid)], err => {
+                    if (err) {
+                        return next(err);
+                    }
+
+                    helpers.redirect(res, strategy.successUrl !== undefined ? strategy.successUrl : '/');
+                });
             }
-
-            next(req.query.state !== req.session.ssoState ? new Error('[[error:csrf-invalid]]') : null);
-        }, (req, res, next) => {
-            // Trigger registration interstitial checks
-            req.session.registration = req.session.registration || {};
-            // save returnTo for later usage in /register/complete
-            // passport seems to remove `req.session.returnTo` after it redirects
-            req.session.registration.returnTo = req.session.returnTo;
-
-            passport.authenticate(strategy.name, (err, user) => {
-                if (err) {
-                    if (req.session && req.session.registration) {
-                        delete req.session.registration;
-                    }
-                    return next(err);
-                }
-
-                if (!user) {
-                    if (req.session && req.session.registration) {
-                        delete req.session.registration;
-                    }
-                    return helpers.redirect(res, strategy.failureUrl !== undefined ? strategy.failureUrl : '/login');
-                }
-
-                res.locals.user = user;
-                res.locals.strategy = strategy;
-                next();
-            })(req, res, next);
-        }, Auth.middleware.validateAuth, (req, res, next) => {
-            async.waterfall([
-                async.apply(req.login.bind(req), res.locals.user, { keepSessionInfo: true }),
-                async.apply(controllers.authentication.onSuccessfulLogin, req, req.uid),
-            ], (err) => {
-                if (err) {
-                    return next(err);
-                }
-
-                helpers.redirect(res, strategy.successUrl !== undefined ? strategy.successUrl : '/');
-            });
-        });
+        );
     });
 
     const multipart = require('connect-multiparty');

@@ -28,9 +28,7 @@ require('./diffs')(Posts);
 require('./uploads')(Posts);
 
 Posts.exists = async function (pids) {
-    return await db.exists(
-        Array.isArray(pids) ? pids.map(pid => `post:${pid}`) : `post:${pids}`
-    );
+    return await db.exists(Array.isArray(pids) ? pids.map(pid => `post:${pid}`) : `post:${pids}`);
 };
 
 Posts.getPidsFromSet = async function (set, start, stop, reverse) {

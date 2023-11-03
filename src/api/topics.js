@@ -16,16 +16,8 @@ const socketHelpers = require('../socket.io/helpers');
 const topicsAPI = module.exports;
 
 topicsAPI.get = async function (caller, data) {
-    const [userPrivileges, topic] = await Promise.all([
-        privileges.topics.get(data.tid, caller.uid),
-        topics.getTopicData(data.tid),
-    ]);
-    if (
-        !topic ||
-        !userPrivileges.read ||
-        !userPrivileges['topics:read'] ||
-        !privileges.topics.canViewDeletedScheduled(topic, userPrivileges)
-    ) {
+    const [userPrivileges, topic] = await Promise.all([privileges.topics.get(data.tid, caller.uid), topics.getTopicData(data.tid)]);
+    if (!topic || !userPrivileges.read || !userPrivileges['topics:read'] || !privileges.topics.canViewDeletedScheduled(topic, userPrivileges)) {
         return null;
     }
 

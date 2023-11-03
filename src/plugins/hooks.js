@@ -8,36 +8,54 @@ const utils = require('../utils');
 const Hooks = module.exports;
 
 Hooks._deprecated = new Map([
-    ['filter:email.send', {
-        new: 'static:email.send',
-        since: 'v1.17.0',
-        until: 'v2.0.0',
-    }],
-    ['filter:router.page', {
-        new: 'response:router.page',
-        since: 'v1.15.3',
-        until: 'v2.1.0',
-    }],
-    ['filter:post.purge', {
-        new: 'filter:posts.purge',
-        since: 'v1.19.6',
-        until: 'v2.1.0',
-    }],
-    ['action:post.purge', {
-        new: 'action:posts.purge',
-        since: 'v1.19.6',
-        until: 'v2.1.0',
-    }],
-    ['filter:user.verify.code', {
-        new: 'filter:user.verify',
-        since: 'v2.2.0',
-        until: 'v3.0.0',
-    }],
-    ['filter:flags.getFilters', {
-        new: 'filter:flags.init',
-        since: 'v2.7.0',
-        until: 'v3.0.0',
-    }],
+    [
+        'filter:email.send',
+        {
+            new: 'static:email.send',
+            since: 'v1.17.0',
+            until: 'v2.0.0',
+        },
+    ],
+    [
+        'filter:router.page',
+        {
+            new: 'response:router.page',
+            since: 'v1.15.3',
+            until: 'v2.1.0',
+        },
+    ],
+    [
+        'filter:post.purge',
+        {
+            new: 'filter:posts.purge',
+            since: 'v1.19.6',
+            until: 'v2.1.0',
+        },
+    ],
+    [
+        'action:post.purge',
+        {
+            new: 'action:posts.purge',
+            since: 'v1.19.6',
+            until: 'v2.1.0',
+        },
+    ],
+    [
+        'filter:user.verify.code',
+        {
+            new: 'filter:user.verify',
+            since: 'v2.2.0',
+            until: 'v3.0.0',
+        },
+    ],
+    [
+        'filter:flags.getFilters',
+        {
+            new: 'filter:flags.init',
+            since: 'v2.7.0',
+            until: 'v3.0.0',
+        },
+    ],
 ]);
 
 Hooks.internals = {
@@ -83,7 +101,7 @@ Hooks.register = function (id, data) {
 
     if (Array.isArray(data.method) && data.method.every(method => typeof method === 'function' || typeof method === 'string')) {
         // Go go gadget recursion!
-        data.method.forEach((method) => {
+        data.method.forEach(method => {
             const singularData = { ...data, method: method };
             Hooks.register(id, singularData);
         });
@@ -174,7 +192,8 @@ async function fireFilterHook(hook, hookList, params) {
                 resolve(result);
             }
             const returned = hookObj.method(params, (err, result) => {
-                if (err) reject(err); else _resolve(result);
+                if (err) reject(err);
+                else _resolve(result);
             });
 
             if (utils.isPromise(returned)) {

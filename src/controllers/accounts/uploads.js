@@ -22,10 +22,7 @@ uploadsController.get = async function (req, res, next) {
     const itemsPerPage = 25;
     const start = (page - 1) * itemsPerPage;
     const stop = start + itemsPerPage - 1;
-    const [itemCount, uploadNames] = await Promise.all([
-        db.sortedSetCard(`uid:${userData.uid}:uploads`),
-        db.getSortedSetRevRange(`uid:${userData.uid}:uploads`, start, stop),
-    ]);
+    const [itemCount, uploadNames] = await Promise.all([db.sortedSetCard(`uid:${userData.uid}:uploads`), db.getSortedSetRevRange(`uid:${userData.uid}:uploads`, start, stop)]);
 
     userData.uploads = uploadNames.map(uploadName => ({
         name: uploadName,

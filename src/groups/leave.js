@@ -22,9 +22,18 @@ module.exports = function (Groups) {
         }
 
         await Promise.all([
-            db.sortedSetRemove(groupsToLeave.map(groupName => `group:${groupName}:members`), uid),
-            db.setRemove(groupsToLeave.map(groupName => `group:${groupName}:owners`), uid),
-            db.decrObjectField(groupsToLeave.map(groupName => `group:${groupName}`), 'memberCount'),
+            db.sortedSetRemove(
+                groupsToLeave.map(groupName => `group:${groupName}:members`),
+                uid
+            ),
+            db.setRemove(
+                groupsToLeave.map(groupName => `group:${groupName}:owners`),
+                uid
+            ),
+            db.decrObjectField(
+                groupsToLeave.map(groupName => `group:${groupName}`),
+                'memberCount'
+            ),
         ]);
 
         Groups.clearCache(uid, groupsToLeave);
@@ -81,10 +90,7 @@ module.exports = function (Groups) {
 
     Groups.leaveAllGroups = async function (uid) {
         const groups = await db.getSortedSetRange('groups:createtime', 0, -1);
-        await Promise.all([
-            Groups.leave(groups, uid),
-            Groups.rejectMembership(groups, uid),
-        ]);
+        await Promise.all([Groups.leave(groups, uid), Groups.rejectMembership(groups, uid)]);
     };
 
     Groups.kick = async function (uid, groupName, isOwner) {

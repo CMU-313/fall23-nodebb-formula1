@@ -18,18 +18,12 @@ SocketCategories.get = async function (socket) {
         const cids = await categories.getCidsByPrivilege('categories:cid', socket.uid, 'find');
         return await categories.getCategoriesData(cids);
     }
-    const [isAdmin, categoriesData] = await Promise.all([
-        user.isAdministrator(socket.uid),
-        getCategories(),
-    ]);
+    const [isAdmin, categoriesData] = await Promise.all([user.isAdministrator(socket.uid), getCategories()]);
     return categoriesData.filter(category => category && (!category.disabled || isAdmin));
 };
 
 SocketCategories.getWatchedCategories = async function (socket) {
-    const [categoriesData, ignoredCids] = await Promise.all([
-        categories.getCategoriesByPrivilege('cid:0:children', socket.uid, 'find'),
-        user.getIgnoredCategories(socket.uid),
-    ]);
+    const [categoriesData, ignoredCids] = await Promise.all([categories.getCategoriesByPrivilege('cid:0:children', socket.uid, 'find'), user.getIgnoredCategories(socket.uid)]);
     return categoriesData.filter(category => category && !ignoredCids.includes(String(category.cid)));
 };
 
@@ -38,11 +32,7 @@ SocketCategories.loadMore = async function (socket, data) {
         throw new Error('[[error:invalid-data]]');
     }
     data.query = data.query || {};
-    const [userPrivileges, settings, targetUid] = await Promise.all([
-        privileges.categories.get(data.cid, socket.uid),
-        user.getSettings(socket.uid),
-        user.getUidByUserslug(data.query.author),
-    ]);
+    const [userPrivileges, settings, targetUid] = await Promise.all([privileges.categories.get(data.cid, socket.uid), user.getSettings(socket.uid), user.getUidByUserslug(data.query.author)]);
 
     if (!userPrivileges.read) {
         throw new Error('[[error:no-privileges]]');
@@ -95,10 +85,7 @@ SocketCategories.getMoveCategories = async function (socket, data) {
 };
 
 SocketCategories.getSelectCategories = async function (socket) {
-    const [isAdmin, categoriesData] = await Promise.all([
-        user.isAdministrator(socket.uid),
-        categories.buildForSelect(socket.uid, 'find', ['disabled', 'link']),
-    ]);
+    const [isAdmin, categoriesData] = await Promise.all([user.isAdministrator(socket.uid), categories.buildForSelect(socket.uid, 'find', ['disabled', 'link'])]);
     return categoriesData.filter(category => category && (!category.disabled || isAdmin) && !category.link);
 };
 
@@ -106,9 +93,13 @@ SocketCategories.setWatchState = async function (socket, data) {
     if (!data || !data.cid || !data.state) {
         throw new Error('[[error:invalid-data]]');
     }
-    return await ignoreOrWatch(async (uid, cids) => {
-        await user.setCategoryWatchState(uid, cids, categories.watchStates[data.state]);
-    }, socket, data);
+    return await ignoreOrWatch(
+        async (uid, cids) => {
+            await user.setCategoryWatchState(uid, cids, categories.watchStates[data.state]);
+        },
+        socket,
+        data
+    );
 };
 
 SocketCategories.watch = async function (socket, data) {

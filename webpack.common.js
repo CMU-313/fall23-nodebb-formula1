@@ -29,8 +29,7 @@ module.exports = {
         publicPath: `${relativePath}/assets/`,
         clean: {
             keep(asset) {
-                return asset === 'installer.min.js' ||
-                    !asset.endsWith('.min.js');
+                return asset === 'installer.min.js' || !asset.endsWith('.min.js');
             },
         },
     },
@@ -40,12 +39,7 @@ module.exports = {
     },
     resolve: {
         symlinks: false,
-        modules: [
-            'build/public/src/modules',
-            'build/public/src',
-            'node_modules',
-            ...activePlugins.map(p => `node_modules/${p}/node_modules`),
-        ],
+        modules: ['build/public/src/modules', 'build/public/src', 'node_modules', ...activePlugins.map(p => `node_modules/${p}/node_modules`)],
         extensions: ['.js', '.json', '.wasm', '.mjs'],
         alias: {
             assets: path.resolve(__dirname, 'build/public'),

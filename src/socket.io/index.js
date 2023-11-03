@@ -171,13 +171,9 @@ async function onMessage(socket, payload) {
 }
 
 function requireModules() {
-    const modules = [
-        'admin', 'categories', 'groups', 'meta', 'modules',
-        'notifications', 'plugins', 'posts', 'topics', 'user',
-        'blacklist', 'uploads',
-    ];
+    const modules = ['admin', 'categories', 'groups', 'meta', 'modules', 'notifications', 'plugins', 'posts', 'topics', 'user', 'blacklist', 'uploads'];
 
-    modules.forEach((module) => {
+    modules.forEach(module => {
         Namespaces[module] = require(`./${module}`);
     });
 }
@@ -195,9 +191,7 @@ async function checkMaintenance(socket) {
     throw new Error(`[[pages:maintenance.text, ${validator.escape(String(meta.config.title || 'NodeBB'))}]]`);
 }
 
-const getSessionAsync = util.promisify(
-    (sid, callback) => db.sessionStore.get(sid, (err, sessionObj) => callback(err, sessionObj || null))
-);
+const getSessionAsync = util.promisify((sid, callback) => db.sessionStore.get(sid, (err, sessionObj) => callback(err, sessionObj || null)));
 
 async function validateSession(socket, errorMsg) {
     const req = socket.request;

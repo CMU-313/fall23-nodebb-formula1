@@ -8,10 +8,7 @@ const index = require('./index');
 const admin = module.exports;
 
 admin.get = async function () {
-    const [areas, availableWidgets] = await Promise.all([
-        admin.getAreas(),
-        getAvailableWidgets(),
-    ]);
+    const [areas, availableWidgets] = await Promise.all([admin.getAreas(), getAvailableWidgets()]);
 
     return {
         templates: buildTemplatesFromAreas(areas),
@@ -41,11 +38,8 @@ admin.getAreas = async function () {
 };
 
 async function getAvailableWidgets() {
-    const [availableWidgets, adminTemplate] = await Promise.all([
-        plugins.hooks.fire('filter:widgets.getWidgets', []),
-        renderAdminTemplate(),
-    ]);
-    availableWidgets.forEach((w) => {
+    const [availableWidgets, adminTemplate] = await Promise.all([plugins.hooks.fire('filter:widgets.getWidgets', []), renderAdminTemplate()]);
+    availableWidgets.forEach(w => {
         w.content += adminTemplate;
     });
     return availableWidgets;
@@ -62,7 +56,7 @@ function buildTemplatesFromAreas(areas) {
     const list = {};
     let index = 0;
 
-    areas.forEach((area) => {
+    areas.forEach(area => {
         if (typeof list[area.template] === 'undefined') {
             list[area.template] = index;
             templates.push({

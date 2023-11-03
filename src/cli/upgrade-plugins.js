@@ -22,35 +22,33 @@ if (process.platform === 'win32') {
 async function getModuleVersions(modules) {
     const versionHash = {};
     const batch = require('../batch');
-    await batch.processArray(modules, async (moduleNames) => {
-        await Promise.all(moduleNames.map(async (module) => {
-            let pkg = await fs.promises.readFile(
-                path.join(paths.nodeModules, module, 'package.json'), { encoding: 'utf-8' }
+    await batch.processArray(
+        modules,
+        async moduleNames => {
+            await Promise.all(
+                moduleNames.map(async module => {
+                    let pkg = await fs.promises.readFile(path.join(paths.nodeModules, module, 'package.json'), { encoding: 'utf-8' });
+                    pkg = JSON.parse(pkg);
+                    versionHash[module] = pkg.version;
+                })
             );
-            pkg = JSON.parse(pkg);
-            versionHash[module] = pkg.version;
-        }));
-    }, {
-        batch: 50,
-    });
+        },
+        {
+            batch: 50,
+        }
+    );
 
     return versionHash;
 }
 
 async function getInstalledPlugins() {
-    let [deps, bundled] = await Promise.all([
-        fs.promises.readFile(paths.currentPackage, { encoding: 'utf-8' }),
-        fs.promises.readFile(paths.installPackage, { encoding: 'utf-8' }),
-    ]);
+    let [deps, bundled] = await Promise.all([fs.promises.readFile(paths.currentPackage, { encoding: 'utf-8' }), fs.promises.readFile(paths.installPackage, { encoding: 'utf-8' })]);
 
-    deps = Object.keys(JSON.parse(deps).dependencies)
-        .filter(pkgName => pluginNamePattern.test(pkgName));
-    bundled = Object.keys(JSON.parse(bundled).dependencies)
-        .filter(pkgName => pluginNamePattern.test(pkgName));
-
+    deps = Object.keys(JSON.parse(deps).dependencies).filter(pkgName => pluginNamePattern.test(pkgName));
+    bundled = Object.keys(JSON.parse(bundled).dependencies).filter(pkgName => pluginNamePattern.test(pkgName));
 
     // Whittle down deps to send back only extraneously installed plugins/themes/etc
-    const checklist = deps.filter((pkgName) => {
+    const checklist = deps.filter(pkgName => {
         if (bundled.includes(pkgName)) {
             return false;
         }
@@ -87,10 +85,7 @@ async function getSuggestedModules(nbbVersion, toCheck) {
 
 async function checkPlugins() {
     process.stdout.write('Checking installed plugins and themes for updates... ');
-    const [plugins, nbbVersion] = await Promise.all([
-        getInstalledPlugins(),
-        getCurrentVersion(),
-    ]);
+    const [plugins, nbbVersion] = await Promise.all([getInstalledPlugins(), getCurrentVersion()]);
 
     const toCheck = Object.keys(plugins);
     if (!toCheck.length) {
@@ -102,19 +97,21 @@ async function checkPlugins() {
 
     let current;
     let suggested;
-    const upgradable = suggestedModules.map((suggestObj) => {
-        current = plugins[suggestObj.package];
-        suggested = suggestObj.version;
+    const upgradable = suggestedModules
+        .map(suggestObj => {
+            current = plugins[suggestObj.package];
+            suggested = suggestObj.version;
 
-        if (suggestObj.code === 'match-found' && semver.gt(suggested, current)) {
-            return {
-                name: suggestObj.package,
-                current: current,
-                suggested: suggested,
-            };
-        }
-        return null;
-    }).filter(Boolean);
+            if (suggestObj.code === 'match-found' && semver.gt(suggested, current)) {
+                return {
+                    name: suggestObj.package,
+                    current: current,
+                    suggested: suggested,
+                };
+            }
+            return null;
+        })
+        .filter(Boolean);
 
     return upgradable;
 }
@@ -124,7 +121,7 @@ async function upgradePlugins() {
         const found = await checkPlugins();
         if (found && found.length) {
             process.stdout.write(`\n\nA total of ${chalk.bold(String(found.length))} package(s) can be upgraded:\n\n`);
-            found.forEach((suggestObj) => {
+            found.forEach(suggestObj => {
                 process.stdout.write(`${chalk.yellow('  * ') + suggestObj.name} (${chalk.yellow(suggestObj.current)} -> ${chalk.green(suggestObj.suggested)})\n`);
             });
         } else {

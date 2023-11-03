@@ -124,7 +124,7 @@ SELECT s."data" t
             return;
         }
 
-        await module.transaction(async (client) => {
+        await module.transaction(async client => {
             await helpers.ensureLegacyObjectType(client, key, 'string');
             await client.query({
                 name: 'set',
@@ -143,7 +143,7 @@ DO UPDATE SET "data" = $2::TEXT`,
             return;
         }
 
-        return await module.transaction(async (client) => {
+        return await module.transaction(async client => {
             await helpers.ensureLegacyObjectType(client, key, 'string');
             const res = await client.query({
                 name: 'increment',
@@ -160,7 +160,7 @@ RETURNING "data" d`,
     };
 
     module.rename = async function (oldKey, newKey) {
-        await module.transaction(async (client) => {
+        await module.transaction(async client => {
             await client.query({
                 name: 'deleteRename',
                 text: `
@@ -205,7 +205,7 @@ UPDATE "legacy_object"
     }
 
     module.expire = async function (key, seconds) {
-        await doExpire(key, new Date(((Date.now() / 1000) + seconds) * 1000));
+        await doExpire(key, new Date((Date.now() / 1000 + seconds) * 1000));
     };
 
     module.expireAt = async function (key, timestamp) {
@@ -235,10 +235,10 @@ SELECT "expireAt"::TEXT
     }
 
     module.ttl = async function (key) {
-        return Math.round((await getExpire(key) - Date.now()) / 1000);
+        return Math.round(((await getExpire(key)) - Date.now()) / 1000);
     };
 
     module.pttl = async function (key) {
-        return await getExpire(key) - Date.now();
+        return (await getExpire(key)) - Date.now();
     };
 };

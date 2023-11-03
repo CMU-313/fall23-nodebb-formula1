@@ -44,14 +44,11 @@ usersController.search = async function (req, res) {
 };
 
 usersController.getOnlineUsers = async function (req, res) {
-    const [userData, guests] = await Promise.all([
-        usersController.getUsers('users:online', req.uid, req.query),
-        require('../socket.io/admin/rooms').getTotalGuestCount(),
-    ]);
+    const [userData, guests] = await Promise.all([usersController.getUsers('users:online', req.uid, req.query), require('../socket.io/admin/rooms').getTotalGuestCount()]);
 
     let hiddenCount = 0;
     if (!userData.isAdminOrGlobalMod) {
-        userData.users = userData.users.filter((user) => {
+        userData.users = userData.users.filter(user => {
             const showUser = user && (user.uid === req.uid || user.userStatus !== 'offline');
             if (!showUser) {
                 hiddenCount += 1;
@@ -127,12 +124,7 @@ usersController.getUsers = async function (set, uid, query) {
     const start = Math.max(0, page - 1) * resultsPerPage;
     const stop = start + resultsPerPage - 1;
 
-    const [isAdmin, isGlobalMod, canSearch, usersData] = await Promise.all([
-        user.isAdministrator(uid),
-        user.isGlobalModerator(uid),
-        privileges.global.can('search:users', uid),
-        usersController.getUsersAndCount(set, uid, start, stop),
-    ]);
+    const [isAdmin, isGlobalMod, canSearch, usersData] = await Promise.all([user.isAdministrator(uid), user.isGlobalModerator(uid), privileges.global.can('search:users', uid), usersController.getUsersAndCount(set, uid, start, stop)]);
     const pageCount = Math.ceil(usersData.count / resultsPerPage);
     return {
         users: usersData.users,
@@ -164,7 +156,10 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
             const uids = data.map(d => d.value);
             const scores = data.map(d => d.score);
             const [userStatus, userData] = await Promise.all([
-                db.getObjectsFields(uids.map(uid => `user:${uid}`), ['status']),
+                db.getObjectsFields(
+                    uids.map(uid => `user:${uid}`),
+                    ['status']
+                ),
                 user.getUsers(uids, uid),
             ]);
 
@@ -179,10 +174,7 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
         }
         return await user.getUsersFromSet(set, uid, start, stop);
     }
-    const [usersData, count] = await Promise.all([
-        getUsers(),
-        getCount(),
-    ]);
+    const [usersData, count] = await Promise.all([getUsers(), getCount()]);
     return {
         users: usersData.filter(user => user && parseInt(user.uid, 10)),
         count: count,

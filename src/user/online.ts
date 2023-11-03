@@ -25,7 +25,7 @@ module.exports = function (User: UserTemplate) {
             return;
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const userData: userDataTemplate = await db.getObjectFields(`user:${uid}`, ['status', 'lastonline']) as userDataTemplate;
+        const userData: userDataTemplate = (await db.getObjectFields(`user:${uid}`, ['status', 'lastonline'])) as userDataTemplate;
         const now = Date.now();
         if (userData.status === 'offline' || now - parseInt(userData.lastonline, 10) < 300000) {
             return;
@@ -39,7 +39,7 @@ module.exports = function (User: UserTemplate) {
         }
         const now = Date.now();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const userOnlineTime: string = await db.sortedSetScore('users:online', uid) as string;
+        const userOnlineTime: string = (await db.sortedSetScore('users:online', uid)) as string;
         if (now - parseInt(userOnlineTime, 10) < 300000) {
             return;
         }
@@ -55,10 +55,10 @@ module.exports = function (User: UserTemplate) {
         const isArray = Array.isArray(uid);
         uid = (isArray ? uid : [uid]) as string[];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const lastonline : [] = await db.sortedSetScores('users:online', uid) as [];
-        const isOnline : boolean[] = uid.map(
+        const lastonline: [] = (await db.sortedSetScores('users:online', uid)) as [];
+        const isOnline: boolean[] = uid.map(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            (_uid, index) => (now - lastonline[index]) < (meta.config.onlineCutoff * 60000)
+            (_uid, index) => now - lastonline[index] < meta.config.onlineCutoff * 60000
         );
         return isArray ? isOnline : isOnline[0];
     };
@@ -75,7 +75,7 @@ module.exports = function (User: UserTemplate) {
 
         // Get boolean array repesenting user membership in group
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const groupMemberMask = await groups.isMembers(onlineUids, groupName) as boolean[];
+        const groupMemberMask = (await groups.isMembers(onlineUids, groupName)) as boolean[];
 
         // Filter online user that are members in group
         const numOnlineInGroup = groupMemberMask.reduce((count, isMember) => count + Number(isMember), 0);

@@ -13,7 +13,6 @@ const morgan = require('morgan');
 const file = require('./file');
 const meta = require('./meta');
 
-
 const opts = {
     /*
      * state used by Logger
@@ -87,7 +86,7 @@ Logger.open = function (value) {
         }
 
         if (stream) {
-            stream.on('error', (err) => {
+            stream.on('error', err => {
                 winston.error(err.stack);
             });
         }

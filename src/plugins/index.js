@@ -139,7 +139,7 @@ Plugins.reload = async function () {
     });
 
     // Lower priority runs earlier
-    Object.keys(Plugins.loadedHooks).forEach((hook) => {
+    Object.keys(Plugins.loadedHooks).forEach(hook => {
         Plugins.loadedHooks[hook].sort((a, b) => a.priority - b.priority);
     });
 
@@ -192,7 +192,7 @@ Plugins.normalise = async function (apiReturn) {
     const pluginMap = {};
     const { dependencies } = require(paths.currentPackage);
     apiReturn = Array.isArray(apiReturn) ? apiReturn : [];
-    apiReturn.forEach((packageData) => {
+    apiReturn.forEach(packageData => {
         packageData.id = packageData.name;
         packageData.installed = false;
         packageData.active = false;
@@ -203,7 +203,7 @@ Plugins.normalise = async function (apiReturn) {
     let installedPlugins = await Plugins.showInstalled();
     installedPlugins = installedPlugins.filter(plugin => plugin && !plugin.system);
 
-    installedPlugins.forEach((plugin) => {
+    installedPlugins.forEach(plugin => {
         // If it errored out because a package.json or plugin.json couldn't be read, no need to do this stuff
         if (plugin.error) {
             pluginMap[plugin.id] = pluginMap[plugin.id] || {};
@@ -276,32 +276,36 @@ Plugins.showInstalled = async function () {
 
 async function findNodeBBModules(dirs) {
     const pluginPaths = [];
-    await Promise.all(dirs.map(async (dirname) => {
-        const dirPath = path.join(Plugins.nodeModulesPath, dirname);
-        const isDir = await isDirectory(dirPath);
-        if (!isDir) {
-            return;
-        }
-        if (pluginNamePattern.test(dirname)) {
-            pluginPaths.push(dirname);
-            return;
-        }
+    await Promise.all(
+        dirs.map(async dirname => {
+            const dirPath = path.join(Plugins.nodeModulesPath, dirname);
+            const isDir = await isDirectory(dirPath);
+            if (!isDir) {
+                return;
+            }
+            if (pluginNamePattern.test(dirname)) {
+                pluginPaths.push(dirname);
+                return;
+            }
 
-        if (dirname[0] === '@') {
-            const subdirs = await fs.promises.readdir(dirPath);
-            await Promise.all(subdirs.map(async (subdir) => {
-                if (!pluginNamePattern.test(subdir)) {
-                    return;
-                }
+            if (dirname[0] === '@') {
+                const subdirs = await fs.promises.readdir(dirPath);
+                await Promise.all(
+                    subdirs.map(async subdir => {
+                        if (!pluginNamePattern.test(subdir)) {
+                            return;
+                        }
 
-                const subdirPath = path.join(dirPath, subdir);
-                const isDir = await isDirectory(subdirPath);
-                if (isDir) {
-                    pluginPaths.push(`${dirname}/${subdir}`);
-                }
-            }));
-        }
-    }));
+                        const subdirPath = path.join(dirPath, subdir);
+                        const isDir = await isDirectory(subdirPath);
+                        if (isDir) {
+                            pluginPaths.push(`${dirname}/${subdir}`);
+                        }
+                    })
+                );
+            }
+        })
+    );
     return pluginPaths;
 }
 

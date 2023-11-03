@@ -92,10 +92,7 @@ SocketPosts.getReplies = async function (socket, pid) {
     const { topicPostSort } = await user.getSettings(socket.uid);
     const pids = await posts.getPidsFromSet(`pid:${pid}:replies`, 0, -1, topicPostSort === 'newest_to_oldest');
 
-    let [postData, postPrivileges] = await Promise.all([
-        posts.getPostsByPids(pids, socket.uid),
-        privileges.posts.get(pids, socket.uid),
-    ]);
+    let [postData, postPrivileges] = await Promise.all([posts.getPostsByPids(pids, socket.uid), privileges.posts.get(pids, socket.uid)]);
     postData = await topics.addPostData(postData, socket.uid);
     postData.forEach((postData, index) => posts.modifyPostByPrivilege(postData, postPrivileges[index]));
     postData = postData.filter((postData, index) => postData && postPrivileges[index].read);

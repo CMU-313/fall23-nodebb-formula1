@@ -19,11 +19,15 @@ const SocketHelpers = module.exports;
 SocketHelpers.notifyNew = async function (uid, type, result) {
     let uids = await user.getUidsFromSet('users:online', 0, -1);
     uids = uids.filter(toUid => parseInt(toUid, 10) !== uid);
-    await batch.processArray(uids, async (uids) => {
-        await notifyUids(uid, uids, type, result);
-    }, {
-        interval: 1000,
-    });
+    await batch.processArray(
+        uids,
+        async uids => {
+            await notifyUids(uid, uids, type, result);
+        },
+        {
+            interval: 1000,
+        }
+    );
 };
 
 async function notifyUids(uid, uids, type, result) {
@@ -49,7 +53,7 @@ async function notifyUids(uid, uids, type, result) {
 
     post.ip = undefined;
 
-    data.uidsTo.forEach((toUid) => {
+    data.uidsTo.forEach(toUid => {
         post.categoryWatchState = categoryWatchStates[toUid];
         post.topic.isFollowing = topicFollowState[toUid];
         websockets.in(`uid_${toUid}`).emit('event:new_post', result);
@@ -68,9 +72,7 @@ async function getWatchStates(uids, tid, cid) {
 }
 
 function filterTidCidIgnorers(uids, watchStates) {
-    return uids.filter((uid, index) => watchStates.topicFollowed[index] ||
-        (!watchStates.topicIgnored[index] &&
-            watchStates.categoryWatchStates[index] !== categories.watchStates.ignoring));
+    return uids.filter((uid, index) => watchStates.topicFollowed[index] || (!watchStates.topicIgnored[index] && watchStates.categoryWatchStates[index] !== categories.watchStates.ignoring));
 }
 
 SocketHelpers.sendNotificationToPostOwner = async function (pid, fromuid, command, notification) {
@@ -79,18 +81,11 @@ SocketHelpers.sendNotificationToPostOwner = async function (pid, fromuid, comman
     }
     fromuid = parseInt(fromuid, 10);
     const postData = await posts.getPostFields(pid, ['tid', 'uid', 'content']);
-    const [canRead, isIgnoring] = await Promise.all([
-        privileges.posts.can('topics:read', pid, postData.uid),
-        topics.isIgnoring([postData.tid], postData.uid),
-    ]);
+    const [canRead, isIgnoring] = await Promise.all([privileges.posts.can('topics:read', pid, postData.uid), topics.isIgnoring([postData.tid], postData.uid)]);
     if (!canRead || isIgnoring[0] || !postData.uid || fromuid === postData.uid) {
         return;
     }
-    const [userData, topicTitle, postObj] = await Promise.all([
-        user.getUserFields(fromuid, ['username']),
-        topics.getTopicField(postData.tid, 'title'),
-        posts.parsePost(postData),
-    ]);
+    const [userData, topicTitle, postObj] = await Promise.all([user.getUserFields(fromuid, ['username']), topics.getTopicField(postData.tid, 'title'), posts.parsePost(postData)]);
 
     const { displayname } = userData;
 
@@ -113,7 +108,6 @@ SocketHelpers.sendNotificationToPostOwner = async function (pid, fromuid, comman
     notifications.push(notifObj, [postData.uid]);
 };
 
-
 SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, command, notification) {
     if (!tid || !fromuid || !notification) {
         return;
@@ -121,10 +115,7 @@ SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, comma
 
     fromuid = parseInt(fromuid, 10);
 
-    const [userData, topicData] = await Promise.all([
-        user.getUserFields(fromuid, ['username']),
-        topics.getTopicFields(tid, ['uid', 'slug', 'title']),
-    ]);
+    const [userData, topicData] = await Promise.all([user.getUserFields(fromuid, ['username']), topics.getTopicFields(tid, ['uid', 'slug', 'title'])]);
 
     if (fromuid === topicData.uid) {
         return;

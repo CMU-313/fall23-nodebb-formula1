@@ -1,6 +1,5 @@
 'use strict';
 
-
 const db = require('../../database');
 
 module.exports = {
@@ -9,16 +8,9 @@ module.exports = {
     method: async function () {
         const config = await db.getObject('config');
         if (config) {
-            const keys = [
-                'brand:favicon',
-                'brand:touchicon',
-                'og:image',
-                'brand:logo:url',
-                'defaultAvatar',
-                'profile:defaultCovers',
-            ];
+            const keys = ['brand:favicon', 'brand:touchicon', 'og:image', 'brand:logo:url', 'defaultAvatar', 'profile:defaultCovers'];
 
-            keys.forEach((key) => {
+            keys.forEach(key => {
                 const oldValue = config[key];
 
                 if (!oldValue || typeof oldValue !== 'string') {

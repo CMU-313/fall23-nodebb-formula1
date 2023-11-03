@@ -23,34 +23,16 @@ const upload_url = nconf.get('upload_url');
 topicsController.get = async function getTopic(req, res, next) {
     const tid = req.params.topic_id;
 
-    if (
-        (req.params.post_index && !utils.isNumber(req.params.post_index) && req.params.post_index !== 'unread') ||
-        !utils.isNumber(tid)
-    ) {
+    if ((req.params.post_index && !utils.isNumber(req.params.post_index) && req.params.post_index !== 'unread') || !utils.isNumber(tid)) {
         return next();
     }
     let postIndex = parseInt(req.params.post_index, 10) || 1;
-    const [
-        userPrivileges,
-        settings,
-        topicData,
-        rssToken,
-    ] = await Promise.all([
-        privileges.topics.get(tid, req.uid),
-        user.getSettings(req.uid),
-        topics.getTopicData(tid),
-        user.auth.getFeedToken(req.uid),
-    ]);
+    const [userPrivileges, settings, topicData, rssToken] = await Promise.all([privileges.topics.get(tid, req.uid), user.getSettings(req.uid), topics.getTopicData(tid), user.auth.getFeedToken(req.uid)]);
 
     let currentPage = parseInt(req.query.page, 10) || 1;
     const pageCount = Math.max(1, Math.ceil((topicData && topicData.postcount) / settings.postsPerPage));
-    const invalidPagination = (settings.usePagination && (currentPage < 1 || currentPage > pageCount));
-    if (
-        !topicData ||
-        userPrivileges.disabled ||
-        invalidPagination ||
-        (topicData.scheduled && !userPrivileges.view_scheduled)
-    ) {
+    const invalidPagination = settings.usePagination && (currentPage < 1 || currentPage > pageCount);
+    if (!topicData || userPrivileges.disabled || invalidPagination || (topicData.scheduled && !userPrivileges.view_scheduled)) {
         return next();
     }
 
@@ -62,7 +44,7 @@ topicsController.get = async function getTopic(req, res, next) {
         postIndex = await topics.getUserBookmark(tid, req.uid);
     }
 
-    if (!res.locals.isAPI && (!req.params.slug || topicData.slug !== `${tid}/${req.params.slug}`) && (topicData.slug && topicData.slug !== `${tid}/`)) {
+    if (!res.locals.isAPI && (!req.params.slug || topicData.slug !== `${tid}/${req.params.slug}`) && topicData.slug && topicData.slug !== `${tid}/`) {
         return helpers.redirect(res, `/topic/${topicData.slug}${postIndex ? `/${postIndex}` : ''}${generateQueryString(req.query)}`, true);
     }
 
@@ -105,17 +87,10 @@ topicsController.get = async function getTopic(req, res, next) {
 
     topicData.postIndex = postIndex;
 
-    await Promise.all([
-        buildBreadcrumbs(topicData),
-        addOldCategory(topicData, userPrivileges),
-        addTags(topicData, req, res),
-        incrementViewCount(req, tid),
-        markAsRead(req, tid),
-        analytics.increment([`pageviews:byCid:${topicData.category.cid}`]),
-    ]);
+    await Promise.all([buildBreadcrumbs(topicData), addOldCategory(topicData, userPrivileges), addTags(topicData, req, res), incrementViewCount(req, tid), markAsRead(req, tid), analytics.increment([`pageviews:byCid:${topicData.category.cid}`])]);
 
     topicData.pagination = pagination.create(currentPage, pageCount, req.query);
-    topicData.pagination.rel.forEach((rel) => {
+    topicData.pagination.rel.forEach(rel => {
         rel.href = `${url}/topic/${topicData.slug}${rel.href}`;
         res.locals.linkTags.push(rel);
     });
@@ -142,7 +117,7 @@ function calculateStartStop(page, postIndex, settings) {
         startSkip = Math.max(0, postIndex - Math.ceil(settings.postsPerPage / 2));
     }
 
-    const start = ((page - 1) * settings.postsPerPage) + startSkip;
+    const start = (page - 1) * settings.postsPerPage + startSkip;
     const stop = start + settings.postsPerPage - 1;
     return { start: Math.max(0, start), stop: Math.max(0, stop) };
 }
@@ -188,9 +163,7 @@ async function buildBreadcrumbs(topicData) {
 
 async function addOldCategory(topicData, userPrivileges) {
     if (userPrivileges.isAdminOrMod && topicData.oldCid) {
-        topicData.oldCategory = await categories.getCategoryFields(
-            topicData.oldCid, ['cid', 'name', 'icon', 'bgColor', 'color', 'slug']
-        );
+        topicData.oldCategory = await categories.getCategoryFields(topicData.oldCid, ['cid', 'name', 'icon', 'bgColor', 'color', 'slug']);
     }
 }
 
@@ -269,15 +242,13 @@ async function addTags(topicData, req, res) {
 
 async function addOGImageTags(res, topicData, postAtIndex) {
     const uploads = postAtIndex ? await posts.uploads.listWithSizes(postAtIndex.pid) : [];
-    const images = uploads.map((upload) => {
+    const images = uploads.map(upload => {
         upload.name = `${url + upload_url}/${upload.name}`;
         return upload;
     });
     if (topicData.thumbs) {
         const path = require('path');
-        const thumbs = topicData.thumbs.filter(
-            t => t && images.every(img => path.normalize(img.name) !== path.normalize(url + t.url))
-        );
+        const thumbs = topicData.thumbs.filter(t => t && images.every(img => path.normalize(img.name) !== path.normalize(url + t.url)));
         images.push(...thumbs.map(thumbObj => ({ name: url + thumbObj.url })));
     }
     if (topicData.category.backgroundImage && (!postAtIndex || !postAtIndex.index)) {
@@ -299,24 +270,30 @@ function addOGImageTag(res, image) {
         imageUrl = image;
     }
 
-    res.locals.metaTags.push({
-        property: 'og:image',
-        content: imageUrl,
-        noEscape: true,
-    }, {
-        property: 'og:image:url',
-        content: imageUrl,
-        noEscape: true,
-    });
+    res.locals.metaTags.push(
+        {
+            property: 'og:image',
+            content: imageUrl,
+            noEscape: true,
+        },
+        {
+            property: 'og:image:url',
+            content: imageUrl,
+            noEscape: true,
+        }
+    );
 
     if (typeof image === 'object' && image.width && image.height) {
-        res.locals.metaTags.push({
-            property: 'og:image:width',
-            content: String(image.width),
-        }, {
-            property: 'og:image:height',
-            content: String(image.height),
-        });
+        res.locals.metaTags.push(
+            {
+                property: 'og:image:width',
+                content: String(image.width),
+            },
+            {
+                property: 'og:image:height',
+                content: String(image.height),
+            }
+        );
     }
 }
 
@@ -348,11 +325,7 @@ topicsController.pagination = async function (req, res, next) {
         return next();
     }
 
-    const [userPrivileges, settings, topic] = await Promise.all([
-        privileges.topics.get(tid, req.uid),
-        user.getSettings(req.uid),
-        topics.getTopicData(tid),
-    ]);
+    const [userPrivileges, settings, topic] = await Promise.all([privileges.topics.get(tid, req.uid), user.getSettings(req.uid), topics.getTopicData(tid)]);
 
     if (!topic) {
         return next();
@@ -366,7 +339,7 @@ topicsController.pagination = async function (req, res, next) {
     const pageCount = Math.max(1, Math.ceil(postCount / settings.postsPerPage));
 
     const paginationData = pagination.create(currentPage, pageCount);
-    paginationData.rel.forEach((rel) => {
+    paginationData.rel.forEach(rel => {
         rel.href = `${url}/topic/${topic.slug}${rel.href}`;
     });
 

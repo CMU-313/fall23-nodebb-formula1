@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -17,10 +16,7 @@ const uidToSystemGroup = {
 };
 
 helpers.isUsersAllowedTo = async function (privilege, uids, cid) {
-    const [hasUserPrivilege, hasGroupPrivilege] = await Promise.all([
-        groups.isMembers(uids, `cid:${cid}:privileges:${privilege}`),
-        groups.isMembersOfGroupList(uids, `cid:${cid}:privileges:groups:${privilege}`),
-    ]);
+    const [hasUserPrivilege, hasGroupPrivilege] = await Promise.all([groups.isMembers(uids, `cid:${cid}:privileges:${privilege}`), groups.isMembersOfGroupList(uids, `cid:${cid}:privileges:groups:${privilege}`)]);
     const allowed = uids.map((uid, index) => hasUserPrivilege[index] || hasGroupPrivilege[index]);
     const result = await plugins.hooks.fire('filter:privileges:isUsersAllowedTo', { allowed: allowed, privilege: privilege, uids: uids, cid: cid });
     return result.allowed;
@@ -78,18 +74,12 @@ async function isAllowedToPrivileges(privileges, uidOrGroupName, cid) {
 }
 
 async function checkIfAllowedUser(uid, userKeys, groupKeys) {
-    const [hasUserPrivilege, hasGroupPrivilege] = await Promise.all([
-        groups.isMemberOfGroups(uid, userKeys),
-        groups.isMemberOfGroupsList(uid, groupKeys),
-    ]);
+    const [hasUserPrivilege, hasGroupPrivilege] = await Promise.all([groups.isMemberOfGroups(uid, userKeys), groups.isMemberOfGroupsList(uid, groupKeys)]);
     return userKeys.map((key, index) => hasUserPrivilege[index] || hasGroupPrivilege[index]);
 }
 
 async function checkIfAllowedGroup(groupName, groupKeys) {
-    const sets = await Promise.all([
-        groups.isMemberOfGroups(groupName, groupKeys),
-        groups.isMemberOfGroups('registered-users', groupKeys),
-    ]);
+    const sets = await Promise.all([groups.isMemberOfGroups(groupName, groupKeys), groups.isMemberOfGroups('registered-users', groupKeys)]);
     return groupKeys.map((key, index) => sets[0][index] || sets[1][index]);
 }
 
@@ -110,7 +100,7 @@ helpers.getUserPrivileges = async function (cid, userPrivileges) {
     const members = _.uniq(_.flatten(memberSets));
     const memberData = await user.getUsersFields(members, ['picture', 'username', 'banned']);
 
-    memberData.forEach((member) => {
+    memberData.forEach(member => {
         member.privileges = {};
         for (let x = 0, numPrivs = userPrivileges.length; x < numPrivs; x += 1) {
             member.privileges[userPrivileges[x]] = memberSets[x].includes(parseInt(member.uid, 10));
@@ -121,10 +111,7 @@ helpers.getUserPrivileges = async function (cid, userPrivileges) {
 };
 
 helpers.getGroupPrivileges = async function (cid, groupPrivileges) {
-    const [memberSets, allGroupNames] = await Promise.all([
-        groups.getMembersOfGroups(groupPrivileges.map(privilege => `cid:${cid}:privileges:${privilege}`)),
-        groups.getGroups('groups:createtime', 0, -1),
-    ]);
+    const [memberSets, allGroupNames] = await Promise.all([groups.getMembersOfGroups(groupPrivileges.map(privilege => `cid:${cid}:privileges:${privilege}`)), groups.getGroups('groups:createtime', 0, -1)]);
 
     const uniqueGroups = _.uniq(_.flatten(memberSets));
 
@@ -173,8 +160,8 @@ helpers.giveOrRescind = async function (method, privileges, cids, members) {
     cids = Array.isArray(cids) ? cids : [cids];
     for (const member of members) {
         const groupKeys = [];
-        cids.forEach((cid) => {
-            privileges.forEach((privilege) => {
+        cids.forEach(cid => {
+            privileges.forEach(privilege => {
                 groupKeys.push(`cid:${cid}:privileges:${privilege}`);
             });
         });

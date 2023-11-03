@@ -8,9 +8,6 @@ module.exports = function (User) {
     };
 
     User.addTopicIdToUser = async function (uid, tid, timestamp) {
-        await Promise.all([
-            db.sortedSetAdd(`uid:${uid}:topics`, timestamp, tid),
-            User.incrementUserFieldBy(uid, 'topiccount', 1),
-        ]);
+        await Promise.all([db.sortedSetAdd(`uid:${uid}:topics`, timestamp, tid), User.incrementUserFieldBy(uid, 'topiccount', 1)]);
     };
 };

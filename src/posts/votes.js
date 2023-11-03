@@ -142,13 +142,7 @@ module.exports = function (Posts) {
     async function checkVoteLimitation(pid, uid, type) {
         // type = 'upvote' or 'downvote'
         const oneDay = 86400000;
-        const [reputation, targetUid, votedPidsToday] = await Promise.all([
-            user.getUserField(uid, 'reputation'),
-            Posts.getPostField(pid, 'uid'),
-            db.getSortedSetRevRangeByScore(
-                `uid:${uid}:${type}`, 0, -1, '+inf', Date.now() - oneDay
-            ),
-        ]);
+        const [reputation, targetUid, votedPidsToday] = await Promise.all([user.getUserField(uid, 'reputation'), Posts.getPostField(pid, 'uid'), db.getSortedSetRevRangeByScore(`uid:${uid}:${type}`, 0, -1, '+inf', Date.now() - oneDay)]);
 
         if (reputation < meta.config[`min:rep:${type}`]) {
             throw new Error(`[[error:not-enough-reputation-to-${type}, ${meta.config[`min:rep:${type}`]}]]`);
@@ -207,9 +201,11 @@ module.exports = function (Posts) {
     async function fireVoteHook(postData, uid, type, unvote, voteStatus) {
         let hook = type;
         let current = voteStatus.upvoted ? 'upvote' : 'downvote';
-        if (unvote) { // e.g. unvoting, removing a upvote or downvote
+        if (unvote) {
+            // e.g. unvoting, removing a upvote or downvote
             hook = 'unvote';
-        } else { // e.g. User *has not* voted, clicks upvote or downvote
+        } else {
+            // e.g. User *has not* voted, clicks upvote or downvote
             current = 'unvote';
         }
         // action:post.upvote
@@ -224,7 +220,7 @@ module.exports = function (Posts) {
     }
 
     async function adjustPostVotes(postData, uid, type, unvote) {
-        const notType = (type === 'upvote' ? 'downvote' : 'upvote');
+        const notType = type === 'upvote' ? 'downvote' : 'upvote';
         if (unvote) {
             await db.setRemove(`pid:${postData.pid}:${type}`, uid);
         } else {
@@ -232,10 +228,7 @@ module.exports = function (Posts) {
         }
         await db.setRemove(`pid:${postData.pid}:${notType}`, uid);
 
-        const [upvotes, downvotes] = await Promise.all([
-            db.setCount(`pid:${postData.pid}:upvote`),
-            db.setCount(`pid:${postData.pid}:downvote`),
-        ]);
+        const [upvotes, downvotes] = await Promise.all([db.setCount(`pid:${postData.pid}:upvote`), db.setCount(`pid:${postData.pid}:downvote`)]);
         postData.upvotes = upvotes;
         postData.downvotes = downvotes;
         postData.votes = postData.upvotes - postData.downvotes;
@@ -247,7 +240,7 @@ module.exports = function (Posts) {
             return;
         }
         const threshold = meta.config['flags:autoFlagOnDownvoteThreshold'];
-        if (threshold && postData.votes <= (-threshold)) {
+        if (threshold && postData.votes <= -threshold) {
             const adminUid = await user.getFirstAdminUid();
             const reportMsg = await translator.translate(`[[flags:auto-flagged, ${-postData.votes}]]`);
             const flagObj = await flags.create('post', postData.pid, adminUid, reportMsg, null, true);

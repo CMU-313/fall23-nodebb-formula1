@@ -1,4 +1,3 @@
-
 'use strict';
 
 const nconf = require('nconf');
@@ -17,11 +16,7 @@ unreadController.get = async function (req, res) {
     const { cid } = req.query;
     const filter = req.query.filter || '';
 
-    const [categoryData, userSettings, isPrivileged] = await Promise.all([
-        helpers.getSelectedCategory(cid),
-        user.getSettings(req.uid),
-        user.isPrivileged(req.uid),
-    ]);
+    const [categoryData, userSettings, isPrivileged] = await Promise.all([helpers.getSelectedCategory(cid), user.getSettings(req.uid), user.isPrivileged(req.uid)]);
 
     const page = parseInt(req.query.page, 10) || 1;
     const start = Math.max(0, (page - 1) * userSettings.topicsPerPage);

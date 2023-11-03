@@ -25,8 +25,7 @@ async function getActiveIds() {
 
 Data.getPluginPaths = async function () {
     const plugins = await getActiveIds();
-    const pluginPaths = plugins.filter(plugin => plugin && typeof plugin === 'string')
-        .map(plugin => path.join(paths.nodeModules, plugin));
+    const pluginPaths = plugins.filter(plugin => plugin && typeof plugin === 'string').map(plugin => path.join(paths.nodeModules, plugin));
     const exists = await Promise.all(pluginPaths.map(file.exists));
     exists.forEach((exists, i) => {
         if (!exists) {
@@ -37,10 +36,7 @@ Data.getPluginPaths = async function () {
 };
 
 Data.loadPluginInfo = async function (pluginPath) {
-    const [packageJson, pluginJson] = await Promise.all([
-        fs.promises.readFile(path.join(pluginPath, 'package.json'), 'utf8'),
-        fs.promises.readFile(path.join(pluginPath, 'plugin.json'), 'utf8'),
-    ]);
+    const [packageJson, pluginJson] = await Promise.all([fs.promises.readFile(path.join(pluginPath, 'package.json'), 'utf8'), fs.promises.readFile(path.join(pluginPath, 'plugin.json'), 'utf8')]);
 
     let pluginData;
     let packageData;
@@ -84,7 +80,6 @@ Data.getActive = async function () {
     return await Promise.all(pluginPaths.map(p => Data.loadPluginInfo(p)));
 };
 
-
 Data.getStaticDirectories = async function (pluginData) {
     const validMappedPath = /^[\w\-_]+$/;
 
@@ -101,29 +96,25 @@ Data.getStaticDirectories = async function (pluginData) {
 
     async function processDir(route) {
         if (!validMappedPath.test(route)) {
-            winston.warn(`[plugins/${pluginData.id}] Invalid mapped path specified: ${
-                route}. Path must adhere to: ${validMappedPath.toString()}`);
+            winston.warn(`[plugins/${pluginData.id}] Invalid mapped path specified: ${route}. Path must adhere to: ${validMappedPath.toString()}`);
             return;
         }
         const dirPath = await resolveModulePath(pluginData.path, pluginData.staticDirs[route]);
         if (!dirPath) {
-            winston.warn(`[plugins/${pluginData.id}] Invalid mapped path specified: ${
-                route} => ${pluginData.staticDirs[route]}`);
+            winston.warn(`[plugins/${pluginData.id}] Invalid mapped path specified: ${route} => ${pluginData.staticDirs[route]}`);
             return;
         }
         try {
             const stats = await fs.promises.stat(dirPath);
             if (!stats.isDirectory()) {
-                winston.warn(`[plugins/${pluginData.id}] Mapped path '${
-                    route} => ${dirPath}' is not a directory.`);
+                winston.warn(`[plugins/${pluginData.id}] Mapped path '${route} => ${dirPath}' is not a directory.`);
                 return;
             }
 
             staticDirs[`${pluginData.id}/${route}`] = dirPath;
         } catch (err) {
             if (err.code === 'ENOENT') {
-                winston.warn(`[plugins/${pluginData.id}] Mapped path '${
-                    route} => ${dirPath}' not found.`);
+                winston.warn(`[plugins/${pluginData.id}] Mapped path '${route} => ${dirPath}' not found.`);
                 return;
             }
             throw err;
@@ -134,7 +125,6 @@ Data.getStaticDirectories = async function (pluginData) {
     winston.verbose(`[plugins] found ${Object.keys(staticDirs).length} static directories for ${pluginData.id}`);
     return staticDirs;
 };
-
 
 Data.getFiles = async function (pluginData, type) {
     if (!Array.isArray(pluginData[type]) || !pluginData[type].length) {
@@ -172,9 +162,8 @@ async function resolveModulePath(basePath, modulePath) {
     return await resolveModulePath(dirPath, modulePath);
 }
 
-
 Data.getScripts = async function getScripts(pluginData, target) {
-    target = (target === 'client') ? 'scripts' : 'acpScripts';
+    target = target === 'client' ? 'scripts' : 'acpScripts';
 
     const input = pluginData[target];
     if (!Array.isArray(input) || !input.length) {
@@ -195,7 +184,6 @@ Data.getScripts = async function getScripts(pluginData, target) {
     }
     return scripts;
 };
-
 
 Data.getModules = async function getModules(pluginData) {
     if (!pluginData.modules || !pluginData.hasOwnProperty('modules')) {
@@ -246,7 +234,7 @@ Data.getLanguageData = async function getLanguageData(pluginData) {
     const namespaces = [];
     const languages = [];
 
-    filepaths.forEach((p) => {
+    filepaths.forEach(p => {
         const rel = path.relative(pathToFolder, p).split(/[/\\]/);
         const language = rel.shift().replace('_', '-').replace('@', '-x-');
         const namespace = rel.join('/').replace(/\.json$/, '');

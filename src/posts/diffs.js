@@ -28,8 +28,7 @@ module.exports = function (Posts) {
         }
 
         // Pass those made after `since`, and create keys
-        const keys = timestamps.filter(t => (parseInt(t, 10) || 0) > since)
-            .map(t => `diff:${pid}.${t}`);
+        const keys = timestamps.filter(t => (parseInt(t, 10) || 0) > since).map(t => `diff:${pid}.${t}`);
         return await db.getObjects(keys);
     };
 
@@ -51,12 +50,12 @@ module.exports = function (Posts) {
             diffData.title = topic.oldTitle;
         }
         if (topic.tagsupdated && Array.isArray(topic.oldTags)) {
-            diffData.tags = topic.oldTags.map(tag => tag && tag.value).filter(Boolean).join(',');
+            diffData.tags = topic.oldTags
+                .map(tag => tag && tag.value)
+                .filter(Boolean)
+                .join(',');
         }
-        await Promise.all([
-            db.listPrepend(`post:${pid}:diffs`, editTimestamp),
-            db.setObject(`diff:${pid}.${editTimestamp}`, diffData),
-        ]);
+        await Promise.all([db.listPrepend(`post:${pid}:diffs`, editTimestamp), db.setObject(`diff:${pid}.${editTimestamp}`, diffData)]);
     };
 
     Diffs.load = async function (pid, since, uid) {
@@ -87,21 +86,14 @@ module.exports = function (Posts) {
     Diffs.delete = async function (pid, timestamp, uid) {
         getValidatedTimestamp(timestamp);
 
-        const [post, diffs, timestamps] = await Promise.all([
-            Posts.getPostSummaryByPids([pid], uid, { parse: false }),
-            Diffs.get(pid),
-            Diffs.list(pid),
-        ]);
+        const [post, diffs, timestamps] = await Promise.all([Posts.getPostSummaryByPids([pid], uid, { parse: false }), Diffs.get(pid), Diffs.list(pid)]);
 
         const timestampIndex = timestamps.indexOf(timestamp);
         const lastTimestampIndex = timestamps.length - 1;
 
         if (timestamp === String(post[0].timestamp)) {
             // Deleting oldest diff, so history rewrite is not needed
-            return Promise.all([
-                db.delete(`diff:${pid}.${timestamps[lastTimestampIndex]}`),
-                db.listRemoveAll(`post:${pid}:diffs`, timestamps[lastTimestampIndex]),
-            ]);
+            return Promise.all([db.delete(`diff:${pid}.${timestamps[lastTimestampIndex]}`), db.listRemoveAll(`post:${pid}:diffs`, timestamps[lastTimestampIndex])]);
         }
         if (timestampIndex === 0 || timestampIndex === -1) {
             throw new Error('[[error:invalid-data]]');
@@ -124,18 +116,12 @@ module.exports = function (Posts) {
             await db.setObject(`diff:${pid}.${timestamps[timestampToUpdate]}`, { patch });
         }
 
-        return Promise.all([
-            db.delete(`diff:${pid}.${timestamp}`),
-            db.listRemoveAll(`post:${pid}:diffs`, timestamp),
-        ]);
+        return Promise.all([db.delete(`diff:${pid}.${timestamp}`), db.listRemoveAll(`post:${pid}:diffs`, timestamp)]);
     };
 
     async function postDiffLoad(pid, since, uid) {
         // Retrieves all diffs made since `since` and replays them to reconstruct what the post looked like at `since`
-        const [post, diffs] = await Promise.all([
-            Posts.getPostSummaryByPids([pid], uid, { parse: false }),
-            Posts.diffs.get(pid, since),
-        ]);
+        const [post, diffs] = await Promise.all([Posts.getPostSummaryByPids([pid], uid, { parse: false }), Posts.diffs.get(pid, since)]);
 
         // Replace content with re-constructed content from that point in time
         post[0].content = diffs.reduce(applyPatch, validator.unescape(post[0].content));

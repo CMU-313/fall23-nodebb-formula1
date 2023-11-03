@@ -24,16 +24,20 @@ module.exports = {
             const sessionKeys = await client.keys('sess:*');
             progress.total = sessionKeys.length;
 
-            await batch.processArray(sessionKeys, async (keys) => {
-                const multi = client.multi();
-                keys.forEach((key) => {
-                    progress.incr();
-                    multi.del(key);
-                });
-                await multi.exec();
-            }, {
-                batch: 1000,
-            });
+            await batch.processArray(
+                sessionKeys,
+                async keys => {
+                    const multi = client.multi();
+                    keys.forEach(key => {
+                        progress.incr();
+                        multi.del(key);
+                    });
+                    await multi.exec();
+                },
+                {
+                    batch: 1000,
+                }
+            );
         } else if (db.client && db.client.collection) {
             await db.client.collection('sessions').deleteMany({}, {});
         }

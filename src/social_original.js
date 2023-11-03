@@ -33,7 +33,7 @@ social.getPostSharing = async function () {
     ];
     networks = await plugins.hooks.fire('filter:social.posts', networks);
     const activated = await db.getSetMembers('social:posts.activated');
-    networks.forEach((network) => {
+    networks.forEach(network => {
         network.activated = activated.includes(network.id);
     });
 

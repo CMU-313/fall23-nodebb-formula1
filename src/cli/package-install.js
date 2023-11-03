@@ -52,12 +52,7 @@ pkgInstall.updatePackageFile = () => {
     fs.writeFileSync(paths.currentPackage, JSON.stringify(packageContents, null, 4));
 };
 
-pkgInstall.supportedPackageManager = [
-    'npm',
-    'cnpm',
-    'pnpm',
-    'yarn',
-];
+pkgInstall.supportedPackageManager = ['npm', 'cnpm', 'pnpm', 'yarn'];
 
 pkgInstall.getPackageManager = () => {
     try {
@@ -74,7 +69,8 @@ pkgInstall.getPackageManager = () => {
         if (!Object.keys(nconf.stores).length) {
             // Quick & dirty nconf setup for when you cannot rely on nconf having been required already
             const configFile = path.resolve(__dirname, '../../', nconf.any(['config', 'CONFIG']) || 'config.json');
-            nconf.env().file({ // not sure why adding .argv() causes the process to terminate
+            nconf.env().file({
+                // not sure why adding .argv() causes the process to terminate
                 file: configFile,
             });
         }
@@ -110,18 +106,18 @@ pkgInstall.installAll = () => {
     const packageManager = pkgInstall.getPackageManager();
     if (supportedPackageManagerList.indexOf(packageManager) >= 0) {
         switch (packageManager) {
-        case 'yarn':
-            command = `yarn${prod ? ' --production' : ''}`;
-            break;
-        case 'pnpm':
-            command = 'pnpm install'; // pnpm checks NODE_ENV
-            break;
-        case 'cnpm':
-            command = `cnpm install ${prod ? ' --production' : ''}`;
-            break;
-        default:
-            command += prod ? ' --omit=dev' : '';
-            break;
+            case 'yarn':
+                command = `yarn${prod ? ' --production' : ''}`;
+                break;
+            case 'pnpm':
+                command = 'pnpm install'; // pnpm checks NODE_ENV
+                break;
+            case 'cnpm':
+                command = `cnpm install ${prod ? ' --production' : ''}`;
+                break;
+            default:
+                command += prod ? ' --omit=dev' : '';
+                break;
         }
     }
 
@@ -147,20 +143,19 @@ pkgInstall.preserveExtraneousPlugins = () => {
         return;
     }
 
-    const packages = fs.readdirSync(paths.nodeModules)
-        .filter(pkgName => pluginNamePattern.test(pkgName));
+    const packages = fs.readdirSync(paths.nodeModules).filter(pkgName => pluginNamePattern.test(pkgName));
 
     const packageContents = JSON.parse(fs.readFileSync(paths.currentPackage, 'utf8'));
 
     const extraneous = packages
-    // only extraneous plugins (ones not in package.json) which are not links
-        .filter((pkgName) => {
+        // only extraneous plugins (ones not in package.json) which are not links
+        .filter(pkgName => {
             const extraneous = !packageContents.dependencies.hasOwnProperty(pkgName);
             const isLink = fs.lstatSync(path.join(paths.nodeModules, pkgName)).isSymbolicLink();
 
             return extraneous && !isLink;
         })
-    // reduce to a map of package names to package versions
+        // reduce to a map of package names to package versions
         .reduce((map, pkgName) => {
             const pkgConfig = JSON.parse(fs.readFileSync(path.join(paths.nodeModules, pkgName, 'package.json'), 'utf8'));
             map[pkgName] = pkgConfig.version;

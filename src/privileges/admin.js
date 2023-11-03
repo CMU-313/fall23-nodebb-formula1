@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -28,12 +27,13 @@ const _privilegeMap = new Map([
 ]);
 
 privsAdmin.getUserPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.admin.list', Array.from(_privilegeMap.keys()));
-privsAdmin.getGroupPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.admin.groups.list', Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`));
+privsAdmin.getGroupPrivilegeList = async () =>
+    await plugins.hooks.fire(
+        'filter:privileges.admin.groups.list',
+        Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`)
+    );
 privsAdmin.getPrivilegeList = async () => {
-    const [user, group] = await Promise.all([
-        privsAdmin.getUserPrivilegeList(),
-        privsAdmin.getGroupPrivilegeList(),
-    ]);
+    const [user, group] = await Promise.all([privsAdmin.getUserPrivilegeList(), privsAdmin.getGroupPrivilegeList()]);
     return user.concat(group);
 };
 
@@ -112,7 +112,7 @@ privsAdmin.socketMap = {
     'admin.settings.set': 'admin:settings',
 };
 
-privsAdmin.resolve = (path) => {
+privsAdmin.resolve = path => {
     if (privsAdmin.routeMap.hasOwnProperty(path)) {
         return privsAdmin.routeMap[path];
     }
@@ -161,10 +161,7 @@ privsAdmin.list = async function (uid) {
 
 privsAdmin.get = async function (uid) {
     const userPrivilegeList = await privsAdmin.getUserPrivilegeList();
-    const [userPrivileges, isAdministrator] = await Promise.all([
-        helpers.isAllowedTo(userPrivilegeList, uid, 0),
-        user.isAdministrator(uid),
-    ]);
+    const [userPrivileges, isAdministrator] = await Promise.all([helpers.isAllowedTo(userPrivilegeList, uid, 0), user.isAdministrator(uid)]);
 
     const combined = userPrivileges.map(allowed => allowed || isAdministrator);
     const privData = _.zipObject(userPrivilegeList, combined);
@@ -174,10 +171,7 @@ privsAdmin.get = async function (uid) {
 };
 
 privsAdmin.can = async function (privilege, uid) {
-    const [isUserAllowedTo, isAdministrator] = await Promise.all([
-        helpers.isAllowedTo(privilege, uid, [0]),
-        user.isAdministrator(uid),
-    ]);
+    const [isUserAllowedTo, isAdministrator] = await Promise.all([helpers.isAllowedTo(privilege, uid, [0]), user.isAdministrator(uid)]);
     return isAdministrator || isUserAllowedTo[0];
 };
 

@@ -6,7 +6,7 @@ const db = require('../database');
 const user = require('../user');
 
 module.exports = function (Messaging) {
-    Messaging.sendMessage = async (data) => {
+    Messaging.sendMessage = async data => {
         await Messaging.checkContent(data.content);
         const inRoom = await Messaging.isUserInRoom(data.uid, data.roomId);
         if (!inRoom) {
@@ -16,7 +16,7 @@ module.exports = function (Messaging) {
         return await Messaging.addMessage(data);
     };
 
-    Messaging.checkContent = async (content) => {
+    Messaging.checkContent = async content => {
         if (!content) {
             throw new Error('[[error:invalid-chat-message]]');
         }
@@ -33,7 +33,7 @@ module.exports = function (Messaging) {
         }
     };
 
-    Messaging.addMessage = async (data) => {
+    Messaging.addMessage = async data => {
         const mid = await db.incrObjectField('global', 'nextMid');
         const timestamp = data.timestamp || Date.now();
         let message = {
@@ -58,7 +58,10 @@ module.exports = function (Messaging) {
         await Promise.all([
             Messaging.addRoomToUsers(data.roomId, uids, timestamp),
             Messaging.addMessageToUsers(data.roomId, uids, mid, timestamp),
-            Messaging.markUnread(uids.filter(uid => uid !== String(data.uid)), data.roomId),
+            Messaging.markUnread(
+                uids.filter(uid => uid !== String(data.uid)),
+                data.roomId
+            ),
         ]);
 
         const messages = await Messaging.getMessagesData([mid], data.uid, data.roomId, true);

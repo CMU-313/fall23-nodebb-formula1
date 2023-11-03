@@ -11,10 +11,7 @@ const file = require('../../file');
 const editController = module.exports;
 
 editController.get = async function (req, res, next) {
-    const [userData, canUseSignature] = await Promise.all([
-        accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query),
-        privileges.global.can('signature', req.uid),
-    ]);
+    const [userData, canUseSignature] = await Promise.all([accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query), privileges.global.can('signature', req.uid)]);
     if (!userData) {
         return next();
     }
@@ -24,7 +21,10 @@ editController.get = async function (req, res, next) {
     userData.allowProfilePicture = !userData.isSelf || !!meta.config['reputation:disabled'] || userData.reputation >= meta.config['min:rep:profile-picture'];
     userData.allowCoverPicture = !userData.isSelf || !!meta.config['reputation:disabled'] || userData.reputation >= meta.config['min:rep:cover-picture'];
     userData.allowProfileImageUploads = meta.config.allowProfileImageUploads;
-    userData.allowedProfileImageExtensions = user.getAllowedProfileImageExtensions().map(ext => `.${ext}`).join(', ');
+    userData.allowedProfileImageExtensions = user
+        .getAllowedProfileImageExtensions()
+        .map(ext => `.${ext}`)
+        .join(', ');
     userData.allowMultipleBadges = meta.config.allowMultipleBadges === 1;
     userData.allowAccountDelete = meta.config.allowAccountDelete === 1;
     userData.allowWebsite = !userData.isSelf || !!meta.config['reputation:disabled'] || userData.reputation >= meta.config['min:rep:website'];
@@ -49,7 +49,7 @@ editController.get = async function (req, res, next) {
         }
         return i1 - i2;
     });
-    userData.groups.forEach((group) => {
+    userData.groups.forEach(group => {
         group.userTitle = group.userTitle || group.displayName;
         group.selected = userData.groupTitleArray.includes(group.name);
     });
@@ -83,10 +83,7 @@ editController.email = async function (req, res, next) {
         return next();
     }
 
-    const [isAdminOrGlobalMod, canEdit] = await Promise.all([
-        user.isAdminOrGlobalMod(req.uid),
-        privileges.users.canEdit(req.uid, targetUid),
-    ]);
+    const [isAdminOrGlobalMod, canEdit] = await Promise.all([user.isAdminOrGlobalMod(req.uid), privileges.users.canEdit(req.uid, targetUid)]);
 
     if (!isAdminOrGlobalMod && !canEdit) {
         return next();
@@ -157,10 +154,12 @@ editController.uploadPicture = async function (req, res, next) {
             file: userPhoto,
         });
 
-        res.json([{
-            name: userPhoto.name,
-            url: image.url,
-        }]);
+        res.json([
+            {
+                name: userPhoto.name,
+                url: image.url,
+            },
+        ]);
     } catch (err) {
         next(err);
     } finally {

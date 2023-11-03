@@ -11,31 +11,26 @@ import privileges from '../privileges';
 import { GroupFullObject, PostObject, UserObjectSlim } from '../types';
 
 interface GroupsRequest extends Request {
-  uid: string;
+    uid: string;
 }
 const relative_path: string = nconf.get('relative_path') as string;
 
 export const list = async function (req: GroupsRequest, res: Response) {
     const sort = req.query.sort || 'alpha';
 
-    const [groupsData, allowGroupCreation]: [GroupFullObject[], boolean] = await Promise.all([
-        groups.getGroupsBySort(sort, 0, 14) as Promise<GroupFullObject[]>,
-        privileges.global.can('group:create', req.uid) as Promise<boolean>,
-    ]);
+    const [groupsData, allowGroupCreation]: [GroupFullObject[], boolean] = await Promise.all([groups.getGroupsBySort(sort, 0, 14) as Promise<GroupFullObject[]>, privileges.global.can('group:create', req.uid) as Promise<boolean>]);
 
     // get GroupObject with the current online user count (onlineUserCount property)
     async function withOnineUserCount(groupData: GroupFullObject): Promise<GroupFullObject> {
         return {
             ...groupData,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            onlineUserCount: await user.getGroupOnlineCount(groupData.name) as number,
+            onlineUserCount: (await user.getGroupOnlineCount(groupData.name)) as number,
         };
     }
 
     // Get online group count for all groups
-    const groupsDataWithOnineUserCount = await Promise.all(
-        groupsData.map(withOnineUserCount)
-    );
+    const groupsDataWithOnineUserCount = await Promise.all(groupsData.map(withOnineUserCount));
 
     res.render('groups/list', {
         groups: groupsDataWithOnineUserCount,
@@ -55,16 +50,11 @@ export const details = async function (req: GroupsRequest, res: Response, next: 
             return res.redirect(`${relative_path}/groups/${lowercaseSlug}`);
         }
     }
-    const groupName = await groups.getGroupNameByGroupSlug(req.params.slug) as string;
+    const groupName = (await groups.getGroupNameByGroupSlug(req.params.slug)) as string;
     if (!groupName) {
         return next();
     }
-    const [exists, isHidden, isAdmin, isGlobalMod] = await Promise.all([
-        groups.exists(groupName),
-        groups.isHidden(groupName),
-        user.isAdministrator(req.uid),
-        user.isGlobalModerator(req.uid),
-    ] as Promise<boolean>[]);
+    const [exists, isHidden, isAdmin, isGlobalMod] = await Promise.all([groups.exists(groupName), groups.isHidden(groupName), user.isAdministrator(req.uid), user.isGlobalModerator(req.uid)] as Promise<boolean>[]);
     if (!exists) {
         return next();
     }
@@ -95,7 +85,7 @@ export const details = async function (req: GroupsRequest, res: Response, next: 
     groupData.isOwner = groupData.isOwner || isAdmin || (isGlobalMod && !groupData.system);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    groupData.onlineUserCount = await user.getGroupOnlineCount(groupData.name) as number;
+    groupData.onlineUserCount = (await user.getGroupOnlineCount(groupData.name)) as number;
 
     res.render('groups/details', {
         title: `[[pages:group, ${groupData.displayName}]]`,
@@ -109,14 +99,12 @@ export const details = async function (req: GroupsRequest, res: Response, next: 
     });
 };
 
-export const members = async function (
-    req: GroupsRequest, res: Response & { query: {page: string }}, next: NextFunction
-) {
+export const members = async function (req: GroupsRequest, res: Response & { query: { page: string } }, next: NextFunction) {
     const page = parseInt(req.query.page as string, 10) || 1;
     const usersPerPage = 50;
     const start = Math.max(0, (page - 1) * usersPerPage);
     const stop = start + usersPerPage - 1;
-    const groupName = await groups.getGroupNameByGroupSlug(req.params.slug) as string;
+    const groupName = (await groups.getGroupNameByGroupSlug(req.params.slug)) as string;
     if (!groupName) {
         return next();
     }
@@ -132,13 +120,9 @@ export const members = async function (
     if (isHidden && !isMember && !isAdminOrGlobalMod) {
         return next();
     }
-    const users = await user.getUsersFromSet(`group:${groupName}:members`, req.uid, start, stop) as UserObjectSlim[];
+    const users = (await user.getUsersFromSet(`group:${groupName}:members`, req.uid, start, stop)) as UserObjectSlim[];
 
-    const breadcrumbs = helpers.buildBreadcrumbs([
-        { text: '[[pages:groups]]', url: '/groups' },
-        { text: validator.escape(String(groupName)), url: `/groups/${req.params.slug}` },
-        { text: '[[groups:details.members]]' },
-    ]);
+    const breadcrumbs = helpers.buildBreadcrumbs([{ text: '[[pages:groups]]', url: '/groups' }, { text: validator.escape(String(groupName)), url: `/groups/${req.params.slug}` }, { text: '[[groups:details.members]]' }]);
 
     const pageCount = Math.max(1, Math.ceil(groupData.memberCount / usersPerPage));
     res.render('groups/members', {
@@ -147,4 +131,3 @@ export const members = async function (
         breadcrumbs: breadcrumbs,
     });
 };
-

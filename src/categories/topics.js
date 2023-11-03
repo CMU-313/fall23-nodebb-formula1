@@ -28,11 +28,7 @@ module.exports = function (Categories) {
         dataForPinned.start = 0;
         dataForPinned.stop = -1;
 
-        const [pinnedTids, set, direction] = await Promise.all([
-            Categories.getPinnedTids(dataForPinned),
-            Categories.buildTopicsSortedSet(data),
-            Categories.getSortedSetRangeDirection(data.sort),
-        ]);
+        const [pinnedTids, set, direction] = await Promise.all([Categories.getPinnedTids(dataForPinned), Categories.buildTopicsSortedSet(data), Categories.getSortedSetRangeDirection(data.sort)]);
 
         const totalPinnedCount = pinnedTids.length;
         const pinnedTidsOnPage = pinnedTids.slice(data.start, data.stop !== -1 ? data.stop + 1 : undefined);
@@ -145,10 +141,7 @@ module.exports = function (Categories) {
             });
             return result && result.pinnedTids;
         }
-        const [allPinnedTids, canSchedule] = await Promise.all([
-            db.getSortedSetRevRange(`cid:${data.cid}:tids:pinned`, data.start, data.stop),
-            privileges.categories.can('topics:schedule', data.cid, data.uid),
-        ]);
+        const [allPinnedTids, canSchedule] = await Promise.all([db.getSortedSetRevRange(`cid:${data.cid}:tids:pinned`, data.start, data.stop), privileges.categories.can('topics:schedule', data.cid, data.uid)]);
         const pinnedTids = canSchedule ? allPinnedTids : await filterScheduledTids(allPinnedTids);
 
         return await topics.tools.checkPinExpiry(pinnedTids);
@@ -159,7 +152,7 @@ module.exports = function (Categories) {
             return;
         }
 
-        topics.forEach((topic) => {
+        topics.forEach(topic => {
             if (!topic.scheduled && topic.deleted && !topic.isOwner) {
                 topic.title = '[[topic:topic_is_deleted]]';
                 if (topic.hasOwnProperty('titleRaw')) {
@@ -177,10 +170,7 @@ module.exports = function (Categories) {
         if (!cid || !postData) {
             return;
         }
-        const promises = [
-            db.sortedSetAdd(`cid:${cid}:pids`, postData.timestamp, postData.pid),
-            db.incrObjectField(`category:${cid}`, 'post_count'),
-        ];
+        const promises = [db.sortedSetAdd(`cid:${cid}:pids`, postData.timestamp, postData.pid), db.incrObjectField(`category:${cid}`, 'post_count')];
         if (!pinned) {
             promises.push(db.sortedSetIncrBy(`cid:${cid}:tids:posts`, 1, postData.tid));
         }

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const db = require('../database');
@@ -29,10 +28,7 @@ module.exports = function (Topics) {
         const mainPid = pids[0];
         const cid = await posts.getCidByPid(mainPid);
 
-        const [postData, isAdminOrMod] = await Promise.all([
-            posts.getPostData(mainPid),
-            privileges.categories.isAdminOrMod(cid, uid),
-        ]);
+        const [postData, isAdminOrMod] = await Promise.all([posts.getPostData(mainPid), privileges.categories.isAdminOrMod(cid, uid)]);
 
         if (!isAdminOrMod) {
             throw new Error('[[error:no-privileges]]');
@@ -62,7 +58,7 @@ module.exports = function (Topics) {
             await Topics.movePostToTopic(uid, pid, tid, scheduled);
         }
 
-        await Topics.updateLastPostTime(tid, scheduled ? (postData.timestamp + 1) : Date.now());
+        await Topics.updateLastPostTime(tid, scheduled ? postData.timestamp + 1 : Date.now());
 
         await Promise.all([
             Topics.setTopicFields(tid, {
@@ -104,16 +100,9 @@ module.exports = function (Topics) {
         postData.pid = pid;
 
         await Topics.removePostFromTopic(postData.tid, postData);
-        await Promise.all([
-            updateCategory(postData, tid),
-            posts.setPostField(pid, 'tid', tid),
-            Topics.addPostToTopic(tid, postData),
-        ]);
+        await Promise.all([updateCategory(postData, tid), posts.setPostField(pid, 'tid', tid), Topics.addPostToTopic(tid, postData)]);
 
-        await Promise.all([
-            Topics.updateLastPostTimeFromLastPid(tid),
-            Topics.updateLastPostTimeFromLastPid(postData.tid),
-        ]);
+        await Promise.all([Topics.updateLastPostTimeFromLastPid(tid), Topics.updateLastPostTimeFromLastPid(postData.tid)]);
         plugins.hooks.fire('action:post.move', { uid: callerUid, post: postData, tid: tid });
     };
 
@@ -134,26 +123,13 @@ module.exports = function (Topics) {
             await categories.updateRecentTidForCid(topicData[0].cid);
             return;
         }
-        const removeFrom = [
-            `cid:${topicData[0].cid}:pids`,
-            `cid:${topicData[0].cid}:uid:${postData.uid}:pids`,
-            `cid:${topicData[0].cid}:uid:${postData.uid}:pids:votes`,
-        ];
-        const tasks = [
-            db.incrObjectFieldBy(`category:${topicData[0].cid}`, 'post_count', -1),
-            db.incrObjectFieldBy(`category:${topicData[1].cid}`, 'post_count', 1),
-            db.sortedSetRemove(removeFrom, postData.pid),
-            db.sortedSetAdd(`cid:${topicData[1].cid}:pids`, postData.timestamp, postData.pid),
-            db.sortedSetAdd(`cid:${topicData[1].cid}:uid:${postData.uid}:pids`, postData.timestamp, postData.pid),
-        ];
+        const removeFrom = [`cid:${topicData[0].cid}:pids`, `cid:${topicData[0].cid}:uid:${postData.uid}:pids`, `cid:${topicData[0].cid}:uid:${postData.uid}:pids:votes`];
+        const tasks = [db.incrObjectFieldBy(`category:${topicData[0].cid}`, 'post_count', -1), db.incrObjectFieldBy(`category:${topicData[1].cid}`, 'post_count', 1), db.sortedSetRemove(removeFrom, postData.pid), db.sortedSetAdd(`cid:${topicData[1].cid}:pids`, postData.timestamp, postData.pid), db.sortedSetAdd(`cid:${topicData[1].cid}:uid:${postData.uid}:pids`, postData.timestamp, postData.pid)];
         if (postData.votes > 0 || postData.votes < 0) {
             tasks.push(db.sortedSetAdd(`cid:${topicData[1].cid}:uid:${postData.uid}:pids:votes`, postData.votes, postData.pid));
         }
 
         await Promise.all(tasks);
-        await Promise.all([
-            categories.updateRecentTidForCid(topicData[0].cid),
-            categories.updateRecentTidForCid(topicData[1].cid),
-        ]);
+        await Promise.all([categories.updateRecentTidForCid(topicData[0].cid), categories.updateRecentTidForCid(topicData[1].cid)]);
     }
 };

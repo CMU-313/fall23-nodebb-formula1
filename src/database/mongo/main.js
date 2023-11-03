@@ -17,29 +17,36 @@ module.exports = function (module) {
         }
 
         if (Array.isArray(key)) {
-            const data = await module.client.collection('objects').find({
-                _key: { $in: key },
-            }, { _id: 0, _key: 1 }).toArray();
+            const data = await module.client
+                .collection('objects')
+                .find(
+                    {
+                        _key: { $in: key },
+                    },
+                    { _id: 0, _key: 1 }
+                )
+                .toArray();
 
             const map = {};
-            data.forEach((item) => {
+            data.forEach(item => {
                 map[item._key] = true;
             });
 
             return key.map(key => !!map[key]);
         }
 
-        const item = await module.client.collection('objects').findOne({
-            _key: key,
-        }, { _id: 0, _key: 1 });
+        const item = await module.client.collection('objects').findOne(
+            {
+                _key: key,
+            },
+            { _id: 0, _key: 1 }
+        );
         return item !== undefined && item !== null;
     };
 
     module.scan = async function (params) {
         const match = helpers.buildMatchQuery(params.match);
-        return await module.client.collection('objects').distinct(
-            '_key', { _key: { $regex: new RegExp(match) } }
-        );
+        return await module.client.collection('objects').distinct('_key', { _key: { $regex: new RegExp(match) } });
     };
 
     module.delete = async function (key) {
@@ -88,14 +95,18 @@ module.exports = function (module) {
         if (!key) {
             return;
         }
-        const result = await module.client.collection('objects').findOneAndUpdate({
-            _key: key,
-        }, {
-            $inc: { data: 1 },
-        }, {
-            returnDocument: 'after',
-            upsert: true,
-        });
+        const result = await module.client.collection('objects').findOneAndUpdate(
+            {
+                _key: key,
+            },
+            {
+                $inc: { data: 1 },
+            },
+            {
+                returnDocument: 'after',
+                upsert: true,
+            }
+        );
         return result && result.value ? result.value.data : null;
     };
 
@@ -141,10 +152,10 @@ module.exports = function (module) {
     };
 
     module.ttl = async function (key) {
-        return Math.round((await module.getObjectField(key, 'expireAt') - Date.now()) / 1000);
+        return Math.round(((await module.getObjectField(key, 'expireAt')) - Date.now()) / 1000);
     };
 
     module.pttl = async function (key) {
-        return await module.getObjectField(key, 'expireAt') - Date.now();
+        return (await module.getObjectField(key, 'expireAt')) - Date.now();
     };
 };

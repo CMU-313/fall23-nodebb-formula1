@@ -9,10 +9,7 @@ const privileges = require('../privileges');
 const categoriesAPI = module.exports;
 
 categoriesAPI.get = async function (caller, data) {
-    const [userPrivileges, category] = await Promise.all([
-        privileges.categories.get(data.cid, caller.uid),
-        categories.getCategoryData(data.cid),
-    ]);
+    const [userPrivileges, category] = await Promise.all([privileges.categories.get(data.cid, caller.uid), categories.getCategoryData(data.cid)]);
     if (!category || !userPrivileges.read) {
         return null;
     }
@@ -60,10 +57,7 @@ categoriesAPI.getPrivileges = async (caller, cid) => {
 };
 
 categoriesAPI.setPrivilege = async (caller, data) => {
-    const [userExists, groupExists] = await Promise.all([
-        user.exists(data.member),
-        groups.exists(data.member),
-    ]);
+    const [userExists, groupExists] = await Promise.all([user.exists(data.member), groups.exists(data.member)]);
 
     if (!userExists && !groupExists) {
         throw new Error('[[error:no-user-or-group]]');

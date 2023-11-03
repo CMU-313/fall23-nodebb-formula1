@@ -42,7 +42,7 @@ Digest.execute = async function (payload) {
     }
 };
 
-Digest.getUsersInterval = async (uids) => {
+Digest.getUsersInterval = async uids => {
     // Checks whether user specifies digest setting, or false for system default setting
     let single = false;
     if (!Array.isArray(uids) && !isNaN(parseInt(uids, 10))) {
@@ -58,20 +58,24 @@ Digest.getUsersInterval = async (uids) => {
 Digest.getSubscribers = async function (interval) {
     let subscribers = [];
 
-    await batch.processSortedSet('users:joindate', async (uids) => {
-        const settings = await user.getMultipleUserSettings(uids);
-        let subUids = [];
-        settings.forEach((hash) => {
-            if (hash.dailyDigestFreq === interval) {
-                subUids.push(hash.uid);
-            }
-        });
-        subUids = await user.bans.filterBanned(subUids);
-        subscribers = subscribers.concat(subUids);
-    }, {
-        interval: 1000,
-        batch: 500,
-    });
+    await batch.processSortedSet(
+        'users:joindate',
+        async uids => {
+            const settings = await user.getMultipleUserSettings(uids);
+            let subUids = [];
+            settings.forEach(hash => {
+                if (hash.dailyDigestFreq === interval) {
+                    subUids.push(hash.uid);
+                }
+            });
+            subUids = await user.bans.filterBanned(subUids);
+            subscribers = subscribers.concat(subUids);
+        },
+        {
+            interval: 1000,
+            batch: 500,
+        }
+    );
 
     const results = await plugins.hooks.fire('filter:digest.subscribers', {
         interval: interval,
@@ -86,59 +90,68 @@ Digest.send = async function (data) {
         return emailsSent;
     }
     let errorLogged = false;
-    await batch.processArray(data.subscribers, async (uids) => {
-        let userData = await user.getUsersFields(uids, ['uid', 'email', 'email:confirmed', 'username', 'userslug', 'lastonline']);
-        userData = userData.filter(u => u && u.email && (meta.config.includeUnverifiedEmails || u['email:confirmed']));
-        if (!userData.length) {
-            return;
-        }
-        await Promise.all(userData.map(async (userObj) => {
-            const [notifications, topics] = await Promise.all([
-                user.notifications.getUnreadInterval(userObj.uid, data.interval),
-                getTermTopics(data.interval, userObj.uid),
-            ]);
-            const unreadNotifs = notifications.filter(Boolean);
-            // If there are no notifications and no new topics, don't bother sending a digest
-            if (!unreadNotifs.length && !topics.top.length && !topics.popular.length && !topics.recent.length) {
+    await batch.processArray(
+        data.subscribers,
+        async uids => {
+            let userData = await user.getUsersFields(uids, ['uid', 'email', 'email:confirmed', 'username', 'userslug', 'lastonline']);
+            userData = userData.filter(u => u && u.email && (meta.config.includeUnverifiedEmails || u['email:confirmed']));
+            if (!userData.length) {
                 return;
             }
+            await Promise.all(
+                userData.map(async userObj => {
+                    const [notifications, topics] = await Promise.all([user.notifications.getUnreadInterval(userObj.uid, data.interval), getTermTopics(data.interval, userObj.uid)]);
+                    const unreadNotifs = notifications.filter(Boolean);
+                    // If there are no notifications and no new topics, don't bother sending a digest
+                    if (!unreadNotifs.length && !topics.top.length && !topics.popular.length && !topics.recent.length) {
+                        return;
+                    }
 
-            unreadNotifs.forEach((n) => {
-                if (n.image && !n.image.startsWith('http')) {
-                    n.image = baseUrl + n.image;
-                }
-                if (n.path) {
-                    n.notification_url = n.path.startsWith('http') ? n.path : baseUrl + n.path;
-                }
-            });
+                    unreadNotifs.forEach(n => {
+                        if (n.image && !n.image.startsWith('http')) {
+                            n.image = baseUrl + n.image;
+                        }
+                        if (n.path) {
+                            n.notification_url = n.path.startsWith('http') ? n.path : baseUrl + n.path;
+                        }
+                    });
 
-            emailsSent += 1;
-            const now = new Date();
-            await emailer.send('digest', userObj.uid, {
-                subject: `[[email:digest.subject, ${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}]]`,
-                username: userObj.username,
-                userslug: userObj.userslug,
-                notifications: unreadNotifs,
-                recent: topics.recent,
-                topTopics: topics.top,
-                popularTopics: topics.popular,
-                interval: data.interval,
-                showUnsubscribe: true,
-            }).catch((err) => {
-                if (!errorLogged) {
-                    winston.error(`[user/jobs] Could not send digest email\n[emailer.send] ${err.stack}`);
-                    errorLogged = true;
-                }
-            });
-        }));
-        if (data.interval !== 'alltime') {
-            const now = Date.now();
-            await db.sortedSetAdd('digest:delivery', userData.map(() => now), userData.map(u => u.uid));
+                    emailsSent += 1;
+                    const now = new Date();
+                    await emailer
+                        .send('digest', userObj.uid, {
+                            subject: `[[email:digest.subject, ${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}]]`,
+                            username: userObj.username,
+                            userslug: userObj.userslug,
+                            notifications: unreadNotifs,
+                            recent: topics.recent,
+                            topTopics: topics.top,
+                            popularTopics: topics.popular,
+                            interval: data.interval,
+                            showUnsubscribe: true,
+                        })
+                        .catch(err => {
+                            if (!errorLogged) {
+                                winston.error(`[user/jobs] Could not send digest email\n[emailer.send] ${err.stack}`);
+                                errorLogged = true;
+                            }
+                        });
+                })
+            );
+            if (data.interval !== 'alltime') {
+                const now = Date.now();
+                await db.sortedSetAdd(
+                    'digest:delivery',
+                    userData.map(() => now),
+                    userData.map(u => u.uid)
+                );
+            }
+        },
+        {
+            interval: 1000,
+            batch: 100,
         }
-    }, {
-        interval: 1000,
-        batch: 100,
-    });
+    );
     winston.info(`[user/jobs] Digest (${data.interval}) sending completed. ${emailsSent} emails sent.`);
 };
 
@@ -195,14 +208,13 @@ async function getTermTopics(term, uid) {
         .sort((a, b) => b.lastposttime - a.lastposttime)
         .slice(0, 10);
 
-    [...top, ...popular, ...recent].forEach((topicObj) => {
+    [...top, ...popular, ...recent].forEach(topicObj => {
         if (topicObj) {
             if (topicObj.teaser && topicObj.teaser.content && topicObj.teaser.content.length > 255) {
                 topicObj.teaser.content = `${topicObj.teaser.content.slice(0, 255)}...`;
             }
             // Fix relative paths in topic data
-            const user = topicObj.hasOwnProperty('teaser') && topicObj.teaser && topicObj.teaser.user ?
-                topicObj.teaser.user : topicObj.user;
+            const user = topicObj.hasOwnProperty('teaser') && topicObj.teaser && topicObj.teaser.user ? topicObj.teaser.user : topicObj.user;
             if (user && user.picture && utils.isRelativeUrl(user.picture)) {
                 user.picture = baseUrl + user.picture;
             }

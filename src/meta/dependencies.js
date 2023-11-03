@@ -60,8 +60,7 @@ Dependencies.doesSatisfy = function (moduleData, packageJSONVersion) {
     if (!moduleData) {
         return false;
     }
-    const versionOk = !semver.validRange(packageJSONVersion) ||
-        semver.satisfies(moduleData.version, packageJSONVersion);
+    const versionOk = !semver.validRange(packageJSONVersion) || semver.satisfies(moduleData.version, packageJSONVersion);
     const githubRepo = moduleData._resolved && moduleData._resolved.includes('//github.com');
     const satisfies = versionOk || githubRepo;
     if (!satisfies) {

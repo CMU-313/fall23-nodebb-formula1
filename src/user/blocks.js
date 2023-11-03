@@ -31,10 +31,7 @@ module.exports = function (User) {
 
         // Administrators and global moderators cannot be blocked
         // Only admins/mods can block users as another user
-        const [isCallerAdminOrMod, isBlockeeAdminOrMod] = await Promise.all([
-            User.isAdminOrGlobalMod(callerUid),
-            User.isAdminOrGlobalMod(blockeeUid),
-        ]);
+        const [isCallerAdminOrMod, isBlockeeAdminOrMod] = await Promise.all([User.isAdminOrGlobalMod(callerUid), User.isAdminOrGlobalMod(blockeeUid)]);
         if (isBlockeeAdminOrMod && type === 'block') {
             throw new Error('[[error:cannot-block-privileged]]');
         }
@@ -105,7 +102,7 @@ module.exports = function (User) {
         const blocked_uids = await User.blocks.list(uid);
         const blockedSet = new Set(blocked_uids);
 
-        set = set.filter(item => !blockedSet.has(parseInt(isPlain ? item : (item && item[property]), 10)));
+        set = set.filter(item => !blockedSet.has(parseInt(isPlain ? item : item && item[property], 10)));
         const data = await plugins.hooks.fire('filter:user.blocks.filter', { set: set, property: property, uid: uid, blockedSet: blockedSet });
 
         return data.set;

@@ -6,12 +6,7 @@ const { setupPageRoute } = helpers;
 
 module.exports = function (app, name, middleware, controllers) {
     const middlewares = [middleware.exposeUid, middleware.canViewUsers];
-    const accountMiddlewares = [
-        middleware.exposeUid,
-        middleware.ensureLoggedIn,
-        middleware.canViewUsers,
-        middleware.checkAccountPermissions,
-    ];
+    const accountMiddlewares = [middleware.exposeUid, middleware.ensureLoggedIn, middleware.canViewUsers, middleware.checkAccountPermissions];
 
     setupPageRoute(app, '/me', [], middleware.redirectMeToUserslug);
     setupPageRoute(app, '/me/*', [], middleware.redirectMeToUserslug);

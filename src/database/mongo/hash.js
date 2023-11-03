@@ -48,7 +48,7 @@ module.exports = function (module) {
 
         try {
             let bulk;
-            data.forEach((item) => {
+            data.forEach(item => {
                 const writeData = helpers.serializeData(item[1]);
                 if (Object.keys(writeData).length) {
                     if (!bulk) {
@@ -125,15 +125,15 @@ module.exports = function (module) {
         const unCachedKeys = cache.getUnCachedKeys(keys, cachedData);
         let data = [];
         if (unCachedKeys.length >= 1) {
-            data = await module.client.collection('objects').find(
-                { _key: unCachedKeys.length === 1 ? unCachedKeys[0] : { $in: unCachedKeys } },
-                { projection: { _id: 0 } }
-            ).toArray();
+            data = await module.client
+                .collection('objects')
+                .find({ _key: unCachedKeys.length === 1 ? unCachedKeys[0] : { $in: unCachedKeys } }, { projection: { _id: 0 } })
+                .toArray();
             data = data.map(helpers.deserializeData);
         }
 
         const map = helpers.toMap(data);
-        unCachedKeys.forEach((key) => {
+        unCachedKeys.forEach(key => {
             cachedData[key] = map[key] || null;
             cache.set(key, cachedData[key]);
         });
@@ -141,10 +141,10 @@ module.exports = function (module) {
         if (!Array.isArray(fields) || !fields.length) {
             return keys.map(key => (cachedData[key] ? { ...cachedData[key] } : null));
         }
-        return keys.map((key) => {
+        return keys.map(key => {
             const item = cachedData[key] || {};
             const result = {};
-            fields.forEach((field) => {
+            fields.forEach(field => {
                 result[field] = item[field] !== undefined ? item[field] : null;
             });
             return result;
@@ -172,7 +172,7 @@ module.exports = function (module) {
         }
 
         const data = {};
-        fields.forEach((field) => {
+        fields.forEach(field => {
             field = helpers.fieldToString(field);
             if (field) {
                 data[field] = 1;
@@ -198,7 +198,7 @@ module.exports = function (module) {
         }
 
         const data = {};
-        fields.forEach((field) => {
+        fields.forEach(field => {
             field = helpers.fieldToString(field);
             data[field] = '';
         });
@@ -231,7 +231,7 @@ module.exports = function (module) {
 
         if (Array.isArray(key)) {
             const bulk = module.client.collection('objects').initializeUnorderedBulkOp();
-            key.forEach((key) => {
+            key.forEach(key => {
                 bulk.find({ _key: key }).upsert().update({ $inc: increment });
             });
             await bulk.execute();
@@ -240,14 +240,18 @@ module.exports = function (module) {
             return result.map(data => data && data[field]);
         }
         try {
-            const result = await module.client.collection('objects').findOneAndUpdate({
-                _key: key,
-            }, {
-                $inc: increment,
-            }, {
-                returnDocument: 'after',
-                upsert: true,
-            });
+            const result = await module.client.collection('objects').findOneAndUpdate(
+                {
+                    _key: key,
+                },
+                {
+                    $inc: increment,
+                },
+                {
+                    returnDocument: 'after',
+                    upsert: true,
+                }
+            );
             cache.del(key);
             return result && result.value ? result.value[field] : null;
         } catch (err) {
@@ -269,7 +273,7 @@ module.exports = function (module) {
 
         const bulk = module.client.collection('objects').initializeUnorderedBulkOp();
 
-        data.forEach((item) => {
+        data.forEach(item => {
             const increment = {};
             for (const [field, value] of Object.entries(item[1])) {
                 increment[helpers.fieldToString(field)] = value;

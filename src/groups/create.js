@@ -66,9 +66,7 @@ module.exports = function (Groups) {
     };
 
     function isSystemGroup(data) {
-        return data.system === true || parseInt(data.system, 10) === 1 ||
-            Groups.systemGroups.includes(data.name) ||
-            Groups.isPrivilegeGroup(data.name);
+        return data.system === true || parseInt(data.system, 10) === 1 || Groups.systemGroups.includes(data.name) || Groups.isPrivilegeGroup(data.name);
     }
 
     Groups.validateGroupName = function (name) {

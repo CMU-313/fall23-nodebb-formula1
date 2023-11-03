@@ -20,11 +20,7 @@ eventsController.get = async function (req, res) {
 
     const currentFilter = req.query.type || '';
 
-    const [eventCount, eventData, counts] = await Promise.all([
-        db.sortedSetCount(`events:time${currentFilter ? `:${currentFilter}` : ''}`, from || '-inf', to),
-        events.getEvents(currentFilter, start, stop, from || '-inf', to),
-        db.sortedSetsCard([''].concat(events.types).map(type => `events:time${type ? `:${type}` : ''}`)),
-    ]);
+    const [eventCount, eventData, counts] = await Promise.all([db.sortedSetCount(`events:time${currentFilter ? `:${currentFilter}` : ''}`, from || '-inf', to), events.getEvents(currentFilter, start, stop, from || '-inf', to), db.sortedSetsCard([''].concat(events.types).map(type => `events:time${type ? `:${type}` : ''}`))]);
 
     const types = [''].concat(events.types).map((type, index) => ({
         value: type,

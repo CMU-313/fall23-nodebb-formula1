@@ -9,9 +9,7 @@ module.exports = {
     method: function (callback) {
         const meta = require('../../meta');
 
-        const tasks = [
-            async.apply(privileges.global.give, ['groups:view:users', 'groups:view:tags', 'groups:view:groups'], 'registered-users'),
-        ];
+        const tasks = [async.apply(privileges.global.give, ['groups:view:users', 'groups:view:tags', 'groups:view:groups'], 'registered-users')];
 
         if (parseInt(meta.config.privateUserInfo, 10) !== 1) {
             tasks.push(async.apply(privileges.global.give, ['groups:view:users', 'groups:view:groups'], 'guests'));

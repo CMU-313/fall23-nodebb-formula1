@@ -51,7 +51,9 @@ module.exports = function (middleware) {
             return true;
         } else if (req.headers.hasOwnProperty('authorization')) {
             const user = await passportAuthenticateAsync(req, res);
-            if (!user) { return true; }
+            if (!user) {
+                return true;
+            }
 
             if (user.hasOwnProperty('uid')) {
                 return await finishLogin(req, user);
@@ -97,7 +99,7 @@ module.exports = function (middleware) {
             return next();
         }
 
-        if (!await authenticate(req, res)) {
+        if (!(await authenticate(req, res))) {
             return;
         }
         next();
@@ -169,7 +171,7 @@ module.exports = function (middleware) {
             return controllers.helpers.notAllowed(req, res);
         }
 
-        const uid = req.params.uid || await user.getUidByUserslug(req.params.userslug);
+        const uid = req.params.uid || (await user.getUidByUserslug(req.params.userslug));
         let allowed = await privileges.users.canEdit(req.uid, uid);
         if (allowed) {
             return next();
@@ -201,8 +203,7 @@ module.exports = function (middleware) {
         if (!userslug) {
             return next();
         }
-        const path = req.url.replace(/^\/api/, '')
-            .replace(`/uid/${uid}`, () => `/user/${userslug}`);
+        const path = req.url.replace(/^\/api/, '').replace(`/uid/${uid}`, () => `/user/${userslug}`);
         controllers.helpers.redirect(res, path);
     });
 

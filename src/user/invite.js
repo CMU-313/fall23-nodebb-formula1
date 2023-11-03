@@ -1,4 +1,3 @@
-
 'use strict';
 
 const async = require('async');
@@ -104,11 +103,7 @@ module.exports = function (User) {
             throw new Error('[[error:invalid-username]]');
         }
         const token = await db.get(`invitation:uid:${invitedByUid}:invited:${email}`);
-        await Promise.all([
-            deleteFromReferenceList(invitedByUid, email),
-            db.setRemove(`invitation:invited:${email}`, token),
-            db.delete(`invitation:token:${token}`),
-        ]);
+        await Promise.all([deleteFromReferenceList(invitedByUid, email), db.setRemove(`invitation:invited:${email}`, token), db.delete(`invitation:token:${token}`)]);
     };
 
     User.deleteInvitationKey = async function (registrationEmail, token) {
@@ -126,18 +121,12 @@ module.exports = function (User) {
                 return;
             }
             await deleteFromReferenceList(invite.inviter, invite.email);
-            await db.deleteAll([
-                `invitation:invited:${invite.email}`,
-                `invitation:token:${token}`,
-            ]);
+            await db.deleteAll([`invitation:invited:${invite.email}`, `invitation:token:${token}`]);
         }
     };
 
     async function deleteFromReferenceList(uid, email) {
-        await Promise.all([
-            db.setRemove(`invitation:uid:${uid}`, email),
-            db.delete(`invitation:uid:${uid}:invited:${email}`),
-        ]);
+        await Promise.all([db.setRemove(`invitation:uid:${uid}`, email), db.delete(`invitation:uid:${uid}:invited:${email}`)]);
         const count = await db.setCount(`invitation:uid:${uid}`);
         if (count === 0) {
             await db.setRemove('invitation:uids', uid);

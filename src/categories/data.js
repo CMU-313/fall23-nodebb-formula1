@@ -7,11 +7,7 @@ const meta = require('../meta');
 const plugins = require('../plugins');
 const utils = require('../utils');
 
-const intFields = [
-    'cid', 'parentCid', 'disabled', 'isSection', 'order',
-    'topic_count', 'post_count', 'numRecentReplies',
-    'minTags', 'maxTags', 'postQueue', 'subCategoriesPerPage',
-];
+const intFields = ['cid', 'parentCid', 'disabled', 'isSection', 'order', 'topic_count', 'post_count', 'numRecentReplies', 'minTags', 'maxTags', 'postQueue', 'subCategoriesPerPage'];
 
 module.exports = function (Categories) {
     Categories.getCategoriesFields = async function (cids, fields) {
@@ -66,10 +62,7 @@ module.exports = function (Categories) {
 
 function defaultIntField(category, fields, fieldName, defaultField) {
     if (!fields.length || fields.includes(fieldName)) {
-        const useDefault = !category.hasOwnProperty(fieldName) ||
-            category[fieldName] === null ||
-            category[fieldName] === '' ||
-            !utils.isNumber(category[fieldName]);
+        const useDefault = !category.hasOwnProperty(fieldName) || category[fieldName] === null || category[fieldName] === '' || !utils.isNumber(category[fieldName]);
 
         category[fieldName] = useDefault ? meta.config[defaultField] : category[fieldName];
     }
@@ -87,7 +80,7 @@ function modifyCategory(category, fields) {
     db.parseIntFields(category, intFields, fields);
 
     const escapeFields = ['name', 'color', 'bgColor', 'backgroundImage', 'imageClass', 'class', 'link'];
-    escapeFields.forEach((field) => {
+    escapeFields.forEach(field => {
         if (category.hasOwnProperty(field)) {
             category[field] = validator.escape(String(category[field] || ''));
         }

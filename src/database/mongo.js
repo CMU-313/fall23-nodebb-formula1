@@ -1,6 +1,4 @@
-
 'use strict';
-
 
 const winston = require('winston');
 const nconf = require('nconf');
@@ -49,7 +47,10 @@ mongoModule.questions = [
         default: nconf.get('mongo:password') || '',
         hidden: true,
         ask: isUriNotSpecified,
-        before: function (value) { value = value || nconf.get('mongo:password') || ''; return value; },
+        before: function (value) {
+            value = value || nconf.get('mongo:password') || '';
+            return value;
+        },
     },
     {
         name: 'mongo:database',
@@ -124,11 +125,7 @@ mongoModule.info = async function (db) {
         }
     }
 
-    let [serverStatus, stats, listCollections] = await Promise.all([
-        getServerStatus(),
-        db.command({ dbStats: 1 }),
-        getCollectionStats(db),
-    ]);
+    let [serverStatus, stats, listCollections] = await Promise.all([getServerStatus(), db.command({ dbStats: 1 }), getCollectionStats(db)]);
     stats = stats || {};
     serverStatus = serverStatus || {};
     stats.serverStatusError = serverStatusError;

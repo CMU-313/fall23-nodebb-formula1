@@ -20,9 +20,7 @@ module.exports = function (Messaging) {
         const keys = mids.map(mid => `message:${mid}`);
         const messages = await db.getObjects(keys, fields);
 
-        return await Promise.all(messages.map(
-            async (message, idx) => modifyMessage(message, fields, parseInt(mids[idx], 10))
-        ));
+        return await Promise.all(messages.map(async (message, idx) => modifyMessage(message, fields, parseInt(mids[idx], 10))));
     };
 
     Messaging.getMessageField = async (mid, field) => {
@@ -75,18 +73,20 @@ module.exports = function (Messaging) {
             message.system = !!message.system;
         });
 
-        messages = await Promise.all(messages.map(async (message) => {
-            if (message.system) {
-                message.content = validator.escape(String(message.content));
-                message.cleanedContent = utils.stripHTMLTags(utils.decodeHTMLEntities(message.content));
-                return message;
-            }
+        messages = await Promise.all(
+            messages.map(async message => {
+                if (message.system) {
+                    message.content = validator.escape(String(message.content));
+                    message.cleanedContent = utils.stripHTMLTags(utils.decodeHTMLEntities(message.content));
+                    return message;
+                }
 
-            const result = await Messaging.parse(message.content, message.fromuid, uid, roomId, isNew);
-            message.content = result;
-            message.cleanedContent = utils.stripHTMLTags(utils.decodeHTMLEntities(result));
-            return message;
-        }));
+                const result = await Messaging.parse(message.content, message.fromuid, uid, roomId, isNew);
+                message.content = result;
+                message.cleanedContent = utils.stripHTMLTags(utils.decodeHTMLEntities(result));
+                return message;
+            })
+        );
 
         if (messages.length > 1) {
             // Add a spacer in between messages with time gaps between them
@@ -111,8 +111,7 @@ module.exports = function (Messaging) {
             if (index > 0) {
                 const mid = await db.getSortedSetRange(key, index - 1, index - 1);
                 const fields = await Messaging.getMessageFields(mid, ['fromuid', 'timestamp']);
-                if ((messages[0].timestamp > fields.timestamp + Messaging.newMessageCutoff) ||
-                    (messages[0].fromuid !== fields.fromuid)) {
+                if (messages[0].timestamp > fields.timestamp + Messaging.newMessageCutoff || messages[0].fromuid !== fields.fromuid) {
                     // If it's been 5 minutes, this is a new set of messages
                     messages[0].newSet = true;
                 }

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -43,31 +42,14 @@ module.exports = function (Topics) {
         topicData = result.topic;
         await db.setObject(`topic:${topicData.tid}`, topicData);
 
-        const timestampedSortedSetKeys = [
-            'topics:tid',
-            `cid:${topicData.cid}:tids`,
-            `cid:${topicData.cid}:uid:${topicData.uid}:tids`,
-        ];
+        const timestampedSortedSetKeys = ['topics:tid', `cid:${topicData.cid}:tids`, `cid:${topicData.cid}:uid:${topicData.uid}:tids`];
 
         const scheduled = timestamp > Date.now();
         if (scheduled) {
             timestampedSortedSetKeys.push('topics:scheduled');
         }
 
-        await Promise.all([
-            db.sortedSetsAdd(timestampedSortedSetKeys, timestamp, topicData.tid),
-            db.sortedSetsAdd([
-                'topics:views', 'topics:posts', 'topics:votes',
-                `cid:${topicData.cid}:tids:votes`,
-                `cid:${topicData.cid}:tids:posts`,
-                `cid:${topicData.cid}:tids:views`,
-            ], 0, topicData.tid),
-            user.addTopicIdToUser(topicData.uid, topicData.tid, timestamp),
-            db.incrObjectField(`category:${topicData.cid}`, 'topic_count'),
-            db.incrObjectField('global', 'topicCount'),
-            Topics.createTags(data.tags, topicData.tid, timestamp),
-            scheduled ? Promise.resolve() : categories.updateRecentTid(topicData.cid, topicData.tid),
-        ]);
+        await Promise.all([db.sortedSetsAdd(timestampedSortedSetKeys, timestamp, topicData.tid), db.sortedSetsAdd(['topics:views', 'topics:posts', 'topics:votes', `cid:${topicData.cid}:tids:votes`, `cid:${topicData.cid}:tids:posts`, `cid:${topicData.cid}:tids:views`], 0, topicData.tid), user.addTopicIdToUser(topicData.uid, topicData.tid, timestamp), db.incrObjectField(`category:${topicData.cid}`, 'topic_count'), db.incrObjectField('global', 'topicCount'), Topics.createTags(data.tags, topicData.tid, timestamp), scheduled ? Promise.resolve() : categories.updateRecentTid(topicData.cid, topicData.tid)]);
         if (scheduled) {
             await Topics.scheduled.pin(tid, topicData);
         }
@@ -92,11 +74,7 @@ module.exports = function (Topics) {
             Topics.checkContent(data.content);
         }
 
-        const [categoryExists, canCreate, canTag] = await Promise.all([
-            categories.exists(data.cid),
-            privileges.categories.can('topics:create', data.cid, uid),
-            privileges.categories.can('topics:tag', data.cid, uid),
-        ]);
+        const [categoryExists, canCreate, canTag] = await Promise.all([categories.exists(data.cid), privileges.categories.can('topics:create', data.cid, uid), privileges.categories.can('topics:tag', data.cid, uid)]);
 
         if (!categoryExists) {
             throw new Error('[[error:no-category]]');
@@ -120,10 +98,7 @@ module.exports = function (Topics) {
         postData = await posts.create(postData);
         postData = await onNewPost(postData, data);
 
-        const [settings, topics] = await Promise.all([
-            user.getSettings(uid),
-            Topics.getTopicsByTids([postData.tid], uid),
-        ]);
+        const [settings, topics] = await Promise.all([user.getSettings(uid), Topics.getTopicsByTids([postData.tid], uid)]);
 
         if (!Array.isArray(topics) || !topics.length) {
             throw new Error('[[error:no-topic]]');
@@ -215,16 +190,7 @@ module.exports = function (Topics) {
         const { uid } = postData;
         await Topics.markAsUnreadForAll(tid);
         await Topics.markAsRead([tid], uid);
-        const [
-            userInfo,
-            topicInfo,
-        ] = await Promise.all([
-            posts.getUserInfoForPosts([postData.uid], uid),
-            Topics.getTopicFields(tid, ['tid', 'uid', 'title', 'slug', 'cid', 'postcount', 'mainPid', 'scheduled']),
-            Topics.addParentPosts([postData]),
-            Topics.syncBacklinks(postData),
-            posts.parsePost(postData),
-        ]);
+        const [userInfo, topicInfo] = await Promise.all([posts.getUserInfoForPosts([postData.uid], uid), Topics.getTopicFields(tid, ['tid', 'uid', 'title', 'slug', 'cid', 'postcount', 'mainPid', 'scheduled']), Topics.addParentPosts([postData]), Topics.syncBacklinks(postData), posts.parsePost(postData)]);
 
         postData.user = userInfo[0];
         postData.topic = topicInfo;
@@ -285,11 +251,7 @@ module.exports = function (Topics) {
         const { tid, uid } = data;
         const { cid, deleted, locked, scheduled } = topicData;
 
-        const [canReply, canSchedule, isAdminOrMod] = await Promise.all([
-            privileges.topics.can('topics:reply', tid, uid),
-            privileges.topics.can('topics:schedule', tid, uid),
-            privileges.categories.isAdminOrMod(cid, uid),
-        ]);
+        const [canReply, canSchedule, isAdminOrMod] = await Promise.all([privileges.topics.can('topics:reply', tid, uid), privileges.topics.can('topics:schedule', tid, uid), privileges.categories.isAdminOrMod(cid, uid)]);
 
         if (locked && !isAdminOrMod) {
             throw new Error('[[error:topic-locked]]');

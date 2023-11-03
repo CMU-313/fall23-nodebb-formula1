@@ -48,7 +48,7 @@ Loader.init = function () {
 
 Loader.displayStartupMessages = function () {
     console.log('');
-    console.log(`NodeBB v${pkg.version} Copyright (C) 2013-${(new Date()).getFullYear()} NodeBB Inc.`);
+    console.log(`NodeBB v${pkg.version} Copyright (C) 2013-${new Date().getFullYear()} NodeBB Inc.`);
     console.log('This program comes with ABSOLUTELY NO WARRANTY.');
     console.log('This is free software, and you are welcome to redistribute it under certain conditions.');
     console.log('For the full license, please visit: http://www.gnu.org/copyleft/gpl.html');
@@ -80,25 +80,25 @@ Loader.addWorkerEvents = function (worker) {
         }
     });
 
-    worker.on('message', (message) => {
+    worker.on('message', message => {
         if (message && typeof message === 'object' && message.action) {
             switch (message.action) {
-            case 'restart':
-                console.log('[cluster] Restarting...');
-                Loader.restart();
-                break;
-            case 'pubsub':
-                workers.forEach((w) => {
-                    w.send(message);
-                });
-                break;
-            case 'socket.io':
-                workers.forEach((w) => {
-                    if (w !== worker) {
+                case 'restart':
+                    console.log('[cluster] Restarting...');
+                    Loader.restart();
+                    break;
+                case 'pubsub':
+                    workers.forEach(w => {
                         w.send(message);
-                    }
-                });
-                break;
+                    });
+                    break;
+                case 'socket.io':
+                    workers.forEach(w => {
+                        if (w !== worker) {
+                            w.send(message);
+                        }
+                    });
+                    break;
             }
         }
     });
@@ -193,13 +193,13 @@ Loader.stop = function () {
 };
 
 function killWorkers() {
-    workers.forEach((worker) => {
+    workers.forEach(worker => {
         worker.suicide = true;
         worker.kill();
     });
 }
 
-fs.open(pathToConfig, 'r', (err) => {
+fs.open(pathToConfig, 'r', err => {
     if (err) {
         // No config detected, kickstart web installer
         fork('app');

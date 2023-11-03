@@ -14,7 +14,7 @@ const sleep = util.promisify(setTimeout);
 
 const Interstitials = module.exports;
 
-Interstitials.email = async (data) => {
+Interstitials.email = async data => {
     if (!data.userData) {
         throw new Error('[[error:invalid-data]]');
     }
@@ -22,10 +22,7 @@ Interstitials.email = async (data) => {
         return data;
     }
 
-    const [isAdminOrGlobalMod, hasPassword] = await Promise.all([
-        user.isAdminOrGlobalMod(data.req.uid),
-        user.hasPassword(data.userData.uid),
-    ]);
+    const [isAdminOrGlobalMod, hasPassword] = await Promise.all([user.isAdminOrGlobalMod(data.req.uid), user.hasPassword(data.userData.uid)]);
 
     let email;
     if (data.userData.uid) {
@@ -82,12 +79,14 @@ Interstitials.email = async (data) => {
                             throw new Error('[[error:invalid-password]]');
                         }
 
-                        await user.email.sendValidationEmail(userData.uid, {
-                            email: formData.email,
-                            force: true,
-                        }).catch((err) => {
-                            winston.error(`[user.interstitials.email] Validation email failed to send\n[emailer.send] ${err.stack}`);
-                        });
+                        await user.email
+                            .sendValidationEmail(userData.uid, {
+                                email: formData.email,
+                                force: true,
+                            })
+                            .catch(err => {
+                                winston.error(`[user.interstitials.email] Validation email failed to send\n[emailer.send] ${err.stack}`);
+                            });
                         data.req.session.emailChanged = 1;
                     } else {
                         // User attempting to edit another user's email -- not allowed

@@ -27,12 +27,7 @@ AdminsMods.get = async function (req, res) {
     const selectedCategory = rootCid ? await categories.getCategoryData(rootCid) : null;
     const pageCategories = await categories.getCategoriesData(cids);
 
-    const [admins, globalMods, moderators, crumbs] = await Promise.all([
-        groups.get('administrators', { uid: req.uid }),
-        groups.get('Global Moderators', { uid: req.uid }),
-        getModeratorsOfCategories(pageCategories),
-        categoriesController.buildBreadCrumbs(selectedCategory, '/admin/manage/admins-mods'),
-    ]);
+    const [admins, globalMods, moderators, crumbs] = await Promise.all([groups.get('administrators', { uid: req.uid }), groups.get('Global Moderators', { uid: req.uid }), getModeratorsOfCategories(pageCategories), categoriesController.buildBreadCrumbs(selectedCategory, '/admin/manage/admins-mods')]);
 
     res.render('admin/manage/admins-mods', {
         admins: admins,
@@ -45,10 +40,7 @@ AdminsMods.get = async function (req, res) {
 };
 
 async function getModeratorsOfCategories(categoryData) {
-    const [moderatorUids, childrenCounts] = await Promise.all([
-        categories.getModeratorUids(categoryData.map(c => c.cid)),
-        db.sortedSetsCard(categoryData.map(c => `cid:${c.cid}:children`)),
-    ]);
+    const [moderatorUids, childrenCounts] = await Promise.all([categories.getModeratorUids(categoryData.map(c => c.cid)), db.sortedSetsCard(categoryData.map(c => `cid:${c.cid}:children`))]);
 
     const uids = _.uniq(_.flatten(moderatorUids));
     const moderatorData = await user.getUsersFields(uids, ['uid', 'username', 'userslug', 'picture']);

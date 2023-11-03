@@ -51,10 +51,7 @@ groupsAPI.update = async function (caller, data) {
 groupsAPI.delete = async function (caller, data) {
     const groupName = await groups.getGroupNameByGroupSlug(data.slug);
     await isOwner(caller, groupName);
-    if (
-        groups.systemGroups.includes(groupName) ||
-        groups.ephemeralGroups.includes(groupName)
-    ) {
+    if (groups.systemGroups.includes(groupName) || groups.ephemeralGroups.includes(groupName)) {
         throw new Error('[[error:not-allowed]]');
     }
 
@@ -78,18 +75,11 @@ groupsAPI.join = async function (caller, data) {
     }
 
     const isCallerAdmin = await user.isAdministrator(caller.uid);
-    if (!isCallerAdmin && (
-        groups.systemGroups.includes(groupName) ||
-        groups.isPrivilegeGroup(groupName)
-    )) {
+    if (!isCallerAdmin && (groups.systemGroups.includes(groupName) || groups.isPrivilegeGroup(groupName))) {
         throw new Error('[[error:not-allowed]]');
     }
 
-    const [groupData, isCallerOwner, userExists] = await Promise.all([
-        groups.getGroupData(groupName),
-        groups.ownership.isOwner(caller.uid, groupName),
-        user.exists(data.uid),
-    ]);
+    const [groupData, isCallerOwner, userExists] = await Promise.all([groups.getGroupData(groupName), groups.ownership.isOwner(caller.uid, groupName), user.exists(data.uid)]);
 
     if (!userExists) {
         throw new Error('[[error:invalid-uid]]');
@@ -146,13 +136,7 @@ groupsAPI.leave = async function (caller, data) {
         throw new Error('[[error:cant-remove-self-as-admin]]');
     }
 
-    const [groupData, isCallerAdmin, isCallerOwner, userExists, isMember] = await Promise.all([
-        groups.getGroupData(groupName),
-        user.isAdministrator(caller.uid),
-        groups.ownership.isOwner(caller.uid, groupName),
-        user.exists(data.uid),
-        groups.isMember(data.uid, groupName),
-    ]);
+    const [groupData, isCallerAdmin, isCallerOwner, userExists, isMember] = await Promise.all([groups.getGroupData(groupName), user.isAdministrator(caller.uid), groups.ownership.isOwner(caller.uid, groupName), user.exists(data.uid), groups.isMember(data.uid, groupName)]);
 
     if (!userExists) {
         throw new Error('[[error:invalid-uid]]');
@@ -215,12 +199,7 @@ async function isOwner(caller, groupName) {
     if (typeof groupName !== 'string') {
         throw new Error('[[error:invalid-group-name]]');
     }
-    const [hasAdminPrivilege, isGlobalModerator, isOwner, group] = await Promise.all([
-        privileges.admin.can('admin:groups', caller.uid),
-        user.isGlobalModerator(caller.uid),
-        groups.ownership.isOwner(caller.uid, groupName),
-        groups.getGroupData(groupName),
-    ]);
+    const [hasAdminPrivilege, isGlobalModerator, isOwner, group] = await Promise.all([privileges.admin.can('admin:groups', caller.uid), user.isGlobalModerator(caller.uid), groups.ownership.isOwner(caller.uid, groupName), groups.getGroupData(groupName)]);
 
     const check = isOwner || hasAdminPrivilege || (isGlobalModerator && !group.system);
     if (!check) {

@@ -54,22 +54,12 @@ exports.reset = async function (options) {
         },
     };
 
-    const tasks = Object.keys(map).filter(x => options[x]).map(x => map[x]);
+    const tasks = Object.keys(map)
+        .filter(x => options[x])
+        .map(x => map[x]);
 
     if (!tasks.length) {
-        console.log([
-            chalk.yellow('No arguments passed in, so nothing was reset.\n'),
-            `Use ./nodebb reset ${chalk.red('{-t|-p|-w|-s|-a}')}`,
-            '    -t\tthemes',
-            '    -p\tplugins',
-            '    -w\twidgets',
-            '    -s\tsettings',
-            '    -a\tall of the above',
-            '',
-            'Plugin and theme reset flags (-p & -t) can take a single argument',
-            '    e.g. ./nodebb reset -p nodebb-plugin-mentions, ./nodebb reset -t nodebb-theme-persona',
-            '         Prefix is optional, e.g. ./nodebb reset -p markdown, ./nodebb reset -t persona',
-        ].join('\n'));
+        console.log([chalk.yellow('No arguments passed in, so nothing was reset.\n'), `Use ./nodebb reset ${chalk.red('{-t|-p|-w|-s|-a}')}`, '    -t\tthemes', '    -p\tplugins', '    -w\twidgets', '    -s\tsettings', '    -a\tall of the above', '', 'Plugin and theme reset flags (-p & -t) can take a single argument', '    e.g. ./nodebb reset -p nodebb-plugin-mentions, ./nodebb reset -t nodebb-theme-persona', '         Prefix is optional, e.g. ./nodebb reset -p markdown, ./nodebb reset -t persona'].join('\n'));
 
         process.exit(0);
     }

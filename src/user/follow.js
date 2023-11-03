@@ -1,4 +1,3 @@
-
 'use strict';
 
 const plugins = require('../plugins');
@@ -49,14 +48,8 @@ module.exports = function (User) {
             ]);
         }
 
-        const [followingCount, followerCount] = await Promise.all([
-            db.sortedSetCard(`following:${uid}`),
-            db.sortedSetCard(`followers:${theiruid}`),
-        ]);
-        await Promise.all([
-            User.setUserField(uid, 'followingCount', followingCount),
-            User.setUserField(theiruid, 'followerCount', followerCount),
-        ]);
+        const [followingCount, followerCount] = await Promise.all([db.sortedSetCard(`following:${uid}`), db.sortedSetCard(`followers:${theiruid}`)]);
+        await Promise.all([User.setUserField(uid, 'followingCount', followingCount), User.setUserField(theiruid, 'followerCount', followerCount)]);
     }
 
     User.getFollowing = async function (uid, start, stop) {

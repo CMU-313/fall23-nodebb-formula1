@@ -1,4 +1,3 @@
-
 'use strict';
 
 const nconf = require('nconf');
@@ -33,13 +32,7 @@ recentController.getData = async function (req, url, sort) {
     }
     term = term || 'alltime';
 
-    const [settings, categoryData, rssToken, canPost, isPrivileged] = await Promise.all([
-        user.getSettings(req.uid),
-        helpers.getSelectedCategory(cid),
-        user.auth.getFeedToken(req.uid),
-        canPostTopic(req.uid),
-        user.isPrivileged(req.uid),
-    ]);
+    const [settings, categoryData, rssToken, canPost, isPrivileged] = await Promise.all([user.getSettings(req.uid), helpers.getSelectedCategory(cid), user.auth.getFeedToken(req.uid), canPostTopic(req.uid), user.isPrivileged(req.uid)]);
 
     const start = Math.max(0, (page - 1) * settings.topicsPerPage);
     const stop = start + settings.topicsPerPage - 1;

@@ -40,17 +40,25 @@ module.exports = function (User) {
     };
 
     async function deletePosts(callerUid, uid) {
-        await batch.processSortedSet(`uid:${uid}:posts`, async (pids) => {
-            await posts.purge(pids, callerUid);
-        }, { alwaysStartAt: 0, batch: 500 });
+        await batch.processSortedSet(
+            `uid:${uid}:posts`,
+            async pids => {
+                await posts.purge(pids, callerUid);
+            },
+            { alwaysStartAt: 0, batch: 500 }
+        );
     }
 
     async function deleteTopics(callerUid, uid) {
-        await batch.processSortedSet(`uid:${uid}:topics`, async (ids) => {
-            await async.eachSeries(ids, async (tid) => {
-                await topics.purge(tid, callerUid);
-            });
-        }, { alwaysStartAt: 0 });
+        await batch.processSortedSet(
+            `uid:${uid}:topics`,
+            async ids => {
+                await async.eachSeries(ids, async tid => {
+                    await topics.purge(tid, callerUid);
+                });
+            },
+            { alwaysStartAt: 0 }
+        );
     }
 
     async function deleteUploads(callerUid, uid) {
@@ -60,28 +68,20 @@ module.exports = function (User) {
 
     async function deleteQueued(uid) {
         let deleteIds = [];
-        await batch.processSortedSet('post:queue', async (ids) => {
-            const data = await db.getObjects(ids.map(id => `post:queue:${id}`));
-            const userQueuedIds = data.filter(d => parseInt(d.uid, 10) === parseInt(uid, 10)).map(d => d.id);
-            deleteIds = deleteIds.concat(userQueuedIds);
-        }, { batch: 500 });
+        await batch.processSortedSet(
+            'post:queue',
+            async ids => {
+                const data = await db.getObjects(ids.map(id => `post:queue:${id}`));
+                const userQueuedIds = data.filter(d => parseInt(d.uid, 10) === parseInt(uid, 10)).map(d => d.id);
+                deleteIds = deleteIds.concat(userQueuedIds);
+            },
+            { batch: 500 }
+        );
         await async.eachSeries(deleteIds, posts.removeFromQueue);
     }
 
     async function removeFromSortedSets(uid) {
-        await db.sortedSetsRemove([
-            'users:joindate',
-            'users:postcount',
-            'users:reputation',
-            'users:banned',
-            'users:banned:expire',
-            'users:flags',
-            'users:online',
-            'digest:day:uids',
-            'digest:week:uids',
-            'digest:biweek:uids',
-            'digest:month:uids',
-        ], uid);
+        await db.sortedSetsRemove(['users:joindate', 'users:postcount', 'users:reputation', 'users:banned', 'users:banned:expire', 'users:flags', 'users:online', 'digest:day:uids', 'digest:week:uids', 'digest:biweek:uids', 'digest:month:uids'], uid);
     }
 
     User.deleteAccount = async function (uid) {
@@ -103,26 +103,7 @@ module.exports = function (User) {
         await deleteChats(uid);
         await User.auth.revokeAllSessions(uid);
 
-        const keys = [
-            `uid:${uid}:notifications:read`,
-            `uid:${uid}:notifications:unread`,
-            `uid:${uid}:bookmarks`,
-            `uid:${uid}:tids_read`,
-            `uid:${uid}:tids_unread`,
-            `uid:${uid}:followed_tids`,
-            `uid:${uid}:ignored_tids`,
-            `uid:${uid}:blocked_uids`,
-            `user:${uid}:settings`,
-            `user:${uid}:usernames`,
-            `user:${uid}:emails`,
-            `uid:${uid}:topics`, `uid:${uid}:posts`,
-            `uid:${uid}:chats`, `uid:${uid}:chats:unread`,
-            `uid:${uid}:chat:rooms`, `uid:${uid}:chat:rooms:unread`,
-            `uid:${uid}:upvote`, `uid:${uid}:downvote`,
-            `uid:${uid}:flag:pids`,
-            `uid:${uid}:sessions`, `uid:${uid}:sessionUUID:sessionId`,
-            `invitation:uid:${uid}`,
-        ];
+        const keys = [`uid:${uid}:notifications:read`, `uid:${uid}:notifications:unread`, `uid:${uid}:bookmarks`, `uid:${uid}:tids_read`, `uid:${uid}:tids_unread`, `uid:${uid}:followed_tids`, `uid:${uid}:ignored_tids`, `uid:${uid}:blocked_uids`, `user:${uid}:settings`, `user:${uid}:usernames`, `user:${uid}:emails`, `uid:${uid}:topics`, `uid:${uid}:posts`, `uid:${uid}:chats`, `uid:${uid}:chats:unread`, `uid:${uid}:chat:rooms`, `uid:${uid}:chat:rooms:unread`, `uid:${uid}:upvote`, `uid:${uid}:downvote`, `uid:${uid}:flag:pids`, `uid:${uid}:sessions`, `uid:${uid}:sessionUUID:sessionId`, `invitation:uid:${uid}`];
 
         const bulkRemove = [
             ['username:uid', userData.username],
@@ -139,30 +120,16 @@ module.exports = function (User) {
             bulkRemove.push(['fullname:sorted', `${userData.fullname.toLowerCase()}:${uid}`]);
         }
 
-        await Promise.all([
-            db.sortedSetRemoveBulk(bulkRemove),
-            db.decrObjectField('global', 'userCount'),
-            db.deleteAll(keys),
-            db.setRemove('invitation:uids', uid),
-            deleteUserIps(uid),
-            deleteUserFromFollowers(uid),
-            deleteImages(uid),
-            groups.leaveAllGroups(uid),
-            flags.resolveFlag('user', uid, uid),
-            User.reset.cleanByUid(uid),
-        ]);
+        await Promise.all([db.sortedSetRemoveBulk(bulkRemove), db.decrObjectField('global', 'userCount'), db.deleteAll(keys), db.setRemove('invitation:uids', uid), deleteUserIps(uid), deleteUserFromFollowers(uid), deleteImages(uid), groups.leaveAllGroups(uid), flags.resolveFlag('user', uid, uid), User.reset.cleanByUid(uid)]);
         await db.deleteAll([`followers:${uid}`, `following:${uid}`, `user:${uid}`]);
         delete deletesInProgress[uid];
         return userData;
     };
 
     async function deleteVotes(uid) {
-        const [upvotedPids, downvotedPids] = await Promise.all([
-            db.getSortedSetRange(`uid:${uid}:upvote`, 0, -1),
-            db.getSortedSetRange(`uid:${uid}:downvote`, 0, -1),
-        ]);
+        const [upvotedPids, downvotedPids] = await Promise.all([db.getSortedSetRange(`uid:${uid}:upvote`, 0, -1), db.getSortedSetRange(`uid:${uid}:downvote`, 0, -1)]);
         const pids = _.uniq(upvotedPids.concat(downvotedPids).filter(Boolean));
-        await async.eachSeries(pids, async (pid) => {
+        await async.eachSeries(pids, async pid => {
             await posts.unvote(pid, uid);
         });
     }
@@ -171,26 +138,23 @@ module.exports = function (User) {
         const roomIds = await db.getSortedSetRange(`uid:${uid}:chat:rooms`, 0, -1);
         const userKeys = roomIds.map(roomId => `uid:${uid}:chat:room:${roomId}:mids`);
 
-        await Promise.all([
-            messaging.leaveRooms(uid, roomIds),
-            db.deleteAll(userKeys),
-        ]);
+        await Promise.all([messaging.leaveRooms(uid, roomIds), db.deleteAll(userKeys)]);
     }
 
     async function deleteUserIps(uid) {
         const ips = await db.getSortedSetRange(`uid:${uid}:ip`, 0, -1);
-        await db.sortedSetsRemove(ips.map(ip => `ip:${ip}:uid`), uid);
+        await db.sortedSetsRemove(
+            ips.map(ip => `ip:${ip}:uid`),
+            uid
+        );
         await db.delete(`uid:${uid}:ip`);
     }
 
     async function deleteUserFromFollowers(uid) {
-        const [followers, following] = await Promise.all([
-            db.getSortedSetRange(`followers:${uid}`, 0, -1),
-            db.getSortedSetRange(`following:${uid}`, 0, -1),
-        ]);
+        const [followers, following] = await Promise.all([db.getSortedSetRange(`followers:${uid}`, 0, -1), db.getSortedSetRange(`following:${uid}`, 0, -1)]);
 
         async function updateCount(uids, name, fieldName) {
-            await async.each(uids, async (uid) => {
+            await async.each(uids, async uid => {
                 let count = await db.sortedSetCard(name + uid);
                 count = parseInt(count, 10) || 0;
                 await db.setObjectField(`user:${uid}`, fieldName, count);
@@ -200,18 +164,11 @@ module.exports = function (User) {
         const followingSets = followers.map(uid => `following:${uid}`);
         const followerSets = following.map(uid => `followers:${uid}`);
 
-        await Promise.all([
-            db.sortedSetsRemove(followerSets.concat(followingSets), uid),
-            updateCount(following, 'followers:', 'followerCount'),
-            updateCount(followers, 'following:', 'followingCount'),
-        ]);
+        await Promise.all([db.sortedSetsRemove(followerSets.concat(followingSets), uid), updateCount(following, 'followers:', 'followerCount'), updateCount(followers, 'following:', 'followingCount')]);
     }
 
     async function deleteImages(uid) {
         const folder = path.join(nconf.get('upload_path'), 'profile');
-        await Promise.all([
-            rimrafAsync(path.join(folder, `${uid}-profilecover*`)),
-            rimrafAsync(path.join(folder, `${uid}-profileavatar*`)),
-        ]);
+        await Promise.all([rimrafAsync(path.join(folder, `${uid}-profilecover*`)), rimrafAsync(path.join(folder, `${uid}-profileavatar*`))]);
     }
 };

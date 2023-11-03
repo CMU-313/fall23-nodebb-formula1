@@ -61,12 +61,7 @@ _mounts.topic = (app, name, middleware, controllers) => {
 };
 
 _mounts.post = (app, name, middleware, controllers) => {
-    const middlewares = [
-        middleware.maintenanceMode,
-        middleware.authenticateRequest,
-        middleware.registrationComplete,
-        middleware.pluginHooks,
-    ];
+    const middlewares = [middleware.maintenanceMode, middleware.authenticateRequest, middleware.registrationComplete, middleware.pluginHooks];
     app.get(`/${name}/:pid`, middleware.busyCheck, middlewares, controllers.posts.redirectToPost);
     app.get(`/api/${name}/:pid`, middlewares, controllers.posts.redirectToPost);
 };
@@ -128,14 +123,14 @@ module.exports = async function (app, middleware) {
         }, {}),
     });
     // Guard against plugins sending back missing/extra mounts
-    Object.keys(mounts).forEach((mount) => {
+    Object.keys(mounts).forEach(mount => {
         if (!remountable.includes(mount)) {
             delete mounts[mount];
         } else if (typeof mount !== 'string') {
             mounts[mount] = mount;
         }
     });
-    remountable.forEach((mount) => {
+    remountable.forEach(mount => {
         if (!mounts.hasOwnProperty(mount)) {
             mounts[mount] = mount;
         }
@@ -193,7 +188,7 @@ function addCoreRoutes(app, router, middleware, mounts) {
         statics.unshift({ route: '/assets/uploads', path: nconf.get('upload_path') });
     }
 
-    statics.forEach((obj) => {
+    statics.forEach(obj => {
         app.use(relativePath + obj.route, middleware.addUploadHeaders, express.static(obj.path, staticOptions));
     });
     app.use(`${relativePath}/uploads`, (req, res) => {
@@ -205,7 +200,7 @@ function addCoreRoutes(app, router, middleware, mounts) {
     });
 
     // Skins
-    meta.css.supportedSkins.forEach((skin) => {
+    meta.css.supportedSkins.forEach(skin => {
         app.use(`${relativePath}/assets/client-${skin}.css`, middleware.buildSkinAsset);
     });
 
@@ -215,11 +210,12 @@ function addCoreRoutes(app, router, middleware, mounts) {
 }
 
 function addRemountableRoutes(app, router, middleware, mounts) {
-    Object.keys(mounts).map(async (mount) => {
+    Object.keys(mounts).map(async mount => {
         const original = mount;
         mount = mounts[original];
 
-        if (!mount) { // do not mount at all
+        if (!mount) {
+            // do not mount at all
             winston.warn(`[router] Not mounting /${original}`);
             return;
         }

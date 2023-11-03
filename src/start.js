@@ -51,17 +51,17 @@ start.start = async function () {
         }
     } catch (err) {
         switch (err.message) {
-        case 'dependencies-out-of-date':
-            winston.error('One or more of NodeBB\'s dependent packages are out-of-date. Please run the following command to update them:');
-            winston.error('    ./nodebb upgrade');
-            break;
-        case 'dependencies-missing':
-            winston.error('One or more of NodeBB\'s dependent packages are missing. Please run the following command to update them:');
-            winston.error('    ./nodebb upgrade');
-            break;
-        default:
-            winston.error(err.stack);
-            break;
+            case 'dependencies-out-of-date':
+                winston.error("One or more of NodeBB's dependent packages are out-of-date. Please run the following command to update them:");
+                winston.error('    ./nodebb upgrade');
+                break;
+            case 'dependencies-missing':
+                winston.error("One or more of NodeBB's dependent packages are missing. Please run the following command to update them:");
+                winston.error('    ./nodebb upgrade');
+                break;
+            default:
+                winston.error(err.stack);
+                break;
         }
 
         // Either way, bad stuff happened. Abort start.
@@ -98,13 +98,13 @@ function addProcessHandlers() {
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
     process.on('SIGHUP', restart);
-    process.on('uncaughtException', (err) => {
+    process.on('uncaughtException', err => {
         winston.error(err.stack);
 
         require('./meta').js.killMinifier();
         shutdown(1);
     });
-    process.on('message', (msg) => {
+    process.on('message', msg => {
         if (msg && msg.compiling === 'tpl') {
             const benchpressjs = require('benchpressjs');
             benchpressjs.flush();

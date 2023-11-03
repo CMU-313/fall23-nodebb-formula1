@@ -103,11 +103,15 @@ module.exports = function (User) {
         });
 
         await deleteCurrentPicture(data.uid, 'uploadedpicture');
-        await User.updateProfile(data.callerUid, {
-            uid: data.uid,
-            uploadedpicture: uploadedImage.url,
-            picture: uploadedImage.url,
-        }, ['uploadedpicture', 'picture']);
+        await User.updateProfile(
+            data.callerUid,
+            {
+                uid: data.uid,
+                uploadedpicture: uploadedImage.url,
+                picture: uploadedImage.url,
+            },
+            ['uploadedpicture', 'picture']
+        );
         return uploadedImage;
     };
 
@@ -143,11 +147,15 @@ module.exports = function (User) {
             const uploadedImage = await image.uploadImage(filename, 'profile', picture);
 
             await deleteCurrentPicture(data.uid, 'uploadedpicture');
-            await User.updateProfile(data.callerUid, {
-                uid: data.uid,
-                uploadedpicture: uploadedImage.url,
-                picture: uploadedImage.url,
-            }, ['uploadedpicture', 'picture']);
+            await User.updateProfile(
+                data.callerUid,
+                {
+                    uid: data.uid,
+                    uploadedpicture: uploadedImage.url,
+                    picture: uploadedImage.url,
+                },
+                ['uploadedpicture', 'picture']
+            );
             return uploadedImage;
         } finally {
             await file.delete(picture.path);

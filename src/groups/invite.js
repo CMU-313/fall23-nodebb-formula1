@@ -54,13 +54,17 @@ module.exports = function (Groups) {
         uids = Array.isArray(uids) ? uids : [uids];
         uids = await inviteOrRequestMembership(groupName, uids, 'invite');
 
-        const notificationData = await Promise.all(uids.map(uid => notifications.create({
-            type: 'group-invite',
-            bodyShort: `[[groups:invited.notification_title, ${groupName}]]`,
-            bodyLong: '',
-            nid: `group:${groupName}:uid:${uid}:invite`,
-            path: `/groups/${slugify(groupName)}`,
-        })));
+        const notificationData = await Promise.all(
+            uids.map(uid =>
+                notifications.create({
+                    type: 'group-invite',
+                    bodyShort: `[[groups:invited.notification_title, ${groupName}]]`,
+                    bodyLong: '',
+                    nid: `group:${groupName}:uid:${uid}:invite`,
+                    path: `/groups/${slugify(groupName)}`,
+                })
+            )
+        );
 
         await Promise.all(uids.map((uid, index) => notifications.push(notificationData[index], uid)));
     };
@@ -68,12 +72,7 @@ module.exports = function (Groups) {
     async function inviteOrRequestMembership(groupName, uids, type) {
         uids = Array.isArray(uids) ? uids : [uids];
         uids = uids.filter(uid => parseInt(uid, 10) > 0);
-        const [exists, isMember, isPending, isInvited] = await Promise.all([
-            Groups.exists(groupName),
-            Groups.isMembers(uids, groupName),
-            Groups.isPending(uids, groupName),
-            Groups.isInvited(uids, groupName),
-        ]);
+        const [exists, isMember, isPending, isInvited] = await Promise.all([Groups.exists(groupName), Groups.isMembers(uids, groupName), Groups.isPending(uids, groupName), Groups.isInvited(uids, groupName)]);
 
         if (!exists) {
             throw new Error('[[error:no-group]]');

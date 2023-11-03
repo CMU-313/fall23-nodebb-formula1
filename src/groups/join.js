@@ -23,11 +23,7 @@ module.exports = function (Groups) {
             throw new Error('[[error:invalid-uid]]');
         }
 
-        const [isMembers, exists, isAdmin] = await Promise.all([
-            Groups.isMemberOfGroups(uid, groupNames),
-            Groups.exists(groupNames),
-            user.isAdministrator(uid),
-        ]);
+        const [isMembers, exists, isAdmin] = await Promise.all([Groups.isMemberOfGroups(uid, groupNames), Groups.exists(groupNames), user.isAdministrator(uid)]);
 
         const groupsToCreate = groupNames.filter((groupName, index) => groupName && !exists[index]);
         const groupsToJoin = groupNames.filter((groupName, index) => !isMembers[index]);
@@ -38,11 +34,23 @@ module.exports = function (Groups) {
         await createNonExistingGroups(groupsToCreate);
 
         const promises = [
-            db.sortedSetsAdd(groupsToJoin.map(groupName => `group:${groupName}:members`), Date.now(), uid),
-            db.incrObjectField(groupsToJoin.map(groupName => `group:${groupName}`), 'memberCount'),
+            db.sortedSetsAdd(
+                groupsToJoin.map(groupName => `group:${groupName}:members`),
+                Date.now(),
+                uid
+            ),
+            db.incrObjectField(
+                groupsToJoin.map(groupName => `group:${groupName}`),
+                'memberCount'
+            ),
         ];
         if (isAdmin) {
-            promises.push(db.setsAdd(groupsToJoin.map(groupName => `group:${groupName}:owners`), uid));
+            promises.push(
+                db.setsAdd(
+                    groupsToJoin.map(groupName => `group:${groupName}:owners`),
+                    uid
+                )
+            );
         }
 
         await Promise.all(promises);
@@ -92,9 +100,7 @@ module.exports = function (Groups) {
 
     async function setGroupTitleIfNotSet(groupNames, uid) {
         const ignore = ['registered-users', 'verified-users', 'unverified-users', Groups.BANNED_USERS];
-        groupNames = groupNames.filter(
-            groupName => !ignore.includes(groupName) && !Groups.isPrivilegeGroup(groupName)
-        );
+        groupNames = groupNames.filter(groupName => !ignore.includes(groupName) && !Groups.isPrivilegeGroup(groupName));
         if (!groupNames.length) {
             return;
         }

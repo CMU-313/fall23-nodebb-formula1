@@ -34,11 +34,7 @@ middleware.buildHeader = helpers.try(async (req, res, next) => {
     if (req.method === 'GET') {
         await require('./index').applyCSRFasync(req, res);
     }
-    const [config, canLoginIfBanned] = await Promise.all([
-        controllers.api.loadConfig(req),
-        user.bans.canLoginIfBanned(req.uid),
-        plugins.hooks.fire('filter:middleware.buildHeader', { req: req, locals: res.locals }),
-    ]);
+    const [config, canLoginIfBanned] = await Promise.all([controllers.api.loadConfig(req), user.bans.canLoginIfBanned(req.uid), plugins.hooks.fire('filter:middleware.buildHeader', { req: req, locals: res.locals })]);
 
     if (!canLoginIfBanned && req.loggedIn) {
         req.logout(() => {
@@ -109,10 +105,7 @@ middleware.renderHeader = async function renderHeader(req, res, data) {
 
     templateValues.bootswatchSkin = (parseInt(meta.config.disableCustomUserSkins, 10) !== 1 ? res.locals.config.bootswatchSkin : '') || meta.config.bootswatchSkin || '';
     templateValues.browserTitle = results.browserTitle;
-    ({
-        navigation: templateValues.navigation,
-        unreadCount: templateValues.unreadCount,
-    } = await appendUnreadCounts({
+    ({ navigation: templateValues.navigation, unreadCount: templateValues.unreadCount } = await appendUnreadCounts({
         uid: req.uid,
         query: req.query,
         navigation: results.navigation,
@@ -125,7 +118,7 @@ middleware.renderHeader = async function renderHeader(req, res, data) {
     templateValues.user = results.user;
     templateValues.userJSON = jsesc(JSON.stringify(results.user), { isScriptContext: true });
     templateValues.useCustomCSS = meta.config.useCustomCSS && meta.config.customCSS;
-    templateValues.customCSS = templateValues.useCustomCSS ? (meta.config.renderedCustomCSS || '') : '';
+    templateValues.customCSS = templateValues.useCustomCSS ? meta.config.renderedCustomCSS || '' : '';
     templateValues.useCustomHTML = meta.config.useCustomHTML;
     templateValues.customHTML = templateValues.useCustomHTML ? meta.config.customHTML : '';
     templateValues.maintenanceHeader = meta.config.maintenanceMode && !results.isAdmin;
@@ -165,18 +158,18 @@ async function appendUnreadCounts({ uid, navigation, unreadData, query }) {
         unreadChatCount: messaging.getUnreadCount(uid),
         unreadNotificationCount: user.notifications.getUnreadCount(uid),
         unreadFlagCount: (async function () {
-            if (originalRoutes.includes('/flags') && await user.isPrivileged(uid)) {
+            if (originalRoutes.includes('/flags') && (await user.isPrivileged(uid))) {
                 return flags.getCount({
                     uid,
                     query,
                     filters: {
                         quick: 'unresolved',
-                        cid: (await user.isAdminOrGlobalMod(uid)) ? [] : (await user.getModeratedCids(uid)),
+                        cid: (await user.isAdminOrGlobalMod(uid)) ? [] : await user.getModeratedCids(uid),
                     },
                 });
             }
             return 0;
-        }()),
+        })(),
     };
     const results = await utils.promiseParallel(calls);
 
@@ -193,17 +186,20 @@ async function appendUnreadCounts({ uid, navigation, unreadData, query }) {
         flags: results.unreadFlagCount || 0,
     };
 
-    Object.keys(unreadCount).forEach((key) => {
+    Object.keys(unreadCount).forEach(key => {
         if (unreadCount[key] > 99) {
             unreadCount[key] = '99+';
         }
     });
 
     const { tidsByFilter } = results.unreadData;
-    navigation = navigation.map((item) => {
+    navigation = navigation.map(item => {
         function modifyNavItem(item, route, filter, content) {
             if (item && item.originalRoute === route) {
-                unreadData[filter] = _.zipObject(tidsByFilter[filter], tidsByFilter[filter].map(() => true));
+                unreadData[filter] = _.zipObject(
+                    tidsByFilter[filter],
+                    tidsByFilter[filter].map(() => true)
+                );
                 item.content = content;
                 unreadCount.mobileUnread = content;
                 unreadCount.unreadUrl = route;
@@ -217,7 +213,7 @@ async function appendUnreadCounts({ uid, navigation, unreadData, query }) {
         modifyNavItem(item, '/unread?filter=watched', 'watched', unreadCount.watchedTopic);
         modifyNavItem(item, '/unread?filter=unreplied', 'unreplied', unreadCount.unrepliedTopic);
 
-        ['flags'].forEach((prop) => {
+        ['flags'].forEach(prop => {
             if (item && item.originalRoute === `/${prop}` && unreadCount[prop] > 0) {
                 item.iconClass += ' unread-count';
                 item.content = unreadCount.flags;

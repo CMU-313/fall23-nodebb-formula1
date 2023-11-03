@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -25,9 +24,7 @@ require('./watch')(Categories);
 require('./search')(Categories);
 
 Categories.exists = async function (cids) {
-    return await db.exists(
-        Array.isArray(cids) ? cids.map(cid => `category:${cid}`) : `category:${cids}`
-    );
+    return await db.exists(Array.isArray(cids) ? cids.map(cid => `category:${cid}`) : `category:${cids}`);
 };
 
 Categories.getCategoryById = async function (data) {
@@ -38,12 +35,7 @@ Categories.getCategoryById = async function (data) {
     const category = categories[0];
     data.category = category;
 
-    const promises = [
-        Categories.getCategoryTopics(data),
-        Categories.getTopicCount(data),
-        Categories.getWatchState([data.cid], data.uid),
-        getChildrenTree(category, data.uid),
-    ];
+    const promises = [Categories.getCategoryTopics(data), Categories.getTopicCount(data), Categories.getWatchState([data.cid], data.uid), getChildrenTree(category, data.uid)];
 
     if (category.parentCid) {
         promises.push(Categories.getCategoryData(category.parentCid));
@@ -107,22 +99,23 @@ Categories.getModeratorUids = async function (cids) {
 
     const memberSets = await groups.getMembersOfGroups(groupNames);
     // Every other set is actually a list of user groups, not uids, so convert those to members
-    const sets = memberSets.reduce((memo, set, idx) => {
-        if (idx % 2) {
-            memo.groupNames.push(set);
-        } else {
-            memo.uids.push(set);
-        }
+    const sets = memberSets.reduce(
+        (memo, set, idx) => {
+            if (idx % 2) {
+                memo.groupNames.push(set);
+            } else {
+                memo.uids.push(set);
+            }
 
-        return memo;
-    }, { groupNames: [], uids: [] });
+            return memo;
+        },
+        { groupNames: [], uids: [] }
+    );
 
     const uniqGroups = _.uniq(_.flatten(sets.groupNames));
     const groupUids = await groups.getMembersOfGroups(uniqGroups);
     const map = _.zipObject(uniqGroups, groupUids);
-    const moderatorUids = cids.map(
-        (cid, index) => _.uniq(sets.uids[index].concat(_.flatten(sets.groupNames[index].map(g => map[g]))))
-    );
+    const moderatorUids = cids.map((cid, index) => _.uniq(sets.uids[index].concat(_.flatten(sets.groupNames[index].map(g => map[g])))));
     return moderatorUids;
 };
 
@@ -136,15 +129,11 @@ Categories.getCategories = async function (cids, uid) {
     }
     uid = parseInt(uid, 10);
 
-    const [categories, tagWhitelist, hasRead] = await Promise.all([
-        Categories.getCategoriesData(cids),
-        Categories.getTagWhitelist(cids),
-        Categories.hasReadCategories(cids, uid),
-    ]);
+    const [categories, tagWhitelist, hasRead] = await Promise.all([Categories.getCategoriesData(cids), Categories.getTagWhitelist(cids), Categories.hasReadCategories(cids, uid)]);
     categories.forEach((category, i) => {
         if (category) {
             category.tagWhitelist = tagWhitelist[i];
-            category['unread-class'] = (category.topic_count === 0 || (hasRead[i] && uid !== 0)) ? '' : 'unread';
+            category['unread-class'] = category.topic_count === 0 || (hasRead[i] && uid !== 0) ? '' : 'unread';
         }
     });
     return categories;
@@ -153,7 +142,7 @@ Categories.getCategories = async function (cids, uid) {
 Categories.getTagWhitelist = async function (cids) {
     const cachedData = {};
 
-    const nonCachedCids = cids.filter((cid) => {
+    const nonCachedCids = cids.filter(cid => {
         const data = cache.get(`cid:${cid}:tag:whitelist`);
         const isInCache = data !== undefined;
         if (isInCache) {
@@ -193,7 +182,7 @@ function calculateTopicPostCount(category) {
     let postCount = category.post_count;
     let topicCount = category.topic_count;
     if (Array.isArray(category.children)) {
-        category.children.forEach((child) => {
+        category.children.forEach(child => {
             calculateTopicPostCount(child);
             postCount += parseInt(child.totalPostCount, 10) || 0;
             topicCount += parseInt(child.totalTopicCount, 10) || 0;
@@ -236,7 +225,7 @@ async function getChildrenTree(category, uid) {
     childrenCids = childrenData.map(child => child.cid);
     const hasRead = await Categories.hasReadCategories(childrenCids, uid);
     childrenData.forEach((child, i) => {
-        child['unread-class'] = (child.topic_count === 0 || (hasRead[i] && uid !== 0)) ? '' : 'unread';
+        child['unread-class'] = child.topic_count === 0 || (hasRead[i] && uid !== 0) ? '' : 'unread';
     });
     Categories.getTree([category].concat(childrenData), category.parentCid);
 }
@@ -283,7 +272,7 @@ Categories.getChildrenCids = async function (rootCid) {
 };
 
 Categories.flattenCategories = function (allCategories, categoryData) {
-    categoryData.forEach((category) => {
+    categoryData.forEach(category => {
         if (category) {
             allCategories.push(category);
 
@@ -315,7 +304,7 @@ Categories.getTree = function (categories, parentCid) {
 
     const tree = [];
 
-    categories.forEach((category) => {
+    categories.forEach(category => {
         if (category) {
             category.children = category.children || [];
             if (!category.cid) {
@@ -344,7 +333,7 @@ Categories.getTree = function (categories, parentCid) {
             }
             return a.cid - b.cid;
         });
-        tree.forEach((category) => {
+        tree.forEach(category => {
             if (category && Array.isArray(category.children)) {
                 sortTree(category.children);
             }
@@ -391,10 +380,7 @@ Categories.buildForSelectCategories = function (categories, fields, parentCid) {
 
     rootCategories.forEach(category => recursive(category, categoriesData, '', 0));
 
-    const pickFields = [
-        'cid', 'name', 'level', 'icon', 'parentCid',
-        'color', 'bgColor', 'backgroundImage', 'imageClass',
-    ];
+    const pickFields = ['cid', 'name', 'level', 'icon', 'parentCid', 'color', 'bgColor', 'backgroundImage', 'imageClass'];
     fields = fields || [];
     if (fields.includes('text') && fields.includes('value')) {
         return categoriesData.map(category => _.pick(category, fields));

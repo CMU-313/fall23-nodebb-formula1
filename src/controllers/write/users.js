@@ -173,7 +173,7 @@ const getSessionAsync = util.promisify((sid, callback) => {
 
 Users.revokeSession = async (req, res) => {
     // Only admins or global mods (besides the user themselves) can revoke sessions
-    if (parseInt(req.params.uid, 10) !== req.uid && !await user.isAdminOrGlobalMod(req.uid)) {
+    if (parseInt(req.params.uid, 10) !== req.uid && !(await user.isAdminOrGlobalMod(req.uid))) {
         return helpers.formatApiResponse(404, res);
     }
 
@@ -226,7 +226,10 @@ Users.invite = async (req, res) => {
     }
 
     const max = meta.config.maximumInvites;
-    const emailsArr = emails.split(',').map(email => email.trim()).filter(Boolean);
+    const emailsArr = emails
+        .split(',')
+        .map(email => email.trim())
+        .filter(Boolean);
 
     for (const email of emailsArr) {
         /* eslint-disable no-await-in-loop */
@@ -250,14 +253,15 @@ Users.getInviteGroups = async function (req, res) {
     }
 
     const userInviteGroups = await groups.getUserInviteGroups(req.params.uid);
-    return helpers.formatApiResponse(200, res, userInviteGroups.map(group => group.displayName));
+    return helpers.formatApiResponse(
+        200,
+        res,
+        userInviteGroups.map(group => group.displayName)
+    );
 };
 
 Users.listEmails = async (req, res) => {
-    const [isPrivileged, { showemail }] = await Promise.all([
-        user.isPrivileged(req.uid),
-        user.getSettings(req.params.uid),
-    ]);
+    const [isPrivileged, { showemail }] = await Promise.all([user.isPrivileged(req.uid), user.getSettings(req.params.uid)]);
     const isSelf = req.uid === parseInt(req.params.uid, 10);
 
     if (isSelf || isPrivileged || showemail) {
@@ -269,11 +273,7 @@ Users.listEmails = async (req, res) => {
 };
 
 Users.getEmail = async (req, res) => {
-    const [isPrivileged, { showemail }, exists] = await Promise.all([
-        user.isPrivileged(req.uid),
-        user.getSettings(req.params.uid),
-        db.isSortedSetMember('email:uid', req.params.email.toLowerCase()),
-    ]);
+    const [isPrivileged, { showemail }, exists] = await Promise.all([user.isPrivileged(req.uid), user.getSettings(req.params.uid), db.isSortedSetMember('email:uid', req.params.email.toLowerCase())]);
     const isSelf = req.uid === parseInt(req.params.uid, 10);
 
     if (exists && (isSelf || isPrivileged || showemail)) {
@@ -284,21 +284,19 @@ Users.getEmail = async (req, res) => {
 };
 
 Users.confirmEmail = async (req, res) => {
-    const [pending, current, canManage] = await Promise.all([
-        user.email.isValidationPending(req.params.uid, req.params.email),
-        user.getUserField(req.params.uid, 'email'),
-        privileges.admin.can('admin:users', req.uid),
-    ]);
+    const [pending, current, canManage] = await Promise.all([user.email.isValidationPending(req.params.uid, req.params.email), user.getUserField(req.params.uid, 'email'), privileges.admin.can('admin:users', req.uid)]);
 
     if (!canManage) {
         return helpers.notAllowed(req, res);
     }
 
-    if (pending) { // has active confirmation request
+    if (pending) {
+        // has active confirmation request
         const code = await db.get(`confirm:byUid:${req.params.uid}`);
         await user.email.confirmByCode(code, req.session.id);
         helpers.formatApiResponse(200, res);
-    } else if (current && current === req.params.email) { // email in user hash (i.e. email passed into user.create)
+    } else if (current && current === req.params.email) {
+        // email in user hash (i.e. email passed into user.create)
         await user.email.confirmByUid(req.params.uid);
         helpers.formatApiResponse(200, res);
     } else {
@@ -337,17 +335,21 @@ Users.getExportByType = async (req, res) => {
     }
 
     res.status(200);
-    res.sendFile(filename, {
-        root: path.join(__dirname, '../../../build/export'),
-        headers: {
-            'Content-Type': mime,
-            'Content-Disposition': `attachment; filename=${filename}`,
+    res.sendFile(
+        filename,
+        {
+            root: path.join(__dirname, '../../../build/export'),
+            headers: {
+                'Content-Type': mime,
+                'Content-Disposition': `attachment; filename=${filename}`,
+            },
         },
-    }, (err) => {
-        if (err) {
-            throw err;
+        err => {
+            if (err) {
+                throw err;
+            }
         }
-    });
+    );
 };
 
 Users.generateExportsByType = async (req, res) => {

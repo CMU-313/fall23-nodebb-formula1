@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -36,12 +35,13 @@ const _privilegeMap = new Map([
 ]);
 
 privsGlobal.getUserPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.global.list', Array.from(_privilegeMap.keys()));
-privsGlobal.getGroupPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.global.groups.list', Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`));
+privsGlobal.getGroupPrivilegeList = async () =>
+    await plugins.hooks.fire(
+        'filter:privileges.global.groups.list',
+        Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`)
+    );
 privsGlobal.getPrivilegeList = async () => {
-    const [user, group] = await Promise.all([
-        privsGlobal.getUserPrivilegeList(),
-        privsGlobal.getGroupPrivilegeList(),
-    ]);
+    const [user, group] = await Promise.all([privsGlobal.getUserPrivilegeList(), privsGlobal.getGroupPrivilegeList()]);
     return user.concat(group);
 };
 
@@ -81,10 +81,7 @@ privsGlobal.list = async function () {
 
 privsGlobal.get = async function (uid) {
     const userPrivilegeList = await privsGlobal.getUserPrivilegeList();
-    const [userPrivileges, isAdministrator] = await Promise.all([
-        helpers.isAllowedTo(userPrivilegeList, uid, 0),
-        user.isAdministrator(uid),
-    ]);
+    const [userPrivileges, isAdministrator] = await Promise.all([helpers.isAllowedTo(userPrivilegeList, uid, 0), user.isAdministrator(uid)]);
 
     const combined = userPrivileges.map(allowed => allowed || isAdministrator);
     const privData = _.zipObject(userPrivilegeList, combined);
@@ -93,10 +90,7 @@ privsGlobal.get = async function (uid) {
 };
 
 privsGlobal.can = async function (privilege, uid) {
-    const [isAdministrator, isUserAllowedTo] = await Promise.all([
-        user.isAdministrator(uid),
-        helpers.isAllowedTo(privilege, uid, [0]),
-    ]);
+    const [isAdministrator, isUserAllowedTo] = await Promise.all([user.isAdministrator(uid), helpers.isAllowedTo(privilege, uid, [0])]);
     return isAdministrator || isUserAllowedTo[0];
 };
 

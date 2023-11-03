@@ -17,10 +17,9 @@ questions.main = [
     {
         name: 'url',
         description: 'URL used to access this NodeBB',
-        default:
-            nconf.get('url') || 'http://127.0.0.1:4567',
+        default: nconf.get('url') || 'http://127.0.0.1:4567',
         pattern: /^http(?:s)?:\/\//,
-        message: 'Base URL must begin with \'http://\' or \'https://\'',
+        message: "Base URL must begin with 'http://' or 'https://'",
     },
     {
         name: 'secret',
@@ -70,7 +69,8 @@ function checkSetupFlagEnv() {
         winston.info('[install/checkSetupFlagEnv] checking env vars for setup info...');
         setupVal = setupVal || {};
 
-        Object.entries(process.env).forEach(([evName, evValue]) => { // get setup values from env
+        Object.entries(process.env).forEach(([evName, evValue]) => {
+            // get setup values from env
             if (evName.startsWith('NODEBB_DB_')) {
                 setupVal[`${process.env.NODEBB_DB}:${envConfMap[evName]}`] = evValue;
             } else if (evName.startsWith('NODEBB_')) {
@@ -90,7 +90,7 @@ function checkSetupFlagEnv() {
             setupVal = { ...setupVal, ...setupJSON };
         }
     } catch (err) {
-        winston.error('[install/checkSetupFlagEnv] invalid json in nconf.get(\'setup\'), ignoring setup values from json');
+        winston.error("[install/checkSetupFlagEnv] invalid json in nconf.get('setup'), ignoring setup values from json");
     }
 
     if (setupVal && typeof setupVal === 'object') {
@@ -162,15 +162,9 @@ async function setupConfig() {
         const redisQuestions = require('./database/redis').questions;
         const mongoQuestions = require('./database/mongo').questions;
         const postgresQuestions = require('./database/postgres').questions;
-        const allQuestions = [
-            ...questions.main,
-            ...questions.optional,
-            ...redisQuestions,
-            ...mongoQuestions,
-            ...postgresQuestions,
-        ];
+        const allQuestions = [...questions.main, ...questions.optional, ...redisQuestions, ...mongoQuestions, ...postgresQuestions];
 
-        allQuestions.forEach((question) => {
+        allQuestions.forEach(question => {
             if (install.values.hasOwnProperty(question.name)) {
                 config[question.name] = install.values[question.name];
             } else if (question.hasOwnProperty('default')) {
@@ -271,9 +265,7 @@ async function createDefaultUserGroups() {
         });
     }
 
-    const [verifiedExists, unverifiedExists, bannedExists] = await groups.exists([
-        'verified-users', 'unverified-users', 'banned-users',
-    ]);
+    const [verifiedExists, unverifiedExists, bannedExists] = await groups.exists(['verified-users', 'unverified-users', 'banned-users']);
     if (!verifiedExists) {
         await createGroup('verified-users');
     }
@@ -304,30 +296,36 @@ async function createAdmin() {
 
     winston.warn('No administrators have been detected, running initial user setup\n');
 
-    let questions = [{
-        name: 'username',
-        description: 'Administrator username',
-        required: true,
-        type: 'string',
-    }, {
-        name: 'email',
-        description: 'Administrator email address',
-        pattern: /.+@.+/,
-        required: true,
-    }];
-    const passwordQuestions = [{
-        name: 'password',
-        description: 'Password',
-        required: true,
-        hidden: true,
-        type: 'string',
-    }, {
-        name: 'password:confirm',
-        description: 'Confirm Password',
-        required: true,
-        hidden: true,
-        type: 'string',
-    }];
+    let questions = [
+        {
+            name: 'username',
+            description: 'Administrator username',
+            required: true,
+            type: 'string',
+        },
+        {
+            name: 'email',
+            description: 'Administrator email address',
+            pattern: /.+@.+/,
+            required: true,
+        },
+    ];
+    const passwordQuestions = [
+        {
+            name: 'password',
+            description: 'Password',
+            required: true,
+            hidden: true,
+            type: 'string',
+        },
+        {
+            name: 'password:confirm',
+            description: 'Confirm Password',
+            required: true,
+            hidden: true,
+            type: 'string',
+        },
+    ];
 
     async function success(results) {
         if (!results) {
@@ -422,15 +420,9 @@ async function createGlobalModeratorsGroup() {
 
 async function giveGlobalPrivileges() {
     const privileges = require('./privileges');
-    const defaultPrivileges = [
-        'groups:chat', 'groups:upload:post:image', 'groups:signature', 'groups:search:content',
-        'groups:search:users', 'groups:search:tags', 'groups:view:users', 'groups:view:tags', 'groups:view:groups',
-        'groups:local:login',
-    ];
+    const defaultPrivileges = ['groups:chat', 'groups:upload:post:image', 'groups:signature', 'groups:search:content', 'groups:search:users', 'groups:search:tags', 'groups:view:users', 'groups:view:tags', 'groups:view:groups', 'groups:local:login'];
     await privileges.global.give(defaultPrivileges, 'registered-users');
-    await privileges.global.give(defaultPrivileges.concat([
-        'groups:ban', 'groups:upload:post:file', 'groups:view:users:info',
-    ]), 'Global Moderators');
+    await privileges.global.give(defaultPrivileges.concat(['groups:ban', 'groups:upload:post:file', 'groups:view:users:info']), 'Global Moderators');
     await privileges.global.give(['groups:view:users', 'groups:view:tags', 'groups:view:groups'], 'guests');
     await privileges.global.give(['groups:view:users', 'groups:view:tags', 'groups:view:groups'], 'spiders');
 }
@@ -446,9 +438,7 @@ async function createCategories() {
 
     console.log('No categories found, populating instance with default categories');
 
-    const default_categories = JSON.parse(
-        await fs.promises.readFile(path.join(__dirname, '../', 'install/data/categories.json'), 'utf8')
-    );
+    const default_categories = JSON.parse(await fs.promises.readFile(path.join(__dirname, '../', 'install/data/categories.json'), 'utf8'));
     for (const categoryData of default_categories) {
         // eslint-disable-next-line no-await-in-loop
         await Categories.create(categoryData);
@@ -471,10 +461,7 @@ async function createWelcomePost() {
     const db = require('./database');
     const Topics = require('./topics');
 
-    const [content, numTopics] = await Promise.all([
-        fs.promises.readFile(path.join(__dirname, '../', 'install/data/welcome.md'), 'utf8'),
-        db.getObjectField('global', 'topicCount'),
-    ]);
+    const [content, numTopics] = await Promise.all([fs.promises.readFile(path.join(__dirname, '../', 'install/data/welcome.md'), 'utf8'), db.getObjectField('global', 'topicCount')]);
 
     if (!parseInt(numTopics, 10)) {
         console.log('Creating welcome post!');
@@ -501,15 +488,7 @@ async function createInitialBug() {
 async function enableDefaultPlugins() {
     console.log('Enabling default plugins');
 
-    let defaultEnabled = [
-        'nodebb-plugin-composer-default',
-        'nodebb-plugin-markdown',
-        'nodebb-plugin-mentions',
-        'nodebb-widget-essentials',
-        'nodebb-rewards-essentials',
-        'nodebb-plugin-emoji',
-        'nodebb-plugin-emoji-android',
-    ];
+    let defaultEnabled = ['nodebb-plugin-composer-default', 'nodebb-plugin-markdown', 'nodebb-plugin-mentions', 'nodebb-widget-essentials', 'nodebb-rewards-essentials', 'nodebb-plugin-emoji', 'nodebb-plugin-emoji-android'];
     let customDefaults = nconf.get('defaultplugins') || nconf.get('defaultPlugins');
 
     winston.info(`[install/defaultPlugins] customDefaults ${String(customDefaults)}`);
@@ -535,10 +514,7 @@ async function enableDefaultPlugins() {
 
 async function setCopyrightWidget() {
     const db = require('./database');
-    const [footerJSON, footer] = await Promise.all([
-        fs.promises.readFile(path.join(__dirname, '../', 'install/data/footer.json'), 'utf8'),
-        db.getObjectField('widgets:global', 'footer'),
-    ]);
+    const [footerJSON, footer] = await Promise.all([fs.promises.readFile(path.join(__dirname, '../', 'install/data/footer.json'), 'utf8'), db.getObjectField('widgets:global', 'footer')]);
 
     if (!footer && footerJSON) {
         await db.setObjectField('widgets:global', 'footer', footerJSON);

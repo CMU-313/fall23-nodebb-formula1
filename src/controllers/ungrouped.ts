@@ -9,21 +9,22 @@ import { GroupFullObject } from '../types/group';
 import { Breadcrumb } from '../types';
 
 interface GetRequest extends Request {
-  uid: number;
+    uid: number;
 }
 
 interface UngroupedOutputData extends TopicData {
-  groups: GroupFullObject[];
-  uid: number;
-  title: string;
-  breadcrumbs: Breadcrumb
+    groups: GroupFullObject[];
+    uid: number;
+    title: string;
+    breadcrumbs: Breadcrumb;
 }
 
-interface TopicData { // Consistent with inteface in src/topics/ungrouped.js
-  tids: number[];
-  nextStart: number;
-  topicsCount: number;
-  topics: TopicObject[];
+interface TopicData {
+    // Consistent with inteface in src/topics/ungrouped.js
+    tids: number[];
+    nextStart: number;
+    topicsCount: number;
+    topics: TopicObject[];
 }
 
 // eslint-disable-next-line import/prefer-default-export
@@ -31,16 +32,16 @@ export const get = async function (req: GetRequest, res: Response, next: NextFun
     const { uid } = req;
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const ungroupedTopicsData = await Topics.getUngroupedTopics(uid) as TopicData; // Ungrouped topics
+    const ungroupedTopicsData = (await Topics.getUngroupedTopics(uid)) as TopicData; // Ungrouped topics
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const userGroups = (await Groups.getUserGroups([uid]) as GroupFullObject[][])[0];
+    const userGroups = ((await Groups.getUserGroups([uid])) as GroupFullObject[][])[0];
 
     if (!ungroupedTopicsData || !userGroups) {
         return next();
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const [canPost] = await User.exists([uid]) as boolean[];
+    const [canPost] = (await User.exists([uid])) as boolean[];
 
     const breadcrumbs = [{ text: 'Ungrouped' }];
 

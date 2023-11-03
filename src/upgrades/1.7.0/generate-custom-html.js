@@ -34,10 +34,13 @@ module.exports = {
             newJS = newJS.join('\n\n');
 
             // Write both values to config
-            meta.configs.setMultiple({
-                customHTML: newHTML,
-                customJS: newJS,
-            }, callback);
+            meta.configs.setMultiple(
+                {
+                    customHTML: newHTML,
+                    customJS: newJS,
+                },
+                callback
+            );
         });
     },
 };
